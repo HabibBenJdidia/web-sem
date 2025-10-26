@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  fuseki:
+    image: stain/jena-fuseki
+    container_name: eco-tourism-fuseki
+    ports:
+      - "3030:3030"
+    environment:
+      - ADMIN_PASSWORD=admin
+      - JVM_ARGS=-Xmx2g
+    volumes:
+      - ./fuseki-data:/fuseki
+      - ./untitled-ontology-13:/staging/ontology.rdf
+
+  app:
+    build: .
+    container_name: eco-tourism-app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - fuseki
+    environment:
+      - FUSEKI_URL=http://fuseki:3030/ecotourism
+      - FUSEKI_USER=admin
+      - FUSEKI_PASSWORD=admin
+    volumes:
+      - .:/app
+    command: python app.py
+

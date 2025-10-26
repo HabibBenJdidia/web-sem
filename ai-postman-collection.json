@@ -1,0 +1,257 @@
+{
+  "info": {
+    "name": "Eco Tourism AI Agent API",
+    "description": "AI-powered endpoints using Google Gemini",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "AI Help",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/ai/help",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["ai", "help"]
+        },
+        "description": "Get AI capabilities and usage instructions"
+      }
+    },
+    {
+      "name": "AI Chat - Show All Tourists",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"Show me all tourists from Tunisia\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/ai/chat",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["ai", "chat"]
+        },
+        "description": "Interactive chat that can execute database operations"
+      }
+    },
+    {
+      "name": "AI Chat - Find Eco Activities",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"What eco-friendly activities are available in Tunisia?\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/ai/chat",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["ai", "chat"]
+        }
+      }
+    },
+    {
+      "name": "AI Chat - Create Tourist",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"I want to create a new tourist named Sarah, age 28, from France\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/ai/chat",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["ai", "chat"]
+        }
+      }
+    },
+    {
+      "name": "AI Ask - Simple Question",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"question\": \"What is eco-tourism and why is it important?\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/ai/ask",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["ai", "ask"]
+        },
+        "description": "Simple question-answer (no database operations)"
+      }
+    },
+    {
+      "name": "AI Ask - System Capabilities",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"question\": \"What can you do? What operations are available?\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/ai/ask",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["ai", "ask"]
+        }
+      }
+    },
+    {
+      "name": "AI SPARQL - Get All Tourists",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"query\": \"PREFIX eco: <http://example.org/eco-tourism#>\\nSELECT ?tourist ?name ?age WHERE {\\n  ?tourist a eco:Touriste .\\n  ?tourist eco:nom ?name .\\n  OPTIONAL { ?tourist eco:age ?age }\\n}\\nLIMIT 10\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/ai/sparql",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["ai", "sparql"]
+        },
+        "description": "Execute SPARQL query with AI explanation"
+      }
+    },
+    {
+      "name": "AI SPARQL - Eco Accommodations",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"query\": \"PREFIX eco: <http://example.org/eco-tourism#>\\nSELECT ?hebergement ?nom ?niveau WHERE {\\n  ?hebergement a eco:Hebergement .\\n  ?hebergement eco:nom ?nom .\\n  ?hebergement eco:niveauEco ?niveau .\\n  FILTER(?niveau = 'Gold' || ?niveau = 'Silver')\\n}\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/ai/sparql",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["ai", "sparql"]
+        }
+      }
+    },
+    {
+      "name": "AI Recommend Activities",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"age\": 30,\n  \"nationalite\": \"TN\",\n  \"preferences\": [\"nature\", \"eco-friendly\", \"moderate difficulty\"],\n  \"budget\": 100\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/ai/recommend-activities",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["ai", "recommend-activities"]
+        },
+        "description": "Get AI-powered activity recommendations"
+      }
+    },
+    {
+      "name": "AI Eco Score - Hebergement",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/ai/eco-score/Hebergement/http://example.org/eco-tourism#Hebergement_EcoLodge",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["ai", "eco-score", "Hebergement", "http:", "", "example.org", "eco-tourism#Hebergement_EcoLodge"]
+        },
+        "description": "Calculate eco-friendliness score"
+      }
+    },
+    {
+      "name": "AI Reset Chat",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/ai/reset",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["ai", "reset"]
+        },
+        "description": "Reset AI chat session"
+      }
+    },
+    {
+      "name": "AI Chat - Complex Query",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"Find me all activities with difficulty 'Facile' that cost less than 50 euros and are in natural zones\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/ai/chat",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["ai", "chat"]
+        }
+      }
+    },
+    {
+      "name": "AI Chat - Transportation Query",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"Show me all zero-emission transportation options\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/ai/chat",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["ai", "chat"]
+        }
+      }
+    },
+    {
+      "name": "AI Ask - Data Analysis",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"question\": \"Analyze the eco-tourism trends in our database. What insights can you provide?\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/ai/ask",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["ai", "ask"]
+        }
+      }
+    }
+  ]
+}
+

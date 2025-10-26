@@ -1,0 +1,587 @@
+{
+  "info": {
+    "name": "Eco Tourism API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/health",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "Touriste",
+      "item": [
+        {
+          "name": "Create Touriste",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Ali\",\n  \"age\": 30,\n  \"nationalite\": \"TN\",\n  \"sejourne_dans\": \"http://example.org/eco-tourism#Hebergement_DarElAin\",\n  \"participe_a\": [\"http://example.org/eco-tourism#Activite_RandonneeKroumirie\"],\n  \"se_deplace_par\": [\"http://example.org/eco-tourism#Transport_Velo\"]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/touriste",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["touriste"]
+            }
+          }
+        },
+        {
+          "name": "Get All Touristes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/touriste",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["touriste"]
+            }
+          }
+        },
+        {
+          "name": "Get Touriste by URI",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/touriste/http://example.org/eco-tourism#Touriste_Ali",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["touriste", "http:", "", "example.org", "eco-tourism#Touriste_Ali"]
+            }
+          }
+        },
+        {
+          "name": "Update Touriste",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"age\": 31,\n  \"nationalite\": \"FR\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/touriste/http://example.org/eco-tourism#Touriste_Ali",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["touriste", "http:", "", "example.org", "eco-tourism#Touriste_Ali"]
+            }
+          }
+        },
+        {
+          "name": "Delete Touriste",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/touriste/http://example.org/eco-tourism#Touriste_Ali",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["touriste", "http:", "", "example.org", "eco-tourism#Touriste_Ali"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Guide",
+      "item": [
+        {
+          "name": "Create Guide",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Mohamed\",\n  \"age\": 35,\n  \"nationalite\": \"TN\",\n  \"organise\": [\"http://example.org/eco-tourism#Activite_RandonneeKroumirie\"],\n  \"organise_evenement\": [\"http://example.org/eco-tourism#Evenement_FestivalEcoTabarka\"]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/guide",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["guide"]
+            }
+          }
+        },
+        {
+          "name": "Get All Guides",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/guide",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["guide"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Destination",
+      "item": [
+        {
+          "name": "Create Destination",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Djerba\",\n  \"pays\": \"Tunisie\",\n  \"climat\": \"Méditerranéen\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/destination",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["destination"]
+            }
+          }
+        },
+        {
+          "name": "Get All Destinations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/destination",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["destination"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ville",
+      "item": [
+        {
+          "name": "Create Ville",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Sousse\",\n  \"pays\": \"Tunisie\",\n  \"climat\": \"Méditerranéen\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/ville",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["ville"]
+            }
+          }
+        },
+        {
+          "name": "Get All Villes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/ville",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["ville"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Hebergement",
+      "item": [
+        {
+          "name": "Create Hebergement",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Eco Lodge Sahara\",\n  \"type\": \"Lodge\",\n  \"prix\": 150.0,\n  \"nb_chambres\": 10,\n  \"niveau_eco\": \"Gold\",\n  \"situe_dans\": \"http://example.org/eco-tourism#Tabaraka\",\n  \"utilise_energie\": \"http://example.org/eco-tourism#Energie_Solaire\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/hebergement",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["hebergement"]
+            }
+          }
+        },
+        {
+          "name": "Get All Hebergements",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/hebergement",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["hebergement"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Activite",
+      "item": [
+        {
+          "name": "Create Activite",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Plongée Sous-Marine\",\n  \"difficulte\": \"Facile\",\n  \"duree_heures\": 2.0,\n  \"prix\": 50.0,\n  \"est_dans_zone\": \"http://example.org/eco-tourism#Zone_ElFeija\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/activite",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["activite"]
+            }
+          }
+        },
+        {
+          "name": "Get All Activites",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/activite",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["activite"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transport",
+      "item": [
+        {
+          "name": "Create Transport",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Bus Electrique\",\n  \"type\": \"Bus\",\n  \"emission_co2_per_km\": 0.02\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/transport",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["transport"]
+            }
+          }
+        },
+        {
+          "name": "Get All Transports",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/transport",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["transport"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Restaurant",
+      "item": [
+        {
+          "name": "Create Restaurant",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Le Gourmet Bio\",\n  \"situe_dans\": \"http://example.org/eco-tourism#Tabaraka\",\n  \"sert\": [\"http://example.org/eco-tourism#ProduitLocal_HuileOliveBio\"]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/restaurant",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["restaurant"]
+            }
+          }
+        },
+        {
+          "name": "Get All Restaurants",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/restaurant",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["restaurant"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Produit Local",
+      "item": [
+        {
+          "name": "Create Produit",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Miel de Montagne\",\n  \"saison\": \"Été\",\n  \"bio\": true\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/produit",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["produit"]
+            }
+          }
+        },
+        {
+          "name": "Get All Produits",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/produit",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["produit"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Certification",
+      "item": [
+        {
+          "name": "Create Certification",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label_nom\": \"Green Key\",\n  \"organisme\": \"FEE\",\n  \"annee_obtention\": \"2024-01-15\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/certification",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["certification"]
+            }
+          }
+        },
+        {
+          "name": "Get All Certifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/certification",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["certification"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Evenement",
+      "item": [
+        {
+          "name": "Create Evenement",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Festival Bio 2025\",\n  \"event_date\": \"2025-06-20\",\n  \"event_duree_heures\": 8.0,\n  \"event_prix\": 15.0,\n  \"a_lieu_dans\": \"http://example.org/eco-tourism#Tabaraka\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/evenement",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["evenement"]
+            }
+          }
+        },
+        {
+          "name": "Get All Evenements",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/evenement",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["evenement"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "item": [
+        {
+          "name": "Search Generic",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"class_name\": \"Touriste\",\n  \"filters\": {\n    \"nationalite\": \"TN\"\n  }\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/search",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["search"]
+            }
+          }
+        },
+        {
+          "name": "Search by Name",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/search/name/Tabarka",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["search", "name", "Tabarka"]
+            }
+          }
+        },
+        {
+          "name": "Search Eco Hebergements",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/search/eco-hebergements",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["search", "eco-hebergements"]
+            }
+          }
+        },
+        {
+          "name": "Search Bio Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/search/bio-products",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["search", "bio-products"]
+            }
+          }
+        },
+        {
+          "name": "Search Zero Emission Transport",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/search/zero-emission-transport",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["search", "zero-emission-transport"]
+            }
+          }
+        },
+        {
+          "name": "Search Activities by Difficulty",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/search/activities/Moyenne",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["search", "activities", "Moyenne"]
+            }
+          }
+        },
+        {
+          "name": "Search Events by Date Range",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/search/events?start=2025-01-01&end=2025-12-31",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["search", "events"],
+              "query": [
+                {"key": "start", "value": "2025-01-01"},
+                {"key": "end", "value": "2025-12-31"}
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+
