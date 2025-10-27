@@ -3,6 +3,7 @@ import { Dashboard, Auth } from "@/layouts";
 import { LandingPage } from "@/pages/landing";
 import { ChangePassword } from "@/pages/ChangePassword";
 import { Profile } from "@/pages/Profile";
+import { Energies } from "@/pages/dashboard";
 import { AccessDenied } from "@/pages/AccessDenied";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
@@ -15,6 +16,14 @@ function App() {
         element={
           <ProtectedRoute>
             <Profile />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/dashboard/energies" 
+        element={
+          <ProtectedRoute>
+            <Energies />
           </ProtectedRoute>
         } 
       />

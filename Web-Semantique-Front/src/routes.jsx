@@ -3,8 +3,9 @@ import {
   UserCircleIcon,
   UsersIcon,
   InformationCircleIcon,
+  BoltIcon
 } from "@heroicons/react/24/solid";
-import { Home, Profile, Users, Notifications } from "@/pages/dashboard";
+import { Home, Profile, Users, Notifications, Energies } from "@/pages/dashboard";
 import { SignIn, SignUp, ForgotPassword, ResetPassword, VerifyEmail } from "@/pages/auth";
 
 const icon = {
@@ -38,6 +39,12 @@ export const routes = [
         name: "notifications",
         path: "/notifications",
         element: <Notifications />,
+      },
+      {
+        icon: <BoltIcon {...icon} />,
+        name: "Énergies",
+        path: "/energies",
+        element: <Energies />,
       },
     ],
   },
