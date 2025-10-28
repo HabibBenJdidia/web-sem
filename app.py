@@ -4,7 +4,7 @@ from Mangage import SPARQLManager
 from models import *
 from config import NAMESPACE
 from ai import GeminiAgent
-from auth_routes import auth_bp
+from auth_routes import auth_bp, token_required
 from email_service import init_mail
 import re
 import os
@@ -56,11 +56,23 @@ def clean_uri_name(name):
     """Clean name for use in URI - remove spaces and special chars"""
     if not name:
         return "Unknown"
+    
+    # If name is already a URI, extract just the last part
+    name_str = str(name)
+    if name_str.startswith('http://') or name_str.startswith('https://'):
+        # Extract the last part after # or /
+        if '#' in name_str:
+            name_str = name_str.split('#')[-1]
+        elif '/' in name_str:
+            name_str = name_str.split('/')[-1]
+    
     # Replace spaces and special chars with underscore
-    cleaned = re.sub(r'[^\w\-]', '_', str(name))
+    cleaned = re.sub(r'[^\w\-]', '_', name_str)
     # Remove consecutive underscores
     cleaned = re.sub(r'_+', '_', cleaned)
-    return cleaned
+    # Remove leading/trailing underscores
+    cleaned = cleaned.strip('_')
+    return cleaned if cleaned else "Unknown"
 
 # USERS MANAGEMENT ENDPOINT
 @app.route('/users', methods=['GET'])
@@ -155,6 +167,156 @@ def delete_guide(uri):
     result = manager.delete(uri)
     return jsonify(result)
 
+# PARTICIPATIONS & VISITS
+@app.route('/participations', methods=['GET'])
+@token_required
+def get_participations():
+    """Get list of activities the current user participates in"""
+    try:
+        user_uri = request.current_user['uri']
+        query = f"""
+        PREFIX eco: <{NAMESPACE}>
+        SELECT ?activity WHERE {{
+            <{user_uri}> <{NAMESPACE}participeA> ?activity .
+        }}
+        """
+        results = manager.execute_query(query)
+        if isinstance(results, dict) and results.get('error'):
+            return jsonify(results), 500
+        activities = [item['activity']['value'] for item in results]
+        return jsonify({'activities': activities})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/participations', methods=['POST'])
+@token_required
+def add_participation():
+    """Add participation of current user to an activity"""
+    try:
+        data = request.get_json() or {}
+        activity_uri = data.get('activity_uri')
+        if not activity_uri:
+            return jsonify({'error': 'activity_uri is required'}), 400
+
+        user_uri = request.current_user['uri']
+
+        exists_query = f"""
+        PREFIX eco: <{NAMESPACE}>
+        SELECT ?activity WHERE {{
+            <{user_uri}> <{NAMESPACE}participeA> <{activity_uri}> .
+        }} LIMIT 1
+        """
+        exists = manager.execute_query(exists_query)
+        if isinstance(exists, dict) and exists.get('error'):
+            return jsonify(exists), 500
+        if exists:
+            return jsonify({'message': 'Already participating in this activity', 'activity_uri': activity_uri}), 200
+
+        update_query = f"""
+        PREFIX eco: <{NAMESPACE}>
+        INSERT DATA {{
+            <{user_uri}> <{NAMESPACE}participeA> <{activity_uri}> .
+        }}
+        """
+        result = manager.execute_update(update_query)
+        return jsonify({**result, 'activity_uri': activity_uri})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/participations/<path:activity_uri>', methods=['DELETE'])
+@token_required
+def remove_participation(activity_uri):
+    """Remove participation of current user from an activity"""
+    try:
+        user_uri = request.current_user['uri']
+        delete_query = f"""
+        PREFIX eco: <{NAMESPACE}>
+        DELETE WHERE {{
+            <{user_uri}> <{NAMESPACE}participeA> <{activity_uri}> .
+        }}
+        """
+        result = manager.execute_update(delete_query)
+        return jsonify({**result, 'activity_uri': activity_uri})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/visits', methods=['GET'])
+@token_required
+def get_visits():
+    """Get list of natural zones the current user plans to visit"""
+    try:
+        user_uri = request.current_user['uri']
+        query = f"""
+        PREFIX eco: <{NAMESPACE}>
+        SELECT ?zone WHERE {{
+            <{user_uri}> <{NAMESPACE}planifieVisite> ?zone .
+        }}
+        """
+        results = manager.execute_query(query)
+        if isinstance(results, dict) and results.get('error'):
+            return jsonify(results), 500
+        zones = [item['zone']['value'] for item in results]
+        return jsonify({'zones': zones})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/visits', methods=['POST'])
+@token_required
+def add_visit():
+    """Plan a visit for the current user to a natural zone"""
+    try:
+        data = request.get_json() or {}
+        zone_uri = data.get('zone_uri')
+        if not zone_uri:
+            return jsonify({'error': 'zone_uri is required'}), 400
+
+        user_uri = request.current_user['uri']
+
+        exists_query = f"""
+        PREFIX eco: <{NAMESPACE}>
+        SELECT ?zone WHERE {{
+            <{user_uri}> <{NAMESPACE}planifieVisite> <{zone_uri}> .
+        }} LIMIT 1
+        """
+        exists = manager.execute_query(exists_query)
+        if isinstance(exists, dict) and exists.get('error'):
+            return jsonify(exists), 500
+        if exists:
+            return jsonify({'message': 'Visit already planned for this zone', 'zone_uri': zone_uri}), 200
+
+        update_query = f"""
+        PREFIX eco: <{NAMESPACE}>
+        INSERT DATA {{
+            <{user_uri}> <{NAMESPACE}planifieVisite> <{zone_uri}> .
+        }}
+        """
+        result = manager.execute_update(update_query)
+        return jsonify({**result, 'zone_uri': zone_uri})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/visits/<path:zone_uri>', methods=['DELETE'])
+@token_required
+def remove_visit(zone_uri):
+    """Remove planned visit for the current user"""
+    try:
+        user_uri = request.current_user['uri']
+        delete_query = f"""
+        PREFIX eco: <{NAMESPACE}>
+        DELETE WHERE {{
+            <{user_uri}> <{NAMESPACE}planifieVisite> <{zone_uri}> .
+        }}
+        """
+        result = manager.execute_update(delete_query)
+        return jsonify({**result, 'zone_uri': zone_uri})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 # DESTINATION
 @app.route('/destination', methods=['POST'])
 def create_destination():
@@ -245,6 +407,51 @@ def get_all_activites():
 
 @app.route('/activite/<path:uri>', methods=['DELETE'])
 def delete_activite(uri):
+    result = manager.delete(uri)
+    return jsonify(result)
+
+@app.route('/activite/<path:uri>', methods=['PUT'])
+def update_activite(uri):
+    data = request.json
+    results = []
+    for key, value in data.items():
+        result = manager.update_property(uri, key, value, isinstance(value, str))
+        results.append(result)
+    return jsonify({"updates": results})
+
+# ZONE NATURELLE
+@app.route('/zone-naturelle', methods=['POST'])
+def create_zone_naturelle():
+    data = request.json
+    zone = ZoneNaturelle(
+        uri=f"{NAMESPACE}ZoneNaturelle_{clean_uri_name(data.get('nom'))}",
+        nom=data.get('nom'),
+        type_=data.get('type')
+    )
+    result = manager.create(zone)
+    return jsonify(result)
+
+@app.route('/zone-naturelle', methods=['GET'])
+def get_all_zones_naturelles():
+    result = manager.get_all('ZoneNaturelle')
+    return jsonify(result)
+
+@app.route('/zone-naturelle/<path:uri>', methods=['GET'])
+def get_zone_naturelle(uri):
+    result = manager.get_by_uri(uri)
+    return jsonify(result)
+
+@app.route('/zone-naturelle/<path:uri>', methods=['PUT'])
+def update_zone_naturelle(uri):
+    data = request.json
+    results = []
+    for key, value in data.items():
+        result = manager.update_property(uri, key, value, isinstance(value, str))
+        results.append(result)
+    return jsonify({"updates": results})
+
+@app.route('/zone-naturelle/<path:uri>', methods=['DELETE'])
+def delete_zone_naturelle(uri):
     result = manager.delete(uri)
     return jsonify(result)
 

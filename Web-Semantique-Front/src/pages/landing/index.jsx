@@ -7,6 +7,7 @@ export function LandingPage() {
   const [openNav, setOpenNav] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showDiscoverMenu, setShowDiscoverMenu] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -49,6 +50,47 @@ export function LandingPage() {
               <li className="nav-item px-3 px-xl-4">
                 <a className="nav-link fw-medium" href="#service">Service</a>
               </li>
+              
+              {/* Discover Dropdown */}
+              <li className="nav-item px-3 px-xl-4 user-menu-container">
+                <button 
+                  className="user-menu-trigger nav-link fw-medium"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  onClick={() => setShowDiscoverMenu(!showDiscoverMenu)}
+                >
+                  <span>Discover</span>
+                  <svg className={`chevron ${showDiscoverMenu ? 'open' : ''}`} width="16" height="16" fill="currentColor" viewBox="0 0 20 20" style={{ marginLeft: '4px' }}>
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+                
+                {showDiscoverMenu && (
+                  <div className="user-dropdown">
+                    <Link 
+                      to="/client/activities" 
+                      className="user-dropdown-item"
+                      onClick={() => setShowDiscoverMenu(false)}
+                    >
+                      <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                        <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                      </svg>
+                      Activities
+                    </Link>
+                    <Link 
+                      to="/client/natural-zones" 
+                      className="user-dropdown-item"
+                      onClick={() => setShowDiscoverMenu(false)}
+                    >
+                      <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                      Natural Zones
+                    </Link>
+                  </div>
+                )}
+              </li>
+              
               <li className="nav-item px-3 px-xl-4">
                 <a className="nav-link fw-medium" href="#destination">Destination</a>
               </li>
@@ -223,6 +265,59 @@ export function LandingPage() {
                     <img src="/assets/img/category/icon4.png" width="75" alt="Service" />
                     <h4 className="mb-3">Customization</h4>
                     <p className="mb-0 fw-medium">We deliver outsourced aviation services for military customers</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Activities & Natural Zones Section */}
+        <section className="pt-5 pt-md-9" id="activities">
+          <div className="container">
+            <div className="mb-7 text-center">
+              <h5 className="text-secondary">EXPLORE NATURE</h5>
+              <h3 className="fs-xl-10 fs-lg-8 fs-7 fw-bold font-cursive text-capitalize">Activities & Natural Zones</h3>
+              <p className="fw-medium text-secondary">Discover eco-friendly activities in beautiful natural zones</p>
+            </div>
+            <div className="row justify-content-center">
+              <div className="col-lg-5 col-md-6 mb-6">
+                <div className="card service-card shadow-hover rounded-3 text-center align-items-center h-100">
+                  <div className="card-body p-xxl-5 p-4">
+                    <div className="mb-4">
+                      <span style={{ fontSize: '4rem' }}>🏃</span>
+                    </div>
+                    <h3 className="mb-3 fw-bold text-primary">Activities</h3>
+                    <p className="mb-4 fw-medium text-secondary">
+                      Explore hiking, trekking, water sports, and more eco-friendly activities. 
+                      Find the perfect adventure for your skill level.
+                    </p>
+                    <Link 
+                      to="/client/activities" 
+                      className="btn btn-primary btn-lg"
+                    >
+                      Browse Activities
+                    </Link>
+                  </div>
+                </div>
+              </div>
+              <div className="col-lg-5 col-md-6 mb-6">
+                <div className="card service-card shadow-hover rounded-3 text-center align-items-center h-100">
+                  <div className="card-body p-xxl-5 p-4">
+                    <div className="mb-4">
+                      <span style={{ fontSize: '4rem' }}>🌳</span>
+                    </div>
+                    <h3 className="mb-3 fw-bold text-success">Natural Zones</h3>
+                    <p className="mb-4 fw-medium text-secondary">
+                      Discover protected natural areas, national parks, forests, and pristine 
+                      environments perfect for eco-tourism.
+                    </p>
+                    <Link 
+                      to="/client/natural-zones" 
+                      className="btn btn-success btn-lg"
+                    >
+                      Explore Zones
+                    </Link>
                   </div>
                 </div>
               </div>

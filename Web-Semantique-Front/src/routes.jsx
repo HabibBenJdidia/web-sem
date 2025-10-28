@@ -3,8 +3,10 @@ import {
   UserCircleIcon,
   UsersIcon,
   InformationCircleIcon,
+  MapIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/solid";
-import { Home, Profile, Users, Notifications } from "@/pages/dashboard";
+import { Home, Profile, Users, Notifications, ActivitiesAdmin, ZonesAdmin } from "@/pages/dashboard";
 import { SignIn, SignUp, ForgotPassword, ResetPassword, VerifyEmail } from "@/pages/auth";
 
 const icon = {
@@ -38,6 +40,18 @@ export const routes = [
         name: "notifications",
         path: "/notifications",
         element: <Notifications />,
+      },
+      {
+        icon: <SparklesIcon {...icon} />,
+        name: "activities",
+        path: "/activities",
+        element: <ActivitiesAdmin />,
+      },
+      {
+        icon: <MapIcon {...icon} />,
+        name: "natural zones",
+        path: "/zones",
+        element: <ZonesAdmin />,
       },
     ],
   },

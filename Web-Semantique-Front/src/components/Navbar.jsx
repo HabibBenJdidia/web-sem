@@ -7,6 +7,7 @@ export function Navbar() {
   const [openNav, setOpenNav] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showDiscoverMenu, setShowDiscoverMenu] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -45,16 +46,51 @@ export function Navbar() {
         <div className="navbar-collapse">
           <ul className="navbar-nav ms-auto pt-2 pt-lg-0 font-base align-items-lg-center align-items-start">
             <li className="nav-item px-3 px-xl-4">
-              <a className="nav-link fw-medium" href="/#service">Service</a>
+              <Link className="nav-link fw-medium" to="/">Home</Link>
             </li>
+            
+            {/* Discover Dropdown */}
+            <li className="nav-item px-3 px-xl-4 user-menu-container">
+              <button 
+                className="user-menu-trigger nav-link fw-medium"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                onClick={() => setShowDiscoverMenu(!showDiscoverMenu)}
+              >
+                <span>Discover</span>
+                <svg className={`chevron ${showDiscoverMenu ? 'open' : ''}`} width="16" height="16" fill="currentColor" viewBox="0 0 20 20" style={{ marginLeft: '4px' }}>
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+              
+              {showDiscoverMenu && (
+                <div className="user-dropdown">
+                  <Link 
+                    to="/client/activities" 
+                    className="user-dropdown-item"
+                    onClick={() => setShowDiscoverMenu(false)}
+                  >
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                      <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                    </svg>
+                    Activities
+                  </Link>
+                  <Link 
+                    to="/client/natural-zones" 
+                    className="user-dropdown-item"
+                    onClick={() => setShowDiscoverMenu(false)}
+                  >
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    </svg>
+                    Natural Zones
+                  </Link>
+                </div>
+              )}
+            </li>
+            
             <li className="nav-item px-3 px-xl-4">
               <a className="nav-link fw-medium" href="/#destination">Destination</a>
-            </li>
-            <li className="nav-item px-3 px-xl-4">
-              <a className="nav-link fw-medium" href="/#booking">Booking</a>
-            </li>
-            <li className="nav-item px-3 px-xl-4">
-              <a className="nav-link fw-medium" href="/#testimonial">Testimonial</a>
             </li>
             
             {!user ? (
