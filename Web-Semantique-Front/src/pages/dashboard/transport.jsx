@@ -70,16 +70,14 @@ export function Transport() {
       { label: "Métro (20 g/km - Faible)", value: "Métro", emission: 20.0 },
       { label: "Tramway (25 g/km - Faible)", value: "Tramway", emission: 25.0 },
       { label: "Train (30 g/km - Faible)", value: "Train", emission: 30.0 },
-    ],
-    "TransportNonMotorise": [
-      { label: "Vélo (0 g/km - Zéro émission)", value: "Vélo", emission: 0.0 },
-      { label: "Marche (0 g/km - Zéro émission)", value: "Marche", emission: 0.0 },
-    ],
-    "Standard": [
       { label: "Moto (1200 g/km - Moyenne)", value: "Moto", emission: 1200.0 },
       { label: "Voiture (1200 g/km - Moyenne)", value: "Voiture", emission: 1200.0 },
       { label: "Bus (6000 g/km - Élevée)", value: "Bus", emission: 6000.0 },
       { label: "Bateau (6000 g/km - Élevée)", value: "Bateau", emission: 6000.0 },
+    ],
+    "TransportNonMotorise": [
+      { label: "Vélo (0 g/km - Zéro émission)", value: "Vélo", emission: 0.0 },
+      { label: "Marche (0 g/km - Zéro émission)", value: "Marche", emission: 0.0 },
     ]
   };
 
@@ -479,9 +477,8 @@ export function Transport() {
               setSelectedCategory(value);
             }}
           >
-            <Option value="EcoTransport">EcoTransport (Transports écologiques motorisés)</Option>
-            <Option value="TransportNonMotorise">TransportNonMotorise (Sans moteur)</Option>
-            <Option value="Standard">Standard (Transports classiques)</Option>
+            <Option value="EcoTransport">EcoTransport (Tous les transports motorisés)</Option>
+            <Option value="TransportNonMotorise">TransportNonMotorise (Sans moteur - Zéro émission)</Option>
           </Select>
 
           {formData.category && (
@@ -567,9 +564,8 @@ export function Transport() {
               setSelectedCategory(value);
             }}
           >
-            <Option value="EcoTransport">EcoTransport (Transports écologiques motorisés)</Option>
-            <Option value="TransportNonMotorise">TransportNonMotorise (Sans moteur)</Option>
-            <Option value="Standard">Standard (Transports classiques)</Option>
+            <Option value="EcoTransport">EcoTransport (Tous les transports motorisés)</Option>
+            <Option value="TransportNonMotorise">TransportNonMotorise (Sans moteur - Zéro émission)</Option>
           </Select>
 
           {formData.category && (
