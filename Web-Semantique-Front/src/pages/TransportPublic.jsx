@@ -4,6 +4,31 @@ import { TransportChatBot } from "@/components/TransportChatBot";
 import api from "@/services/api";
 import "./TransportPublic.css";
 
+// Function to determine transport category
+const getTransportCategory = (type) => {
+  const nonMotorizedTypes = ["Vélo", "Marche", "Marche à pied"];
+  if (nonMotorizedTypes.includes(type)) {
+    return "TransportNonMotorise";
+  }
+  return "EcoTransport";
+};
+
+// Function to get category display config
+const getCategoryConfig = (category) => {
+  if (category === "TransportNonMotorise") {
+    return {
+      label: "TransportNonMotorise",
+      color: "#10b981", // Green
+      description: "Sans moteur - Zéro émission"
+    };
+  }
+  return {
+    label: "EcoTransport",
+    color: "#3b82f6", // Blue
+    description: "Transport motorisé écologique"
+  };
+};
+
 // Map transport types to images and colors
 const TRANSPORT_CONFIG = {
   "Vélo": {
@@ -201,6 +226,9 @@ export function TransportPublic() {
           <div className="transport-grid">
             {filteredTransports.map((transport, index) => {
               const config = getTransportConfig(transport.type);
+              const category = getTransportCategory(transport.type);
+              const categoryConfig = getCategoryConfig(category);
+              
               return (
                 <div key={index} className="transport-card">
                   <div className="card-image-wrapper">
@@ -212,8 +240,8 @@ export function TransportPublic() {
                         e.target.src = "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=400&h=300&fit=crop";
                       }}
                     />
-                    <div className="card-badge" style={{ backgroundColor: config.color }}>
-                      <span className="badge-text">{transport.type}</span>
+                    <div className="card-badge" style={{ backgroundColor: categoryConfig.color }}>
+                      <span className="badge-text">{categoryConfig.label}</span>
                     </div>
                   </div>
                   
@@ -233,6 +261,14 @@ export function TransportPublic() {
                       <div className="detail-item">
                         <svg className="detail-icon" width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L11 6.477V16h2a1 1 0 110 2H7a1 1 0 110-2h2V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.788l1.599.799L9 4.323V3a1 1 0 011-1z" clipRule="evenodd" />
+                        </svg>
+                        <span className="detail-label">Catégorie:</span>
+                        <span className="detail-value">{categoryConfig.label}</span>
+                      </div>
+                      
+                      <div className="detail-item">
+                        <svg className="detail-icon" width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                         </svg>
                         <span className="detail-label">Type:</span>
                         <span className="detail-value">{transport.type}</span>
