@@ -22,9 +22,49 @@ ai_agent = GeminiAgent(manager)
 # Register authentication blueprint
 app.register_blueprint(auth_bp)
 
-# Helper function to parse SPARQL results into user objects
+# Helper function to parse SPARQL SELECT results into user objects
+def parse_users_from_query_results(results):
+    """Parse SPARQL SELECT query results into structured user objects (OPTIMIZED)"""
+    users_dict = {}
+    
+    for result in results:
+        user_uri = result.get('user', {}).get('value', '')
+        
+        if user_uri not in users_dict:
+            users_dict[user_uri] = {
+                'uri': user_uri,
+                'nom': None,
+                'email': None,
+                'age': None,
+                'nationalite': None,
+                'type': None
+            }
+        
+        # Get user properties from SELECT columns
+        if result.get('nom'):
+            users_dict[user_uri]['nom'] = result['nom'].get('value')
+        
+        if result.get('email'):
+            users_dict[user_uri]['email'] = result['email'].get('value')
+        
+        if result.get('age'):
+            age_value = result['age'].get('value')
+            users_dict[user_uri]['age'] = age_value
+        
+        if result.get('nationalite'):
+            users_dict[user_uri]['nationalite'] = result['nationalite'].get('value')
+        
+        if result.get('type'):
+            type_uri = result['type'].get('value')
+            # Extract type name from URI (e.g., "http://example.org/eco-tourism#Touriste" -> "Touriste")
+            if '#' in type_uri:
+                users_dict[user_uri]['type'] = type_uri.split('#')[1]
+    
+    return list(users_dict.values())
+
+# Legacy helper function (kept for backward compatibility if needed)
 def parse_users_from_sparql(results):
-    """Parse SPARQL triple results into structured user objects"""
+    """Parse SPARQL triple results into structured user objects (LEGACY)"""
     users_dict = {}
     
     for result in results:
@@ -165,24 +205,30 @@ def parse_transports_from_sparql(results):
 # USERS MANAGEMENT ENDPOINT
 @app.route('/users', methods=['GET'])
 def get_all_users():
-    """Get all users (Touristes and Guides) in a structured format"""
+    """Get all users (Touristes and Guides) in a structured format - OPTIMIZED"""
     try:
-        # Get all tourists
-        touriste_results = manager.get_all('Touriste')
-        # Get all guides
-        guide_results = manager.get_all('Guide')
+        # Custom SPARQL query to get both Touristes and Guides in ONE query
+        query = f"""
+        PREFIX eco: <{NAMESPACE}>
+        SELECT ?user ?nom ?email ?age ?nationalite ?type WHERE {{
+            ?user a ?type .
+            FILTER (?type = eco:Touriste || ?type = eco:Guide)
+            OPTIONAL {{ ?user eco:nom ?nom . }}
+            OPTIONAL {{ ?user eco:email ?email . }}
+            OPTIONAL {{ ?user eco:age ?age . }}
+            OPTIONAL {{ ?user eco:nationalite ?nationalite . }}
+        }}
+        """
         
-        # Combine results
-        all_results = touriste_results + guide_results
-        
-        # Parse into structured format
-        users = parse_users_from_sparql(all_results)
+        results = manager.execute_query(query)
+        users = parse_users_from_query_results(results)
         
         return jsonify({
             'users': users,
             'total': len(users)
         })
     except Exception as e:
+        print(f"Error in get_all_users: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 # TOURISTE
