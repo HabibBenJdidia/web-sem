@@ -5,8 +5,10 @@ from Mangage.sparql_manager import SPARQLManager
 manager = SPARQLManager()
 
 class EnergieRenouvelableController:
-    @staticmethod
-    def create():
+    def __init__(self):
+        self.manager = SPARQLManager()
+
+    def create(self):
         try:
             data = request.get_json()
             if not data.get('nom') or not data.get('type'):
@@ -17,7 +19,7 @@ class EnergieRenouvelableController:
                 type_=data['type'],
                 description=data.get('description', '')
             )
-            result = manager.create(energie)
+            result = self.manager.create(energie)
             
             # Return the created energie with its ID extracted from URI
             energie_dict = energie.to_dict()
@@ -31,10 +33,9 @@ class EnergieRenouvelableController:
             traceback.print_exc()
             return jsonify({'error': str(e)}), 400
 
-    @staticmethod
-    def get_all():
+    def get_all(self):
         try:
-            results = manager.get_all('EnergieRenouvelable')
+            results = self.manager.get_all('EnergieRenouvelable')
             
             # If no results, return empty array
             if not results:
@@ -76,11 +77,10 @@ class EnergieRenouvelableController:
             traceback.print_exc()
             return jsonify({'error': str(e)}), 500
 
-    @staticmethod
-    def get(uri):
+    def get(self, uri):
         try:
             print(f"Getting energie with URI: {uri}")
-            results = manager.get_by_uri(uri)
+            results = self.manager.get_by_uri(uri)
             
             if not results or 'error' in results:
                 print(f"Energy source not found for URI: {uri}")
@@ -113,8 +113,7 @@ class EnergieRenouvelableController:
             traceback.print_exc()
             return jsonify({'error': str(e)}), 500
 
-    @staticmethod
-    def update(uri):
+    def update(self, uri):
         try:
             print(f"Updating energie with URI: {uri}")
             data = request.get_json()
@@ -124,7 +123,7 @@ class EnergieRenouvelableController:
                 return jsonify({'error': 'No data provided'}), 400
 
             # Get the current energy resource
-            current = manager.get_by_uri(uri)
+            current = self.manager.get_by_uri(uri)
             if not current or 'error' in current:
                 print(f"Energy source not found for update: {uri}")
                 return jsonify({'error': 'Energy source not found'}), 404
@@ -141,13 +140,13 @@ class EnergieRenouvelableController:
             # Apply updates
             for prop, value in updates:
                 print(f"Updating property {prop} to {value}")
-                result = manager.update_property(uri, prop, value)
+                result = self.manager.update_property(uri, prop, value)
                 if 'error' in result:
                     print(f"Error updating property: {result}")
                     return jsonify(result), 400
 
             # Return the updated resource
-            updated_results = manager.get_by_uri(uri)
+            updated_results = self.manager.get_by_uri(uri)
             
             # Convert SPARQL results to dictionary
             updated_data = {'uri': uri}
@@ -177,11 +176,10 @@ class EnergieRenouvelableController:
             traceback.print_exc()
             return jsonify({'error': error_msg}), 500
 
-    @staticmethod
-    def delete(uri):
+    def delete(self, uri):
         try:
             print(f"Deleting energie with URI: {uri}")
-            success = manager.delete(uri)
+            success = self.manager.delete(uri)
             if not success:
                 print(f"Failed to delete energy source: {uri}")
                 return jsonify({'error': 'Failed to delete energy source'}), 400

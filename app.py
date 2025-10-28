@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
 from Mangage import SPARQLManager
 from models import *
@@ -11,7 +11,35 @@ import re
 import os
 
 app = Flask(__name__)
-CORS(app)
+
+# Enable CORS for all routes with specific options
+cors = CORS()
+
+# Apply CORS with specific settings
+cors.init_app(
+    app,
+    resources={
+        r"/*": {
+            "origins": "http://localhost:5173",  # Single origin as string
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+            "allow_headers": ["Content-Type", "Authorization"],
+            "supports_credentials": True,
+            "automatic_options": True  # Let Flask handle OPTIONS requests
+        }
+    },
+    supports_credentials=True
+)
+
+# Handle OPTIONS requests for all routes
+@app.before_request
+def handle_options():
+    if request.method == 'OPTIONS':
+        response = make_response()
+        response.headers.add('Access-Control-Allow-Origin', 'http://localhost:5173')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
 
 # Initialize Flask-Mail
 init_mail(app)
@@ -22,7 +50,7 @@ ai_agent = GeminiAgent(manager)
 
 # Register blueprints
 app.register_blueprint(auth_bp)
-app.register_blueprint(energie_bp, url_prefix='/api/energies')
+app.register_blueprint(energie_bp, url_prefix='/api/energie')
 
 # Helper function to parse SPARQL results into user objects
 def parse_users_from_sparql(results):
