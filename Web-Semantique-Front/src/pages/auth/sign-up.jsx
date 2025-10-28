@@ -230,7 +230,7 @@ export function SignUp() {
                   <input
                     type="email"
                     name="email"
-                    placeholder="name@mail.com"
+              placeholder="name@mail.com"
                     value={formData.email}
                     onChange={handleChange}
                     disabled={loading}
@@ -294,7 +294,7 @@ export function SignUp() {
                     </span>
                   )}
                   {formErrors.age && <span className="error-text">{formErrors.age}</span>}
-                </div>
+          </div>
 
                 <div className="auth-form-group">
                   <label className="auth-form-label">

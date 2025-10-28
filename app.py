@@ -62,6 +62,106 @@ def clean_uri_name(name):
     cleaned = re.sub(r'_+', '_', cleaned)
     return cleaned
 
+def parse_transports_from_query_results(results):
+    """Parse SPARQL SELECT query results into structured transport objects with empreinte data"""
+    from models.empreinte_carbone import EmpreinteCarbone
+    
+    transports_dict = {}
+    
+    for result in results:
+        transport_uri = result.get('transport', {}).get('value', '')
+        
+        if transport_uri not in transports_dict:
+            transports_dict[transport_uri] = {
+                'uri': transport_uri,
+                'nom': None,
+                'type': None,
+                'emission_co2_per_km': None,
+                'empreinte': None
+            }
+        
+        # Get transport properties
+        if result.get('nom'):
+            transports_dict[transport_uri]['nom'] = result['nom'].get('value')
+        
+        if result.get('type'):
+            transports_dict[transport_uri]['type'] = result['type'].get('value')
+        
+        if result.get('emission'):
+            emission_value = result['emission'].get('value')
+            transports_dict[transport_uri]['emission_co2_per_km'] = float(emission_value) if emission_value else 0.0
+        
+        # Get empreinte data if present
+        if result.get('empreinteURI') and result.get('valeurCO2kg'):
+            empreinte_uri = result['empreinteURI'].get('value')
+            valeur_co2_kg_str = result['valeurCO2kg'].get('value')
+            valeur_co2_kg = float(valeur_co2_kg_str) if valeur_co2_kg_str else 0.0
+            
+            transports_dict[transport_uri]['empreinte'] = {
+                'uri': empreinte_uri,
+                'valeur_co2_kg': valeur_co2_kg,
+                'is_faible': valeur_co2_kg <= 1.0,
+                'category': EmpreinteCarbone.get_category(valeur_co2_kg),
+                'category_color': EmpreinteCarbone.get_category_color(valeur_co2_kg)
+            }
+    
+    return list(transports_dict.values())
+
+def parse_transports_from_sparql(results):
+    """Parse SPARQL triple results into structured transport objects with empreinte data (legacy)"""
+    from models.empreinte_carbone import EmpreinteCarbone
+    
+    transports_dict = {}
+    empreintes_dict = {}
+    
+    for result in results:
+        uri = result.get('s', {}).get('value', '')
+        predicate = result.get('p', {}).get('value', '')
+        obj = result.get('o', {}).get('value', '')
+        
+        # Extract property name from URI
+        if '#' in predicate:
+            prop_name = predicate.split('#')[1]
+            
+            # Check if this is an EmpreinteCarbone entity
+            if 'Empreinte_' in uri:
+                if uri not in empreintes_dict:
+                    empreintes_dict[uri] = {'uri': uri}
+                
+                if prop_name == 'valeurCO2kg':
+                    empreintes_dict[uri]['valeur_co2_kg'] = float(obj) if obj else 0.0
+                elif prop_name == 'type' and 'EmpreinteCarboneFaible' in obj:
+                    empreintes_dict[uri]['is_faible'] = True
+            else:
+                # This is a Transport entity
+                if uri not in transports_dict:
+                    transports_dict[uri] = {'uri': uri}
+                
+                # Get the type property value (stored as string in RDF)
+                if prop_name == 'type':
+                    transports_dict[uri]['type'] = obj
+                elif prop_name in ['nom', 'emissionCO2PerKm', 'aEmpreinte']:
+                    if prop_name == 'emissionCO2PerKm':
+                        transports_dict[uri]['emission_co2_per_km'] = float(obj) if obj else 0.0
+                    elif prop_name == 'aEmpreinte':
+                        transports_dict[uri]['a_empreinte'] = obj
+                    else:
+                        transports_dict[uri][prop_name] = obj
+    
+    # Enrich transports with empreinte data
+    for transport in transports_dict.values():
+        if transport.get('a_empreinte') and transport['a_empreinte'] in empreintes_dict:
+            empreinte_data = empreintes_dict[transport['a_empreinte']]
+            transport['empreinte'] = {
+                'uri': empreinte_data.get('uri'),
+                'valeur_co2_kg': empreinte_data.get('valeur_co2_kg', 0.0),
+                'is_faible': empreinte_data.get('is_faible', False),
+                'category': EmpreinteCarbone.get_category(empreinte_data.get('valeur_co2_kg')),
+                'category_color': EmpreinteCarbone.get_category_color(empreinte_data.get('valeur_co2_kg'))
+            }
+    
+    return list(transports_dict.values())
+
 # USERS MANAGEMENT ENDPOINT
 @app.route('/users', methods=['GET'])
 def get_all_users():
@@ -149,6 +249,15 @@ def get_all_guides():
 def get_guide(uri):
     result = manager.get_by_uri(uri)
     return jsonify(result)
+
+@app.route('/guide/<path:uri>', methods=['PUT'])
+def update_guide(uri):
+    data = request.json
+    results = []
+    for key, value in data.items():
+        result = manager.update_property(uri, key, value, isinstance(value, str))
+        results.append(result)
+    return jsonify({"updates": results})
 
 @app.route('/guide/<path:uri>', methods=['DELETE'])
 def delete_guide(uri):
@@ -263,13 +372,126 @@ def create_transport():
 
 @app.route('/transport', methods=['GET'])
 def get_all_transports():
-    result = manager.get_all('Transport')
+    """Get all transports in a structured format with empreinte data"""
+    try:
+        # Custom SPARQL query to get transports WITH empreinte data
+        query = f"""
+        PREFIX eco: <{NAMESPACE}>
+        SELECT ?transport ?nom ?type ?emission ?empreinteURI ?valeurCO2kg WHERE {{
+            ?transport a eco:Transport .
+            OPTIONAL {{ ?transport eco:nom ?nom . }}
+            OPTIONAL {{ ?transport eco:type ?type . }}
+            OPTIONAL {{ ?transport eco:emissionCO2PerKm ?emission . }}
+            OPTIONAL {{ 
+                ?transport eco:aEmpreinte ?empreinteURI .
+                ?empreinteURI eco:valeurCO2kg ?valeurCO2kg .
+            }}
+        }}
+        """
+        
+        results = manager.execute_query(query)
+        transports = parse_transports_from_query_results(results)
+        
+        # Add pricing info to each transport
+        for transport_data in transports:
+            transport = Transport(
+                uri=transport_data['uri'],
+                nom=transport_data.get('nom'),
+                type_=transport_data.get('type'),
+                emission_co2_per_km=transport_data.get('emission_co2_per_km')
+            )
+            transport_data['price_per_km'] = transport.get_price_per_km()
+        
+        return jsonify({
+            'transports': transports,
+            'total': len(transports)
+        })
+    except Exception as e:
+        print(f"Error in get_all_transports: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/transport/<path:uri>', methods=['PUT'])
+def update_transport(uri):
+    data = request.json
+    # Delete existing entity
+    manager.delete(uri)
+    # Create updated entity
+    trans = Transport(
+        uri=uri,
+        nom=data.get('nom'),
+        type_=data.get('type'),
+        emission_co2_per_km=data.get('emission_co2_per_km')
+    )
+    result = manager.create(trans)
     return jsonify(result)
 
 @app.route('/transport/<path:uri>', methods=['DELETE'])
 def delete_transport(uri):
     result = manager.delete(uri)
     return jsonify(result)
+
+@app.route('/transport/calculate-price', methods=['POST'])
+def calculate_transport_price():
+    """
+    Calculate trip price for a transport
+    Request body: { "transport_type": "Train", "emission_co2_per_km": 30, "distance_km": 100 }
+    """
+    try:
+        data = request.json
+        transport_type = data.get('transport_type')
+        emission_co2 = data.get('emission_co2_per_km', 0)
+        distance = data.get('distance_km', 0)
+        
+        if not transport_type or distance <= 0:
+            return jsonify({'error': 'transport_type and distance_km required'}), 400
+        
+        transport = Transport(type_=transport_type, emission_co2_per_km=emission_co2)
+        price_breakdown = transport.calculate_price(distance)
+        
+        return jsonify({
+            'transport_type': transport_type,
+            'pricing': price_breakdown
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/transport/compare-prices', methods=['POST'])
+def compare_transport_prices():
+    """
+    Compare prices for multiple transports
+    Request body: { "transports": [{"type": "Train", "emission": 30}, ...], "distance_km": 100 }
+    """
+    try:
+        data = request.json
+        transports_data = data.get('transports', [])
+        distance = data.get('distance_km', 0)
+        
+        if not transports_data or distance <= 0:
+            return jsonify({'error': 'transports array and distance_km required'}), 400
+        
+        comparisons = []
+        for t_data in transports_data:
+            transport = Transport(
+                type_=t_data.get('type'),
+                emission_co2_per_km=t_data.get('emission', 0)
+            )
+            price = transport.calculate_price(distance)
+            comparisons.append({
+                'type': t_data.get('type'),
+                'pricing': price
+            })
+        
+        # Sort by total price
+        comparisons.sort(key=lambda x: x['pricing']['total'])
+        
+        return jsonify({
+            'distance_km': distance,
+            'comparisons': comparisons,
+            'cheapest': comparisons[0] if comparisons else None,
+            'most_expensive': comparisons[-1] if comparisons else None
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # RESTAURANT
 @app.route('/restaurant', methods=['POST'])

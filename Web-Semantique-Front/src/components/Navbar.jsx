@@ -7,7 +7,7 @@ export function Navbar() {
   const [openNav, setOpenNav] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -54,10 +54,17 @@ export function Navbar() {
               <a className="nav-link fw-medium" href="/#booking">Booking</a>
             </li>
             <li className="nav-item px-3 px-xl-4">
+              <Link className="nav-link fw-medium" to="/transport">Transport</Link>
+            </li>
+            <li className="nav-item px-3 px-xl-4">
               <a className="nav-link fw-medium" href="/#testimonial">Testimonial</a>
             </li>
             
-            {!user ? (
+            {loading ? (
+              <li className="nav-item px-3 px-xl-4">
+                <span className="nav-link fw-medium" style={{ opacity: 0.5 }}>Loading...</span>
+              </li>
+            ) : !user ? (
               <>
                 <li className="nav-item px-3 px-xl-4">
                   <Link className="nav-link fw-medium" to="/auth/sign-in">Login</Link>

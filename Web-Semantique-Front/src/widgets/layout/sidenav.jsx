@@ -13,7 +13,7 @@ import { useAuth } from "@/context/AuthContext";
 export function Sidenav({ brandImg, brandName, routes }) {
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavColor, sidenavType, openSidenav } = controller;
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const sidenavTypes = {
     dark: "bg-gradient-to-br from-gray-800 to-gray-900",
     white: "bg-white shadow-sm",
@@ -34,9 +34,9 @@ export function Sidenav({ brandImg, brandName, routes }) {
             variant="h6"
             color={sidenavType === "dark" ? "white" : "blue-gray"}
           >
-            {user ? user.nom : brandName}
+            {loading ? "Loading..." : (user ? user.nom : brandName)}
           </Typography>
-          {user && (
+          {!loading && user && (
             <Typography
               variant="small"
               color={sidenavType === "dark" ? "white" : "blue-gray"}

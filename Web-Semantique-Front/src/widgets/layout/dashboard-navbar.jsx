@@ -33,13 +33,31 @@ export function DashboardNavbar() {
   const { fixedNavbar, openSidenav } = controller;
   const { pathname } = useLocation();
   const [layout, page] = pathname.split("/").filter((el) => el !== "");
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     await logout();
-    navigate("/auth/sign-in");
+    navigate("/");
   };
+
+  // Show loading state while auth is initializing
+  if (loading) {
+    return (
+      <Navbar
+        color="white"
+        className="rounded-xl sticky top-4 z-40 py-3 shadow-md shadow-blue-gray-500/5"
+        fullWidth
+        blurred
+      >
+        <div className="flex justify-center items-center py-2">
+          <Typography variant="small" color="blue-gray" className="opacity-50">
+            Loading...
+          </Typography>
+        </div>
+      </Navbar>
+    );
+  }
 
   return (
     <Navbar
