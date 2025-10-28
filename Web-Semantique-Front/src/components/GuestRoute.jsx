@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 
-export function ProtectedRoute({ children, allowedRoles }) {
+export function GuestRoute({ children }) {
   const { user, loading } = useAuth();
 
   // Show loading state while authentication is being checked
@@ -16,15 +16,17 @@ export function ProtectedRoute({ children, allowedRoles }) {
     );
   }
 
-  // If not logged in, redirect to sign in
-  if (!user) {
-    return <Navigate to="/auth/sign-in" replace />;
+  // If already logged in, redirect to dashboard
+  if (user) {
+    // If user is a Guide, redirect to dashboard
+    if (user.type === "Guide") {
+      return <Navigate to="/dashboard/home" replace />;
+    }
+    // If user is a Tourist, redirect to home page
+    return <Navigate to="/" replace />;
   }
 
-  // If user role is not in allowedRoles, redirect to access denied
-  if (allowedRoles && !allowedRoles.includes(user.type)) {
-    return <Navigate to="/access-denied" replace />;
-  }
-
+  // If not logged in, show the auth page
   return children;
 }
+

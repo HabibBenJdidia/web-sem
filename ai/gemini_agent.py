@@ -84,14 +84,30 @@ class GeminiAgent:
 
 **TRANSPORT CLASSES:**
 12. **Transport**
-    - Properties: nom, type (Bus/Train/Velo/Autre)
-    - emission_co2_per_km (decimal)
+    - Properties: nom, type (Bus/Train/Velo/Voiture/Avion/etc.)
+    - emission_co2_per_km (decimal in g/km)
+    - a_empreinte (URI to EmpreinteCarbone)
+    - **PRICING SYSTEM:**
+      * Base price (€) - fixed cost per trip
+      * Price per km (€/km) - distance-based cost
+      * Carbon tax (€) - based on CO2 emissions (€0.08 per kg CO2)
+      * Total price = base_price + (price_per_km × distance) + (CO2_kg × carbon_tax_rate)
+      * Example prices per km:
+        - Vélo/Marche: 0.00 €/km (free & zero emission)
+        - Train: 0.15 €/km (eco-friendly)
+        - Bus: 0.12 €/km
+        - Voiture: 0.12 €/km
+        - Avion: 0.80 €/km (expensive & high emission)
+      * Carbon tax automatically calculated from emission_co2_per_km
+      * Lower emissions = lower total price (incentivizes eco-friendly choices)
 
 13. **EcoTransport** (extends Transport)
     - Zero or low emission vehicles
+    - Lower pricing due to minimal carbon tax
 
 14. **TransportNonMotorise** (extends Transport)
     - Non-motorized (bikes, walking)
+    - Zero cost and zero emissions
 
 **FOOD & PRODUCTS:**
 15. **Restaurant**
@@ -211,12 +227,33 @@ class GeminiAgent:
 4. For relationships, use full URIs (e.g., "http://example.org/eco-tourism#Hebergement_EcoLodge")
 5. Promote eco-friendly options and sustainability
 6. Respond in French or English based on user's language
+7. **IMPORTANT**: When executing SPARQL queries, always respond with natural conversational text in French, NOT raw JSON
+8. If no results found, suggest alternatives or explain why (e.g., "Aucun transport trouvé avec exactement 0.12g/km, mais il y a des transports avec 0.03g/km")
+9. For numeric comparisons (CO2 emissions), consider using >= or <= instead of exact matches
+10. Always format responses in a user-friendly, conversational manner
+11. **PRICING EXPLANATIONS**: When asked about transport prices:
+    - Always explain the 3 components: base price + distance cost + carbon tax
+    - Show the calculation step by step
+    - Emphasize that lower CO2 = lower price (eco-friendly = economical)
+    - Compare with alternatives when relevant
+    - Recommend greener options to save money
+    - Example: "Le train coûte €17.74 pour 100km (€2.50 base + €15.00 distance + €0.24 taxe carbone). C'est bien moins cher que l'avion à €130.64 grâce à ses faibles émissions!"
 
 **EXAMPLE QUERIES:**
 - "Show tourists" → GET /touriste or SPARQL SELECT
 - "Create a guide" → POST /guide with JSON
 - "Eco hotels" → GET /search/eco-hebergements
 - "Activities in zone X" → SPARQL with estDansZone filter
+- "Transport with 0.12 CO2" → SPARQL: SELECT ?nom WHERE { ?t a eco:Transport . ?t eco:nom ?nom . ?t eco:emissionCO2PerKm "0.12"^^xsd:decimal }
+- "Calculate price for Train 100km" → Explain: Train costs €2.50 base + €15.00 for 100km + €0.24 carbon tax = €17.74 total
+- "Compare prices between Train and Avion" → Show price breakdown for both, recommend cheaper/greener option
+- "Why is Avion more expensive than Train?" → Explain: Higher CO2 emissions (8000g vs 30g) lead to higher carbon tax + higher base price
+- "Cheapest transport to travel 50km?" → Calculate and compare prices, recommend Vélo (€0) or Train (€10)
+
+**IMPORTANT SPARQL NOTES:**
+- Property name for CO2 emission in SPARQL: `emissionCO2PerKm` (camelCase)
+- Always use xsd:decimal for numeric values: "0.12"^^xsd:decimal
+- Decimal values must be strings with type annotation in SPARQL
 
 You have COMPLETE knowledge of the entire system. Use it wisely!
 """
@@ -343,16 +380,289 @@ Otherwise, respond naturally in conversational format."""
     def ask(self, question: str) -> str:
         """
         Simple question-answer interface
-        Returns conversational response
+        Returns conversational response in French - NEVER returns JSON
+        Uses REAL database data with AI-powered dynamic responses
         """
-        result = self.process_message(question)
+        # For transport-related questions, get real data first, then let AI format it
+        question_lower = question.lower()
+        transport_keywords = ['transport', 'vélo', 'train', 'bus', 'voiture', 'emission', 
+                             'co2', 'écologique', 'type', 'disponible', 'hyhy', 'eaaeae']
         
-        if result['type'] == 'conversation':
-            return result['response']
-        elif result['type'] == 'action':
-            return f"{result['explanation']}\n\nResult: {json.dumps(result['result'], indent=2)}"
-        else:
-            return f"Error: {result.get('error', 'Unknown error')}"
+        # Check if question is about transports
+        if any(keyword in question_lower for keyword in transport_keywords):
+            # Step 1: Get REAL data from database
+            real_data = self._fetch_real_transport_data()
+            
+            # Step 2: Let AI format the response dynamically based on real data
+            return self._generate_dynamic_response(question, real_data)
+        
+        # For non-transport questions, use AI with strict rules
+        conversational_prompt = f"""Tu es un assistant transport écologique parlant français.
+        
+Question de l'utilisateur: {question}
+
+RÈGLES IMPORTANTES:
+1. Réponds UNIQUEMENT en texte conversationnel français naturel
+2. N'utilise JAMAIS de format JSON dans ta réponse
+3. N'utilise JAMAIS de blocs de code ou de syntaxe technique
+4. N'INVENTE PAS de données - utilise uniquement ce qui est dans la base de données
+5. Présente les résultats de façon claire, simple et conversationnelle
+
+Réponds maintenant de manière CONVERSATIONNELLE UNIQUEMENT (pas de JSON, pas de code):"""
+
+        if not self.chat:
+            self.initialize_chat()
+        
+        try:
+            response = self.chat.send_message(conversational_prompt)
+            response_text = response.text.strip()
+            
+            # Remove any JSON blocks from the response
+            if '{' in response_text and '}' in response_text:
+                lines = response_text.split('\n')
+                clean_lines = []
+                in_json_block = False
+                
+                for line in lines:
+                    if line.strip().startswith('{') or line.strip().startswith('}') or \
+                       '"action"' in line or '"parameters"' in line or '"explanation"' in line:
+                        in_json_block = True
+                        continue
+                    if in_json_block and line.strip().startswith('}'):
+                        in_json_block = False
+                        continue
+                    if not in_json_block:
+                        clean_lines.append(line)
+                
+                cleaned_response = '\n'.join(clean_lines).strip()
+                
+                if cleaned_response and len(cleaned_response) >= 20:
+                    return cleaned_response
+            
+            return response_text
+            
+        except Exception as e:
+            return "Je suis désolé, j'ai rencontré une difficulté technique. Pouvez-vous reformuler votre question ?"
+    
+    def _fetch_real_transport_data(self) -> list:
+        """
+        Fetch real transport data from database WITH empreinte carbone
+        Returns list of transport dictionaries with empreinte data
+        """
+        try:
+            query = """
+            PREFIX eco: <http://example.org/eco-tourism#>
+            SELECT ?nom ?type ?emission ?empreinteURI ?valeurCO2kg WHERE {
+                ?transport a eco:Transport .
+                ?transport eco:nom ?nom .
+                OPTIONAL { ?transport eco:type ?type . }
+                OPTIONAL { ?transport eco:emissionCO2PerKm ?emission . }
+                OPTIONAL { 
+                    ?transport eco:aEmpreinte ?empreinteURI .
+                    ?empreinteURI eco:valeurCO2kg ?valeurCO2kg .
+                }
+            }
+            """
+            
+            results = self.sparql_manager.execute_query(query)
+            
+            transports = []
+            for result in results:
+                valeur_co2_kg = result.get('valeurCO2kg', {}).get('value')
+                
+                # Calculate empreinte category
+                empreinte_category = "Non spécifié"
+                if valeur_co2_kg is not None:
+                    val = float(valeur_co2_kg)
+                    if val == 0:
+                        empreinte_category = "Zéro émission"
+                    elif val <= 1.0:
+                        empreinte_category = "Faible"
+                    elif val <= 5.0:
+                        empreinte_category = "Moyenne"
+                    else:
+                        empreinte_category = "Élevée"
+                
+                # Determine transport category (EcoTransport or TransportNonMotorise)
+                transport_type = result.get('type', {}).get('value', 'N/A')
+                transport_nom = result.get('nom', {}).get('value', 'N/A')
+                transport_category = "EcoTransport"  # Default (motorized)
+                
+                # Check if it's truly non-motorized (exclude electric versions)
+                is_electric = "électrique" in transport_nom.lower() or "electrique" in transport_nom.lower() or \
+                             "Électrique" in transport_type or "électrique" in transport_type.lower()
+                
+                # Only regular Vélo and Marche are non-motorized
+                if not is_electric and transport_type in ["Vélo", "Marche", "Marche à pied", "TransportNonMotorise"]:
+                    transport_category = "TransportNonMotorise"
+                
+                transport = {
+                    'nom': result.get('nom', {}).get('value', 'N/A'),
+                    'type': result.get('type', {}).get('value', 'N/A'),
+                    'category': transport_category,  # EcoTransport or TransportNonMotorise
+                    'emission': result.get('emission', {}).get('value', 'N/A'),
+                    'empreinte_uri': result.get('empreinteURI', {}).get('value'),
+                    'empreinte_valeur_kg': valeur_co2_kg if valeur_co2_kg else 'N/A',
+                    'empreinte_category': empreinte_category  # Zéro émission, Faible, Moyenne, Élevée
+                }
+                transports.append(transport)
+            
+            return transports
+        except Exception as e:
+            print(f"Error fetching transport data: {str(e)}")
+            return []
+    
+    def _generate_dynamic_response(self, question: str, real_data: list) -> str:
+        """
+        Use AI to generate dynamic conversational response based on real data
+        """
+        if not real_data:
+            return "Je n'ai trouvé aucun transport dans notre base de données pour le moment."
+        
+        # Prepare data summary for AI with empreinte data
+        data_summary = "Données RÉELLES des transports dans la base:\n\n"
+        for i, t in enumerate(real_data, 1):
+            empreinte_info = ""
+            if t.get('empreinte_valeur_kg') and t['empreinte_valeur_kg'] != 'N/A':
+                empreinte_info = f", Empreinte Carbone: {t['empreinte_valeur_kg']} kg CO₂ (Niveau d'impact: {t['empreinte_category']})"
+            data_summary += f"{i}. Nom: {t['nom']}, Catégorie Transport: {t['category']}, Type: {t['type']}, Émission CO₂: {t['emission']} g/km{empreinte_info}\n"
+        
+        # Create AI prompt with real data
+        ai_prompt = f"""Tu es un assistant transport écologique intelligent.
+
+DONNÉES RÉELLES DE LA BASE DE DONNÉES (NE PAS INVENTER D'AUTRES DONNÉES):
+{data_summary}
+
+VOCABULAIRE IMPORTANT:
+- "Catégorie de transport" ou "Catégorie" = EcoTransport (transports motorisés) OU TransportNonMotorise (sans moteur)
+- "Niveau d'impact" ou "Empreinte carbone" = Zéro émission, Faible, Moyenne, Élevée
+- "Type" = Vélo, Train, Bus, Moto, etc.
+
+QUESTION DE L'UTILISATEUR:
+{question}
+
+INSTRUCTIONS STRICTES:
+1. Utilise UNIQUEMENT les données ci-dessus (noms: {', '.join([t['nom'] for t in real_data])})
+2. N'INVENTE AUCUN autre transport qui n'est pas dans la liste
+3. Si la question parle de "catégories de transport", réponds avec EcoTransport et TransportNonMotorise (PAS Faible/Moyenne/Élevée)
+4. Réponds de manière conversationnelle, dynamique et naturelle en français
+5. Adapte ta réponse à la question spécifique posée
+5. Si la question porte sur un transport spécifique, donne ses détails complets (émission ET empreinte carbone)
+6. Si la question demande une liste, liste tous les transports réels avec leur catégorie d'empreinte
+7. Si la question demande le plus écologique, compare les émissions ET les empreintes carbone
+8. N'utilise PAS d'emojis dans ta réponse
+9. Utilise du formatage Markdown pour rendre la réponse agréable et structurée
+10. Sois concis mais informatif, mentionne TOUJOURS l'empreinte carbone quand disponible
+11. N'utilise JAMAIS de format JSON ou code dans ta réponse
+
+Réponds maintenant de manière CONVERSATIONNELLE et DYNAMIQUE:"""
+
+        if not self.chat:
+            self.initialize_chat()
+        
+        try:
+            response = self.chat.send_message(ai_prompt)
+            response_text = response.text.strip()
+            
+            # Clean any JSON if present
+            if '{' in response_text and '}' in response_text:
+                lines = response_text.split('\n')
+                clean_lines = []
+                skip_json = False
+                
+                for line in lines:
+                    if '{' in line or '"action"' in line or '"parameters"' in line:
+                        skip_json = True
+                    if not skip_json:
+                        clean_lines.append(line)
+                    if '}' in line:
+                        skip_json = False
+                
+                cleaned = '\n'.join(clean_lines).strip()
+                if cleaned and len(cleaned) >= 20:
+                    return cleaned
+            
+            return response_text
+            
+        except Exception as e:
+            # Fallback to static response if AI fails
+            return self._get_transport_info_directly(question)
+    
+    def _get_transport_info_directly(self, question: str) -> str:
+        """
+        Get transport info directly from database - REAL DATA ONLY with empreinte carbone
+        """
+        try:
+            # Use the shared fetch method
+            transports = self._fetch_real_transport_data()
+            
+            if not transports:
+                return "Aucun transport n'est actuellement enregistré dans notre base de données."
+            
+            # Analyze the question
+            question_lower = question.lower()
+            
+            # Check if asking about a specific transport by name
+            for transport in transports:
+                if transport['nom'].lower() in question_lower:
+                    empreinte_text = ""
+                    if transport.get('empreinte_valeur_kg') and transport['empreinte_valeur_kg'] != 'N/A':
+                        empreinte_text = f" Son empreinte carbone est de **{transport['empreinte_valeur_kg']} kg CO₂** (catégorie: {transport['empreinte_category']})."
+                    return f"Le transport **{transport['nom']}** est de type **{transport['type']}** avec des émissions de **{transport['emission']} g CO₂/km**.{empreinte_text}"
+            
+            # List all transports if asking for types or list
+            if 'type' in question_lower or 'disponible' in question_lower or 'quels' in question_lower or 'liste' in question_lower:
+                response = "Voici tous les transports actuellement disponibles dans notre base de données:\n\n"
+                
+                for i, t in enumerate(transports, 1):
+                    emoji = "🌿" if t['empreinte_category'] == "Zéro émission" else "✅" if t['empreinte_category'] == "Faible" else "⚠️" if t['empreinte_category'] == "Moyenne" else "🚗"
+                    emission_str = f"{t['emission']} g CO₂/km" if t['emission'] != 'N/A' else 'N/A'
+                    empreinte_str = f" (Empreinte: {t['empreinte_category']})" if t.get('empreinte_category') else ""
+                    response += f"{emoji} {i}. **{t['nom']}** (Type: {t['type']}) - Émissions: {emission_str}{empreinte_str}\n"
+                
+                response += "\nSouhaitez-vous plus de détails sur l'un de ces transports ?"
+                return response
+            
+            # Looking for most ecological (based on empreinte)
+            elif 'écologique' in question_lower or 'meilleur' in question_lower or 'plus' in question_lower or 'empreinte' in question_lower:
+                # Sort by empreinte value in kg
+                sorted_transports = sorted(
+                    [t for t in transports if t['empreinte_valeur_kg'] != 'N/A'],
+                    key=lambda x: float(x['empreinte_valeur_kg'])
+                )
+                
+                if sorted_transports:
+                    best = sorted_transports[0]
+                    response = f"Le transport le plus écologique dans notre base est **{best['nom']}** "
+                    response += f"(Type: {best['type']}) avec une empreinte carbone de **{best['empreinte_valeur_kg']} kg CO₂** "
+                    response += f"(catégorie: {best['empreinte_category']}).\n\n"
+                    response += "Voici le classement des transports par empreinte carbone:\n\n"
+                    
+                    for i, t in enumerate(sorted_transports, 1):
+                        emoji = "🌿" if t['empreinte_category'] == "Zéro émission" else "✅" if t['empreinte_category'] == "Faible" else "⚠️" if t['empreinte_category'] == "Moyenne" else "🚗"
+                        response += f"{emoji} {i}. **{t['nom']}** - {t['empreinte_valeur_kg']} kg CO₂ ({t['empreinte_category']})\n"
+                    
+                    return response
+                else:
+                    return "Je n'ai pas pu comparer les empreintes pour le moment."
+            
+            # Compare emissions/empreintes
+            elif 'co2' in question_lower or 'emission' in question_lower or 'compare' in question_lower:
+                response = "Comparaison des empreintes carbone des transports:\n\n"
+                
+                for t in sorted(transports, key=lambda x: float(x['empreinte_valeur_kg']) if x['empreinte_valeur_kg'] != 'N/A' else 999):
+                    if t['empreinte_valeur_kg'] != 'N/A':
+                        emoji = "🌿" if t['empreinte_category'] == "Zéro émission" else "✅" if t['empreinte_category'] == "Faible" else "⚠️" if t['empreinte_category'] == "Moyenne" else "🚗"
+                        response += f"{emoji} **{t['nom']}** ({t['type']}) - {t['empreinte_valeur_kg']} kg CO₂ ({t['empreinte_category']})\n"
+                
+                return response
+            
+            # Default: provide general info
+            else:
+                return f"J'ai trouvé {len(transports)} transport(s) dans notre système. Posez-moi des questions sur:\n• Les types de transport disponibles\n• Le transport le plus écologique\n• Les émissions et empreintes carbone\n• Un transport spécifique (par son nom)"
+                
+        except Exception as e:
+            return f"Je suis désolé, j'ai rencontré une difficulté technique: {str(e)}"
     
     def execute_sparql(self, query: str) -> Dict[str, Any]:
         """

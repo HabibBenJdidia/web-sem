@@ -2,9 +2,10 @@ import {
   HomeIcon,
   UserCircleIcon,
   UsersIcon,
+  TruckIcon,
   InformationCircleIcon,
 } from "@heroicons/react/24/solid";
-import { Home, Profile, Users, Notifications } from "@/pages/dashboard";
+import { Home, Profile, Users, Transport, Notifications } from "@/pages/dashboard";
 import { SignIn, SignUp, ForgotPassword, ResetPassword, VerifyEmail } from "@/pages/auth";
 
 const icon = {
@@ -32,6 +33,12 @@ export const routes = [
         name: "users",
         path: "/tables",
         element: <Users />,
+      },
+      {
+        icon: <TruckIcon {...icon} />,
+        name: "transport",
+        path: "/transport",
+        element: <Transport />,
       },
       {
         icon: <InformationCircleIcon {...icon} />,

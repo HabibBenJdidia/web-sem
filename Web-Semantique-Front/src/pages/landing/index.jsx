@@ -56,6 +56,9 @@ export function LandingPage() {
                 <a className="nav-link fw-medium" href="#booking">Booking</a>
               </li>
               <li className="nav-item px-3 px-xl-4">
+                <Link className="nav-link fw-medium" to="/transport">Transport</Link>
+              </li>
+              <li className="nav-item px-3 px-xl-4">
                 <a className="nav-link fw-medium" href="#testimonial">Testimonial</a>
               </li>
               

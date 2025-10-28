@@ -4,12 +4,15 @@ import { LandingPage } from "@/pages/landing";
 import { ChangePassword } from "@/pages/ChangePassword";
 import { Profile } from "@/pages/Profile";
 import { AccessDenied } from "@/pages/AccessDenied";
+import { TransportPublic } from "@/pages/TransportPublic";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { GuestRoute } from "@/components/GuestRoute";
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/transport" element={<TransportPublic />} />
       <Route 
         path="/profile" 
         element={
@@ -34,7 +37,14 @@ function App() {
           </ProtectedRoute>
         } 
       />
-      <Route path="/auth/*" element={<Auth />} />
+      <Route 
+        path="/auth/*" 
+        element={
+          <GuestRoute>
+            <Auth />
+          </GuestRoute>
+        } 
+      />
       <Route path="/access-denied" element={<AccessDenied />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

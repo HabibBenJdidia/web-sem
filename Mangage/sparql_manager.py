@@ -22,9 +22,11 @@ class SPARQLManager:
     def execute_update(self, query):
         """Execute SPARQL INSERT/DELETE/UPDATE query using requests directly"""
         try:
+            # Encode query as UTF-8 bytes to handle special characters
+            query_bytes = query.encode('utf-8')
             response = requests.post(
                 FUSEKI_UPDATE_ENDPOINT,
-                data=query,
+                data=query_bytes,
                 headers={'Content-Type': 'application/sparql-update; charset=UTF-8'},
                 auth=(FUSEKI_USER, FUSEKI_PASSWORD)
             )
@@ -39,9 +41,7 @@ class SPARQLManager:
     def create(self, model_instance):
         """Insert a new entity"""
         triples = model_instance.to_sparql_insert()
-        query = f"""PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-INSERT DATA {{
-{triples}}}"""
+        query = f"PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\nINSERT DATA {{\n{triples}\n}}"
         return self.execute_update(query)
     
     # READ
