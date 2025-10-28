@@ -485,8 +485,15 @@ Réponds maintenant de manière CONVERSATIONNELLE UNIQUEMENT (pas de JSON, pas d
                 
                 # Determine transport category (EcoTransport or TransportNonMotorise)
                 transport_type = result.get('type', {}).get('value', 'N/A')
-                transport_category = "EcoTransport"  # Default
-                if transport_type in ["Vélo", "Marche", "Marche à pied", "TransportNonMotorise"]:
+                transport_nom = result.get('nom', {}).get('value', 'N/A')
+                transport_category = "EcoTransport"  # Default (motorized)
+                
+                # Check if it's truly non-motorized (exclude electric versions)
+                is_electric = "électrique" in transport_nom.lower() or "electrique" in transport_nom.lower() or \
+                             "Électrique" in transport_type or "électrique" in transport_type.lower()
+                
+                # Only regular Vélo and Marche are non-motorized
+                if not is_electric and transport_type in ["Vélo", "Marche", "Marche à pied", "TransportNonMotorise"]:
                     transport_category = "TransportNonMotorise"
                 
                 transport = {
@@ -543,7 +550,7 @@ INSTRUCTIONS STRICTES:
 5. Si la question porte sur un transport spécifique, donne ses détails complets (émission ET empreinte carbone)
 6. Si la question demande une liste, liste tous les transports réels avec leur catégorie d'empreinte
 7. Si la question demande le plus écologique, compare les émissions ET les empreintes carbone
-8. Utilise des emojis appropriés: 🌿 pour zéro émission, ✅ pour faible, ⚠️ pour moyenne, 🚗 pour élevée
+8. N'utilise PAS d'emojis dans ta réponse
 9. Utilise du formatage Markdown pour rendre la réponse agréable et structurée
 10. Sois concis mais informatif, mentionne TOUJOURS l'empreinte carbone quand disponible
 11. N'utilise JAMAIS de format JSON ou code dans ta réponse
