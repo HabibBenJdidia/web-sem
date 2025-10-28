@@ -937,6 +937,57 @@
     
 
 
+    <!-- http://example.org/eco-tourism#Empreinte_Train -->
+
+    <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Empreinte_Train">
+        <rdf:type rdf:resource="http://example.org/eco-tourism#EmpreinteCarbone"/>
+        <rdf:type rdf:resource="http://example.org/eco-tourism#EmpreinteCarboneFaible"/>
+        <eco-tourism:valeurCO2kg rdf:datatype="internal:anonymous-constants">0.03</eco-tourism:valeurCO2kg>
+        <eco-tourism:valeurCO2kg rdf:datatype="xsd:decimal">0.03</eco-tourism:valeurCO2kg>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://example.org/eco-tourism#Empreinte_Moto -->
+
+    <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Empreinte_Moto">
+        <rdf:type rdf:resource="http://example.org/eco-tourism#EmpreinteCarbone"/>
+        <eco-tourism:valeurCO2kg rdf:datatype="internal:anonymous-constants">1.2</eco-tourism:valeurCO2kg>
+        <eco-tourism:valeurCO2kg rdf:datatype="xsd:decimal">1.2</eco-tourism:valeurCO2kg>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://example.org/eco-tourism#Empreinte_Voiture -->
+
+    <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Empreinte_Voiture">
+        <rdf:type rdf:resource="http://example.org/eco-tourism#EmpreinteCarbone"/>
+        <eco-tourism:valeurCO2kg rdf:datatype="internal:anonymous-constants">1.2</eco-tourism:valeurCO2kg>
+        <eco-tourism:valeurCO2kg rdf:datatype="xsd:decimal">1.2</eco-tourism:valeurCO2kg>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://example.org/eco-tourism#Empreinte_Bus -->
+
+    <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Empreinte_Bus">
+        <rdf:type rdf:resource="http://example.org/eco-tourism#EmpreinteCarbone"/>
+        <eco-tourism:valeurCO2kg rdf:datatype="internal:anonymous-constants">6.0</eco-tourism:valeurCO2kg>
+        <eco-tourism:valeurCO2kg rdf:datatype="xsd:decimal">6.0</eco-tourism:valeurCO2kg>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://example.org/eco-tourism#Empreinte_Bateau -->
+
+    <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Empreinte_Bateau">
+        <rdf:type rdf:resource="http://example.org/eco-tourism#EmpreinteCarbone"/>
+        <eco-tourism:valeurCO2kg rdf:datatype="internal:anonymous-constants">6.0</eco-tourism:valeurCO2kg>
+        <eco-tourism:valeurCO2kg rdf:datatype="xsd:decimal">6.0</eco-tourism:valeurCO2kg>
+    </owl:NamedIndividual>
+    
+
+
     <!-- http://example.org/eco-tourism#Energie_Solaire -->
 
     <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Energie_Solaire">
@@ -982,39 +1033,6 @@
         <eco-tourism:nom rdf:datatype="xsd:string">Oussama</eco-tourism:nom>
     </owl:NamedIndividual>
     
-
-
-    <!-- http://example.org/eco-tourism#Guide_Sarah -->
-
-    <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Guide_Sarah">
-        <rdf:type rdf:resource="http://example.org/eco-tourism#Guide"/>
-        <rdf:type rdf:resource="http://example.org/eco-tourism#User"/>
-        <eco-tourism:age rdf:datatype="internal:anonymous-constants">28</eco-tourism:age>
-        <eco-tourism:age rdf:datatype="xsd:integer">28</eco-tourism:age>
-        <eco-tourism:email rdf:datatype="internal:anonymous-constants">sarah.eco@ecotourism.tn</eco-tourism:email>
-        <eco-tourism:email rdf:datatype="xsd:string">sarah.eco@ecotourism.tn</eco-tourism:email>
-        <eco-tourism:nationalite rdf:datatype="internal:anonymous-constants">French</eco-tourism:nationalite>
-        <eco-tourism:nationalite rdf:datatype="xsd:string">French</eco-tourism:nationalite>
-        <eco-tourism:nom rdf:datatype="internal:anonymous-constants">Sarah Martin</eco-tourism:nom>
-        <eco-tourism:nom rdf:datatype="xsd:string">Sarah Martin</eco-tourism:nom>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://example.org/eco-tourism#Guide_Ahmed -->
-
-    <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Guide_Ahmed">
-        <rdf:type rdf:resource="http://example.org/eco-tourism#Guide"/>
-        <rdf:type rdf:resource="http://example.org/eco-tourism#User"/>
-        <eco-tourism:age rdf:datatype="internal:anonymous-constants">35</eco-tourism:age>
-        <eco-tourism:age rdf:datatype="xsd:integer">35</eco-tourism:age>
-        <eco-tourism:email rdf:datatype="internal:anonymous-constants">ahmed.nature@ecotourism.tn</eco-tourism:email>
-        <eco-tourism:email rdf:datatype="xsd:string">ahmed.nature@ecotourism.tn</eco-tourism:email>
-        <eco-tourism:nationalite rdf:datatype="internal:anonymous-constants">Moroccan</eco-tourism:nationalite>
-        <eco-tourism:nationalite rdf:datatype="xsd:string">Moroccan</eco-tourism:nationalite>
-        <eco-tourism:nom rdf:datatype="internal:anonymous-constants">Ahmed Benali</eco-tourism:nom>
-        <eco-tourism:nom rdf:datatype="xsd:string">Ahmed Benali</eco-tourism:nom>
-    </owl:NamedIndividual>
     
 
 
@@ -1234,6 +1252,99 @@
         <eco-tourism:nom rdf:datatype="xsd:string">Tramway</eco-tourism:nom>
         <eco-tourism:type rdf:datatype="internal:anonymous-constants">Tramway</eco-tourism:type>
         <eco-tourism:type rdf:datatype="xsd:string">Tramway</eco-tourism:type>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://example.org/eco-tourism#Transport_Marche -->
+
+    <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Transport_Marche">
+        <rdf:type rdf:resource="http://example.org/eco-tourism#EcoTransport"/>
+        <rdf:type rdf:resource="http://example.org/eco-tourism#Transport"/>
+        <rdf:type rdf:resource="http://example.org/eco-tourism#TransportNonMotorise"/>
+        <eco-tourism:aEmpreinte rdf:resource="http://example.org/eco-tourism#Empreinte_Zero"/>
+        <eco-tourism:emissionCO2PerKm rdf:datatype="internal:anonymous-constants">0.0</eco-tourism:emissionCO2PerKm>
+        <eco-tourism:emissionCO2PerKm rdf:datatype="xsd:decimal">0.0</eco-tourism:emissionCO2PerKm>
+        <eco-tourism:nom rdf:datatype="internal:anonymous-constants">Marche</eco-tourism:nom>
+        <eco-tourism:nom rdf:datatype="xsd:string">Marche</eco-tourism:nom>
+        <eco-tourism:type rdf:datatype="internal:anonymous-constants">Marche</eco-tourism:type>
+        <eco-tourism:type rdf:datatype="xsd:string">Marche</eco-tourism:type>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://example.org/eco-tourism#Transport_Train -->
+
+    <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Transport_Train">
+        <rdf:type rdf:resource="http://example.org/eco-tourism#EcoTransport"/>
+        <rdf:type rdf:resource="http://example.org/eco-tourism#Transport"/>
+        <eco-tourism:aEmpreinte rdf:resource="http://example.org/eco-tourism#Empreinte_Train"/>
+        <eco-tourism:emissionCO2PerKm rdf:datatype="internal:anonymous-constants">30.0</eco-tourism:emissionCO2PerKm>
+        <eco-tourism:emissionCO2PerKm rdf:datatype="xsd:decimal">30.0</eco-tourism:emissionCO2PerKm>
+        <eco-tourism:nom rdf:datatype="internal:anonymous-constants">Train</eco-tourism:nom>
+        <eco-tourism:nom rdf:datatype="xsd:string">Train</eco-tourism:nom>
+        <eco-tourism:type rdf:datatype="internal:anonymous-constants">Train</eco-tourism:type>
+        <eco-tourism:type rdf:datatype="xsd:string">Train</eco-tourism:type>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://example.org/eco-tourism#Transport_Moto -->
+
+    <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Transport_Moto">
+        <rdf:type rdf:resource="http://example.org/eco-tourism#Transport"/>
+        <eco-tourism:aEmpreinte rdf:resource="http://example.org/eco-tourism#Empreinte_Moto"/>
+        <eco-tourism:emissionCO2PerKm rdf:datatype="internal:anonymous-constants">1200.0</eco-tourism:emissionCO2PerKm>
+        <eco-tourism:emissionCO2PerKm rdf:datatype="xsd:decimal">1200.0</eco-tourism:emissionCO2PerKm>
+        <eco-tourism:nom rdf:datatype="internal:anonymous-constants">Moto</eco-tourism:nom>
+        <eco-tourism:nom rdf:datatype="xsd:string">Moto</eco-tourism:nom>
+        <eco-tourism:type rdf:datatype="internal:anonymous-constants">Moto</eco-tourism:type>
+        <eco-tourism:type rdf:datatype="xsd:string">Moto</eco-tourism:type>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://example.org/eco-tourism#Transport_Voiture -->
+
+    <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Transport_Voiture">
+        <rdf:type rdf:resource="http://example.org/eco-tourism#Transport"/>
+        <eco-tourism:aEmpreinte rdf:resource="http://example.org/eco-tourism#Empreinte_Voiture"/>
+        <eco-tourism:emissionCO2PerKm rdf:datatype="internal:anonymous-constants">1200.0</eco-tourism:emissionCO2PerKm>
+        <eco-tourism:emissionCO2PerKm rdf:datatype="xsd:decimal">1200.0</eco-tourism:emissionCO2PerKm>
+        <eco-tourism:nom rdf:datatype="internal:anonymous-constants">Voiture</eco-tourism:nom>
+        <eco-tourism:nom rdf:datatype="xsd:string">Voiture</eco-tourism:nom>
+        <eco-tourism:type rdf:datatype="internal:anonymous-constants">Voiture</eco-tourism:type>
+        <eco-tourism:type rdf:datatype="xsd:string">Voiture</eco-tourism:type>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://example.org/eco-tourism#Transport_Bus -->
+
+    <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Transport_Bus">
+        <rdf:type rdf:resource="http://example.org/eco-tourism#Transport"/>
+        <eco-tourism:aEmpreinte rdf:resource="http://example.org/eco-tourism#Empreinte_Bus"/>
+        <eco-tourism:emissionCO2PerKm rdf:datatype="internal:anonymous-constants">6000.0</eco-tourism:emissionCO2PerKm>
+        <eco-tourism:emissionCO2PerKm rdf:datatype="xsd:decimal">6000.0</eco-tourism:emissionCO2PerKm>
+        <eco-tourism:nom rdf:datatype="internal:anonymous-constants">Bus</eco-tourism:nom>
+        <eco-tourism:nom rdf:datatype="xsd:string">Bus</eco-tourism:nom>
+        <eco-tourism:type rdf:datatype="internal:anonymous-constants">Bus</eco-tourism:type>
+        <eco-tourism:type rdf:datatype="xsd:string">Bus</eco-tourism:type>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://example.org/eco-tourism#Transport_Bateau -->
+
+    <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Transport_Bateau">
+        <rdf:type rdf:resource="http://example.org/eco-tourism#Transport"/>
+        <eco-tourism:aEmpreinte rdf:resource="http://example.org/eco-tourism#Empreinte_Bateau"/>
+        <eco-tourism:emissionCO2PerKm rdf:datatype="internal:anonymous-constants">6000.0</eco-tourism:emissionCO2PerKm>
+        <eco-tourism:emissionCO2PerKm rdf:datatype="xsd:decimal">6000.0</eco-tourism:emissionCO2PerKm>
+        <eco-tourism:nom rdf:datatype="internal:anonymous-constants">Bateau</eco-tourism:nom>
+        <eco-tourism:nom rdf:datatype="xsd:string">Bateau</eco-tourism:nom>
+        <eco-tourism:type rdf:datatype="internal:anonymous-constants">Bateau</eco-tourism:type>
+        <eco-tourism:type rdf:datatype="xsd:string">Bateau</eco-tourism:type>
     </owl:NamedIndividual>
     
 
