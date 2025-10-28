@@ -1180,7 +1180,6 @@
     <!-- http://example.org/eco-tourism#Transport_Velo -->
 
     <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Transport_Velo">
-        <rdf:type rdf:resource="http://example.org/eco-tourism#EcoTransport"/>
         <rdf:type rdf:resource="http://example.org/eco-tourism#Transport"/>
         <rdf:type rdf:resource="http://example.org/eco-tourism#TransportNonMotorise"/>
         <eco-tourism:aEmpreinte rdf:resource="http://example.org/eco-tourism#Empreinte_Zero"/>
@@ -1188,6 +1187,8 @@
         <eco-tourism:emissionCO2PerKm rdf:datatype="xsd:decimal">0.0</eco-tourism:emissionCO2PerKm>
         <eco-tourism:nom rdf:datatype="internal:anonymous-constants">Vélo</eco-tourism:nom>
         <eco-tourism:nom rdf:datatype="xsd:string">Vélo</eco-tourism:nom>
+        <eco-tourism:type rdf:datatype="internal:anonymous-constants">TransportNonMotorise</eco-tourism:type>
+        <eco-tourism:type rdf:datatype="xsd:string">TransportNonMotorise</eco-tourism:type>
     </owl:NamedIndividual>
     
 
@@ -1259,7 +1260,6 @@
     <!-- http://example.org/eco-tourism#Transport_Marche -->
 
     <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Transport_Marche">
-        <rdf:type rdf:resource="http://example.org/eco-tourism#EcoTransport"/>
         <rdf:type rdf:resource="http://example.org/eco-tourism#Transport"/>
         <rdf:type rdf:resource="http://example.org/eco-tourism#TransportNonMotorise"/>
         <eco-tourism:aEmpreinte rdf:resource="http://example.org/eco-tourism#Empreinte_Zero"/>
@@ -1267,8 +1267,8 @@
         <eco-tourism:emissionCO2PerKm rdf:datatype="xsd:decimal">0.0</eco-tourism:emissionCO2PerKm>
         <eco-tourism:nom rdf:datatype="internal:anonymous-constants">Marche</eco-tourism:nom>
         <eco-tourism:nom rdf:datatype="xsd:string">Marche</eco-tourism:nom>
-        <eco-tourism:type rdf:datatype="internal:anonymous-constants">Marche</eco-tourism:type>
-        <eco-tourism:type rdf:datatype="xsd:string">Marche</eco-tourism:type>
+        <eco-tourism:type rdf:datatype="internal:anonymous-constants">TransportNonMotorise</eco-tourism:type>
+        <eco-tourism:type rdf:datatype="xsd:string">TransportNonMotorise</eco-tourism:type>
     </owl:NamedIndividual>
     
 

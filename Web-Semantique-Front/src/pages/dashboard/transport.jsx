@@ -27,7 +27,7 @@ import "./transport.css";
 
 // Custom light backdrop component
 const LightBackdrop = ({ open }) => {
-  if (!open) return null;
+  if (!open) return null; 
   return (
     <div 
       style={{
@@ -49,9 +49,11 @@ export function Transport() {
   const [createDialog, setCreateDialog] = useState(false);
   const [priceCalcDialog, setPriceCalcDialog] = useState(false);
   const [selectedTransport, setSelectedTransport] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(""); // Catégorie sélectionnée
   const [formData, setFormData] = useState({
     nom: "",
     type: "",
+    category: "", // EcoTransport ou TransportNonMotorise
     emission_co2_per_km: "",
   });
   const [priceCalcData, setPriceCalcData] = useState({
@@ -60,29 +62,40 @@ export function Transport() {
     priceBreakdown: null,
   });
 
+  // Options de types par catégorie
+  const TRANSPORT_OPTIONS = {
+    "EcoTransport": [
+      { label: "Vélo Électrique (5 g/km - Faible)", value: "Vélo Électrique", emission: 5.0 },
+      { label: "Trottinette Électrique (10 g/km - Faible)", value: "Trottinette Électrique", emission: 10.0 },
+      { label: "Métro (20 g/km - Faible)", value: "Métro", emission: 20.0 },
+      { label: "Tramway (25 g/km - Faible)", value: "Tramway", emission: 25.0 },
+      { label: "Train (30 g/km - Faible)", value: "Train", emission: 30.0 },
+    ],
+    "TransportNonMotorise": [
+      { label: "Vélo (0 g/km - Zéro émission)", value: "Vélo", emission: 0.0 },
+      { label: "Marche (0 g/km - Zéro émission)", value: "Marche", emission: 0.0 },
+    ],
+    "Standard": [
+      { label: "Moto (1200 g/km - Moyenne)", value: "Moto", emission: 1200.0 },
+      { label: "Voiture (1200 g/km - Moyenne)", value: "Voiture", emission: 1200.0 },
+      { label: "Bus (6000 g/km - Élevée)", value: "Bus", emission: 6000.0 },
+      { label: "Bateau (6000 g/km - Élevée)", value: "Bateau", emission: 6000.0 },
+    ]
+  };
+
   // Mapping automatique des émissions CO2 selon le type de transport (en g/km)
-  // Valeurs réalistes pour tester toutes les catégories d'empreinte carbone
   const CO2_EMISSIONS_MAP = {
-    "Vélo": 0.0,                    // Zéro émission (0.0000 kg)
-    "Marche": 0.0,                  // Zéro émission (0.0000 kg)
-    "TransportNonMotorise": 0.0,    // Zéro émission (0.0000 kg)
-    "Train": 30.0,                  // Faible (0.0300 kg)
-    "Tramway": 25.0,                // Faible (0.0250 kg)
-    "Métro": 20.0,                  // Faible (0.0200 kg)
-    "Bus Électrique": 40.0,         // Faible (0.0400 kg)
-    "Vélo Électrique": 5.0,         // Faible (0.0050 kg)
-    "Trottinette Électrique": 10.0, // Faible (0.0100 kg)
-    "Bus": 800.0,                   // Faible (0.8000 kg)
-    "Moto": 1200.0,                 // Moyenne (1.2000 kg)
-    "Voiture Hybride": 2000.0,      // Moyenne (2.0000 kg)
-    "Voiture": 3500.0,              // Moyenne (3.5000 kg)
-    "Voiture Diesel": 4000.0,       // Moyenne (4.0000 kg)
-    "4x4": 5500.0,                  // Élevée (5.5000 kg)
-    "Bateau": 6000.0,               // Élevée (6.0000 kg)
-    "Avion": 8000.0,                // Élevée (8.0000 kg)
-    "Hélicoptère": 12000.0,         // Élevée (12.0000 kg)
-    "EcoTransport": 30.0,           // Faible (0.0300 kg)
-    "Transport": 100.0,             // Faible (0.1000 kg) - Valeur par défaut
+    "Vélo": 0.0,
+    "Marche": 0.0,
+    "Vélo Électrique": 5.0,
+    "Trottinette Électrique": 10.0,
+    "Métro": 20.0,
+    "Tramway": 25.0,
+    "Train": 30.0,
+    "Moto": 1200.0,
+    "Voiture": 1200.0,
+    "Bus": 6000.0,
+    "Bateau": 6000.0,
   };
 
   // Fonction pour obtenir l'émission CO2 selon le type
@@ -457,32 +470,34 @@ export function Transport() {
             onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
             required
           />
+          
           <Select
-            label="Type *"
-            value={formData.type || ""}
-            onChange={handleTypeChange}
+            label="Catégorie *"
+            value={formData.category || ""}
+            onChange={(value) => {
+              setFormData({ ...formData, category: value, type: "", emission_co2_per_km: "" });
+              setSelectedCategory(value);
+            }}
           >
-            <Option value="Vélo">Vélo (0 g/km - Zéro émission)</Option>
-            <Option value="Marche">Marche (0 g/km - Zéro émission)</Option>
-            <Option value="TransportNonMotorise">Transport Non Motorisé (0 g/km)</Option>
-            <Option value="Vélo Électrique">Vélo Électrique (5 g/km - Faible)</Option>
-            <Option value="Trottinette Électrique">Trottinette Électrique (10 g/km - Faible)</Option>
-            <Option value="Métro">Métro (20 g/km - Faible)</Option>
-            <Option value="Tramway">Tramway (25 g/km - Faible)</Option>
-            <Option value="Train">Train (30 g/km - Faible)</Option>
-            <Option value="EcoTransport">Eco Transport (30 g/km - Faible)</Option>
-            <Option value="Bus Électrique">Bus Électrique (40 g/km - Faible)</Option>
-            <Option value="Transport">Transport Standard (100 g/km - Faible)</Option>
-            <Option value="Bus">Bus (800 g/km - Faible)</Option>
-            <Option value="Moto">Moto (1200 g/km - Moyenne)</Option>
-            <Option value="Voiture Hybride">Voiture Hybride (2000 g/km - Moyenne)</Option>
-            <Option value="Voiture">Voiture (3500 g/km - Moyenne)</Option>
-            <Option value="Voiture Diesel">Voiture Diesel (4000 g/km - Moyenne)</Option>
-            <Option value="4x4">4x4 (5500 g/km - Élevée)</Option>
-            <Option value="Bateau">Bateau (6000 g/km - Élevée)</Option>
-            <Option value="Avion">Avion (8000 g/km - Élevée)</Option>
-            <Option value="Hélicoptère">Hélicoptère (12000 g/km - Élevée)</Option>
+            <Option value="EcoTransport">EcoTransport (Transports écologiques motorisés)</Option>
+            <Option value="TransportNonMotorise">TransportNonMotorise (Sans moteur)</Option>
+            <Option value="Standard">Standard (Transports classiques)</Option>
           </Select>
+
+          {formData.category && (
+            <Select
+              label="Type *"
+              value={formData.type || ""}
+              onChange={handleTypeChange}
+              key={`create-type-${formData.category}`}
+            >
+              {TRANSPORT_OPTIONS[formData.category]?.map((option) => (
+                <Option key={option.value} value={option.value}>
+                  {option.label}
+                </Option>
+              ))}
+            </Select>
+          )}
           <Input
             label="Émission CO2 par km (g) - Auto-calculé"
             type="number"
@@ -543,32 +558,34 @@ export function Transport() {
             onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
             required
           />
+          
           <Select
-            label="Type *"
-            value={formData.type || ""}
-            onChange={handleTypeChange}
+            label="Catégorie *"
+            value={formData.category || ""}
+            onChange={(value) => {
+              setFormData({ ...formData, category: value, type: "", emission_co2_per_km: "" });
+              setSelectedCategory(value);
+            }}
           >
-            <Option value="Vélo">Vélo (0 g/km - Zéro émission)</Option>
-            <Option value="Marche">Marche (0 g/km - Zéro émission)</Option>
-            <Option value="TransportNonMotorise">Transport Non Motorisé (0 g/km)</Option>
-            <Option value="Vélo Électrique">Vélo Électrique (5 g/km - Faible)</Option>
-            <Option value="Trottinette Électrique">Trottinette Électrique (10 g/km - Faible)</Option>
-            <Option value="Métro">Métro (20 g/km - Faible)</Option>
-            <Option value="Tramway">Tramway (25 g/km - Faible)</Option>
-            <Option value="Train">Train (30 g/km - Faible)</Option>
-            <Option value="EcoTransport">Eco Transport (30 g/km - Faible)</Option>
-            <Option value="Bus Électrique">Bus Électrique (40 g/km - Faible)</Option>
-            <Option value="Transport">Transport Standard (100 g/km - Faible)</Option>
-            <Option value="Bus">Bus (800 g/km - Faible)</Option>
-            <Option value="Moto">Moto (1200 g/km - Moyenne)</Option>
-            <Option value="Voiture Hybride">Voiture Hybride (2000 g/km - Moyenne)</Option>
-            <Option value="Voiture">Voiture (3500 g/km - Moyenne)</Option>
-            <Option value="Voiture Diesel">Voiture Diesel (4000 g/km - Moyenne)</Option>
-            <Option value="4x4">4x4 (5500 g/km - Élevée)</Option>
-            <Option value="Bateau">Bateau (6000 g/km - Élevée)</Option>
-            <Option value="Avion">Avion (8000 g/km - Élevée)</Option>
-            <Option value="Hélicoptère">Hélicoptère (12000 g/km - Élevée)</Option>
+            <Option value="EcoTransport">EcoTransport (Transports écologiques motorisés)</Option>
+            <Option value="TransportNonMotorise">TransportNonMotorise (Sans moteur)</Option>
+            <Option value="Standard">Standard (Transports classiques)</Option>
           </Select>
+
+          {formData.category && (
+            <Select
+              label="Type *"
+              value={formData.type || ""}
+              onChange={handleTypeChange}
+              key={`edit-type-${formData.category}`}
+            >
+              {TRANSPORT_OPTIONS[formData.category]?.map((option) => (
+                <Option key={option.value} value={option.value}>
+                  {option.label}
+                </Option>
+              ))}
+            </Select>
+          )}
           <Input
             label="Émission CO2 par km (g) - Auto-calculé"
             type="number"
