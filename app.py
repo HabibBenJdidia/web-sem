@@ -39,7 +39,7 @@ def parse_users_from_sparql(results):
         if '#' in predicate:
             prop_name = predicate.split('#')[1]
             
-            if prop_name == 'type' and 'eco-tourism#' in obj:
+            if prop_name == 'type' and f'{NAMESPACE}' in obj:
                 users_dict[uri]['type'] = obj.split('#')[1]
             elif prop_name in ['nom', 'email', 'age', 'nationalite']:
                 users_dict[uri][prop_name] = obj
@@ -61,6 +61,41 @@ def clean_uri_name(name):
     # Remove consecutive underscores
     cleaned = re.sub(r'_+', '_', cleaned)
     return cleaned
+
+# Helper function to parse joined Hebergement and Destination data
+def parse_hebergements_with_destinations(hebergement_results):
+    hebergement_dict = {}
+    destination_dict = {}
+    
+    for result in hebergement_results:
+        s = result.get('s', {}).get('value', '')
+        p = result.get('p', {}).get('value', '')
+        o = result.get('o', {}).get('value', '')
+        
+        if s.startswith(f'{NAMESPACE}Hebergement'):
+            if s not in hebergement_dict:
+                hebergement_dict[s] = {'uri': s}
+            prop_name = p.split('#')[1]
+            if prop_name in ['nom', 'type', 'prix', 'nbChambres', 'niveauEco', 'id']:
+                hebergement_dict[s][prop_name] = o
+            elif prop_name == 'situeDans':
+                hebergement_dict[s]['destinationUri'] = o
+        elif s.startswith(f'{NAMESPACE}Destination'):
+            if s not in destination_dict:
+                destination_dict[s] = {'uri': s}
+            prop_name = p.split('#')[1]
+            if prop_name in ['nom', 'pays', 'climat', 'id']:
+                destination_dict[s][prop_name] = o
+    
+    # Join the data
+    joined_results = []
+    for h in hebergement_dict.values():
+        dest_uri = h.get('destinationUri')
+        if dest_uri and dest_uri in destination_dict:
+            h['destination'] = destination_dict[dest_uri]
+        joined_results.append(h)
+    
+    return joined_results
 
 # USERS MANAGEMENT ENDPOINT
 @app.route('/users', methods=['GET'])
@@ -158,25 +193,48 @@ def delete_guide(uri):
 # DESTINATION
 @app.route('/destination', methods=['POST'])
 def create_destination():
+    """Create a new Destination"""
     data = request.json
-    dest = Destination(
-        uri=f"{NAMESPACE}Destination_{clean_uri_name(data.get('nom'))}",
-        nom=data.get('nom'),
-        pays=data.get('pays'),
-        climat=data.get('climat')
-    )
+    if not data or not data.get('nom'):
+        return jsonify({"error": "Nom is required"}), 400
+    
+    dest = Destination(nom=data.get('nom'), pays=data.get('pays'), climat=data.get('climat'))
     result = manager.create(dest)
-    return jsonify(result)
+    return jsonify(result), 201
 
-@app.route('/destination', methods=['GET'])
+@app.route('/destination/<path:uri>', methods=['GET'])
+def get_destination(uri):
+    """Read a Destination by URI"""
+    result = manager.get_by_uri(uri)
+    if not result:
+        return jsonify({"error": "Destination not found"}), 404
+    return jsonify(result), 200
+
+@app.route('/destinations', methods=['GET'])
 def get_all_destinations():
+    """Read all Destinations"""
     result = manager.get_all('Destination')
-    return jsonify(result)
+    return jsonify(result), 200
+
+@app.route('/destination/<path:uri>', methods=['PUT'])
+def update_destination(uri):
+    """Update a Destination by URI"""
+    data = request.json
+    if not data:
+        return jsonify({"error": "Data required for update"}), 400
+    
+    updates = []
+    for key, value in data.items():
+        if key in ['nom', 'pays', 'climat']:
+            result = manager.update_property(uri, key, value, isinstance(value, str))
+            updates.append(result)
+    return jsonify({"updates": updates}), 200
 
 @app.route('/destination/<path:uri>', methods=['DELETE'])
 def delete_destination(uri):
+    """Delete a Destination by URI"""
     result = manager.delete(uri)
-    return jsonify(result)
+    return jsonify(result), 200
 
 # VILLE
 @app.route('/ville', methods=['POST'])
@@ -199,7 +257,11 @@ def get_all_villes():
 # HEBERGEMENT
 @app.route('/hebergement', methods=['POST'])
 def create_hebergement():
+    """Create a new Hebergement"""
     data = request.json
+    if not data or not data.get('nom'):
+        return jsonify({"error": "Nom is required"}), 400
+    
     heb = Hebergement(
         uri=f"{NAMESPACE}Hebergement_{clean_uri_name(data.get('nom'))}",
         nom=data.get('nom'),
@@ -207,21 +269,125 @@ def create_hebergement():
         prix=data.get('prix'),
         nb_chambres=data.get('nb_chambres'),
         niveau_eco=data.get('niveau_eco'),
-        situe_dans=data.get('situe_dans'),
+        situe_dans=data.get('situe_dans'),  # Link to Destination URI
         utilise_energie=data.get('utilise_energie')
     )
     result = manager.create(heb)
-    return jsonify(result)
+    return jsonify(result), 201
 
-@app.route('/hebergement', methods=['GET'])
+@app.route('/hebergement/<path:uri>', methods=['GET'])
+def get_hebergement(uri):
+    """Read a Hebergement by URI"""
+    result = manager.get_by_uri(uri)
+    if not result:
+        return jsonify({"error": "Hebergement not found"}), 404
+    return jsonify(result), 200
+
+@app.route('/hebergements', methods=['GET'])
 def get_all_hebergements():
-    result = manager.get_all('Hebergement')
-    return jsonify(result)
+    """Read all Hebergements with joined Destination data"""
+    try:
+        print("=" * 70)
+        print("GET /hebergements endpoint called")
+        
+        # Simple query to get all hebergements with their destinations
+        query = f"""
+            PREFIX eco: <{NAMESPACE}>
+            
+            SELECT ?hebUri ?hebNom ?hebType ?hebPrix ?hebChambres ?hebEco 
+                   ?destUri ?destNom ?destPays ?destClimat
+            WHERE {{
+                ?hebUri a eco:Hebergement .
+                
+                OPTIONAL {{ ?hebUri eco:nom ?hebNom }}
+                OPTIONAL {{ ?hebUri eco:type ?hebType }}
+                OPTIONAL {{ ?hebUri eco:prix ?hebPrix }}
+                OPTIONAL {{ ?hebUri eco:nbChambres ?hebChambres }}
+                OPTIONAL {{ ?hebUri eco:niveauEco ?hebEco }}
+                
+                OPTIONAL {{
+                    ?hebUri eco:situeDans ?destUri .
+                    ?destUri a eco:Destination .
+                    OPTIONAL {{ ?destUri eco:nom ?destNom }}
+                    OPTIONAL {{ ?destUri eco:pays ?destPays }}
+                    OPTIONAL {{ ?destUri eco:climat ?destClimat }}
+                }}
+            }}
+        """
+        
+        print("Executing query...")
+        results = manager.execute_query(query)
+        print(f"Query returned {len(results)} rows")
+        
+        if not results:
+            print("No hebergements found")
+            return jsonify({"status": "success", "data": []}), 200
+        
+        # Group results by hebergement URI
+        hebergements_dict = {}
+        
+        for row in results:
+            heb_uri = row.get('hebUri', {}).get('value', '')
+            
+            if not heb_uri:
+                continue
+            
+            if heb_uri not in hebergements_dict:
+                # Initialize hebergement
+                hebergements_dict[heb_uri] = {
+                    'uri': heb_uri,
+                    'nom': row.get('hebNom', {}).get('value', ''),
+                    'type': row.get('hebType', {}).get('value', ''),
+                    'prix': row.get('hebPrix', {}).get('value', ''),
+                    'nbChambres': row.get('hebChambres', {}).get('value', ''),
+                    'niveauEco': row.get('hebEco', {}).get('value', ''),
+                    'destination': None
+                }
+                
+                # Add destination if exists
+                dest_uri = row.get('destUri', {}).get('value', '')
+                if dest_uri:
+                    hebergements_dict[heb_uri]['destination'] = {
+                        'uri': dest_uri,
+                        'nom': row.get('destNom', {}).get('value', 'Non spécifié'),
+                        'pays': row.get('destPays', {}).get('value', ''),
+                        'climat': row.get('destClimat', {}).get('value', '')
+                    }
+        
+        hebergements_list = list(hebergements_dict.values())
+        
+        print(f"Processed {len(hebergements_list)} hebergements")
+        if hebergements_list:
+            print(f"First hebergement sample: {hebergements_list[0]}")
+        
+        return jsonify({"status": "success", "data": hebergements_list}), 200
+        
+    except Exception as e:
+        print("=" * 70)
+        print(f"ERROR in get_all_hebergements: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        print("=" * 70)
+        return jsonify({"status": "error", "message": str(e)}), 500
+@app.route('/hebergement/<path:uri>', methods=['PUT'])
+def update_hebergement(uri):
+    """Update a Hebergement by URI"""
+    data = request.json
+    if not data:
+        return jsonify({"error": "Data required for update"}), 400
+    
+    updates = []
+    for key, value in data.items():
+        if key in ['nom', 'type', 'prix', 'nb_chambres', 'niveau_eco', 'situe_dans', 'utilise_energie']:
+            result = manager.update_property(uri, key, value, isinstance(value, str))
+            updates.append(result)
+    return jsonify({"updates": updates}), 200
 
 @app.route('/hebergement/<path:uri>', methods=['DELETE'])
 def delete_hebergement(uri):
+    """Delete a Hebergement by URI"""
     result = manager.delete(uri)
-    return jsonify(result)
+    return jsonify(result), 200
 
 # ACTIVITE
 @app.route('/activite', methods=['POST'])
@@ -406,10 +572,7 @@ def search_events():
 def health():
     return jsonify({"status": "running"})
 
-# ============================================
 # AI AGENT ENDPOINTS
-# ============================================
-
 @app.route('/ai/chat', methods=['POST'])
 def ai_chat():
     """
@@ -520,7 +683,7 @@ def ai_help():
             "sparql": {
                 "url": "/ai/sparql",
                 "body": {
-                    "query": "PREFIX eco: <http://example.org/eco-tourism#>\nSELECT ?tourist ?name WHERE {\n  ?tourist a eco:Touriste .\n  ?tourist eco:nom ?name .\n}"
+                    "query": f"PREFIX {NAMESPACE[:-1]}: <{NAMESPACE}>\nSELECT ?tourist ?name WHERE {{\n  ?tourist a {NAMESPACE}Touriste .\n  ?tourist {NAMESPACE}nom ?name .\n}}"
                 }
             },
             "recommend": {
@@ -537,4 +700,3 @@ def ai_help():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000, debug=True)
-

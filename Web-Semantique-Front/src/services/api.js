@@ -125,11 +125,22 @@ class ApiService {
 
   // ==================== HEBERGEMENT ENDPOINTS ====================
 
-  /**
+/**
    * Get all accommodations
    */
-  async getHebergements() {
-    return this.fetch('/hebergement');
+ async getHebergements() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/hebergements`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log("API Service - Raw response:", data);
+      return data;
+    } catch (error) {
+      console.error("API Service - Error fetching hebergements:", error);
+      throw error;
+    }
   }
 
   /**
@@ -142,13 +153,67 @@ class ApiService {
   /**
    * Create new accommodation
    */
-  async createHebergement(data) {
-    return this.fetch('/hebergement', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+ async createHebergement(data) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/hebergement`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create hebergement');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("API Service - Error creating hebergement:", error);
+      throw error;
+    }
   }
 
+  /**
+   * Update accommodation
+   */
+  async updateHebergement(uri, data) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/hebergement/${encodeURIComponent(uri)}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update hebergement');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("API Service - Error updating hebergement:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete accommodation
+   */
+  async deleteHebergement(uri) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/hebergement/${encodeURIComponent(uri)}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete hebergement');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("API Service - Error deleting hebergement:", error);
+      throw error;
+    }
+  }
   // ==================== ACTIVITE ENDPOINTS ====================
 
   /**
@@ -177,13 +242,41 @@ class ApiService {
 
   // ==================== DESTINATION ENDPOINTS ====================
 
-  /**
+/**
    * Get all destinations
    */
   async getDestinations() {
-    return this.fetch('/destination');
+    return this.fetch('/destinations'); // Changed to plural
   }
 
+  /**
+   * Create new destination
+   */
+  async createDestination(data) {
+    return this.fetch('/destination', { // Keep singular for create
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Update destination
+   */
+  async updateDestination(uri, data) {
+    return this.fetch(`/destination/${encodeURIComponent(uri)}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Delete destination
+   */
+  async deleteDestination(uri) {
+    return this.fetch(`/destination/${encodeURIComponent(uri)}`, {
+      method: 'DELETE',
+    });
+  }
   /**
    * Get all cities
    */
