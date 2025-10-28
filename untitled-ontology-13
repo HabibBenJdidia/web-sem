@@ -972,8 +972,48 @@
         <rdf:type rdf:resource="http://example.org/eco-tourism#Guide"/>
         <rdf:type rdf:resource="http://example.org/eco-tourism#User"/>
         <eco-tourism:organiseEvenement rdf:resource="http://example.org/eco-tourism#Evenement_FestivalEcoTabarka"/>
+        <eco-tourism:age rdf:datatype="internal:anonymous-constants">32</eco-tourism:age>
+        <eco-tourism:age rdf:datatype="xsd:integer">32</eco-tourism:age>
+        <eco-tourism:email rdf:datatype="internal:anonymous-constants">oussama.guide@ecotourism.tn</eco-tourism:email>
+        <eco-tourism:email rdf:datatype="xsd:string">oussama.guide@ecotourism.tn</eco-tourism:email>
+        <eco-tourism:nationalite rdf:datatype="internal:anonymous-constants">Tunisian</eco-tourism:nationalite>
+        <eco-tourism:nationalite rdf:datatype="xsd:string">Tunisian</eco-tourism:nationalite>
         <eco-tourism:nom rdf:datatype="internal:anonymous-constants">Oussama</eco-tourism:nom>
         <eco-tourism:nom rdf:datatype="xsd:string">Oussama</eco-tourism:nom>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://example.org/eco-tourism#Guide_Sarah -->
+
+    <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Guide_Sarah">
+        <rdf:type rdf:resource="http://example.org/eco-tourism#Guide"/>
+        <rdf:type rdf:resource="http://example.org/eco-tourism#User"/>
+        <eco-tourism:age rdf:datatype="internal:anonymous-constants">28</eco-tourism:age>
+        <eco-tourism:age rdf:datatype="xsd:integer">28</eco-tourism:age>
+        <eco-tourism:email rdf:datatype="internal:anonymous-constants">sarah.eco@ecotourism.tn</eco-tourism:email>
+        <eco-tourism:email rdf:datatype="xsd:string">sarah.eco@ecotourism.tn</eco-tourism:email>
+        <eco-tourism:nationalite rdf:datatype="internal:anonymous-constants">French</eco-tourism:nationalite>
+        <eco-tourism:nationalite rdf:datatype="xsd:string">French</eco-tourism:nationalite>
+        <eco-tourism:nom rdf:datatype="internal:anonymous-constants">Sarah Martin</eco-tourism:nom>
+        <eco-tourism:nom rdf:datatype="xsd:string">Sarah Martin</eco-tourism:nom>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://example.org/eco-tourism#Guide_Ahmed -->
+
+    <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Guide_Ahmed">
+        <rdf:type rdf:resource="http://example.org/eco-tourism#Guide"/>
+        <rdf:type rdf:resource="http://example.org/eco-tourism#User"/>
+        <eco-tourism:age rdf:datatype="internal:anonymous-constants">35</eco-tourism:age>
+        <eco-tourism:age rdf:datatype="xsd:integer">35</eco-tourism:age>
+        <eco-tourism:email rdf:datatype="internal:anonymous-constants">ahmed.nature@ecotourism.tn</eco-tourism:email>
+        <eco-tourism:email rdf:datatype="xsd:string">ahmed.nature@ecotourism.tn</eco-tourism:email>
+        <eco-tourism:nationalite rdf:datatype="internal:anonymous-constants">Moroccan</eco-tourism:nationalite>
+        <eco-tourism:nationalite rdf:datatype="xsd:string">Moroccan</eco-tourism:nationalite>
+        <eco-tourism:nom rdf:datatype="internal:anonymous-constants">Ahmed Benali</eco-tourism:nom>
+        <eco-tourism:nom rdf:datatype="xsd:string">Ahmed Benali</eco-tourism:nom>
     </owl:NamedIndividual>
     
 
@@ -1055,10 +1095,66 @@
         <eco-tourism:sejourneDans rdf:resource="http://example.org/eco-tourism#Hebergement_DarElAin"/>
         <eco-tourism:age rdf:datatype="internal:anonymous-constants">25</eco-tourism:age>
         <eco-tourism:age rdf:datatype="xsd:integer">25</eco-tourism:age>
+        <eco-tourism:email rdf:datatype="internal:anonymous-constants">habib.tourist@example.com</eco-tourism:email>
+        <eco-tourism:email rdf:datatype="xsd:string">habib.tourist@example.com</eco-tourism:email>
         <eco-tourism:nationalite rdf:datatype="internal:anonymous-constants">TN</eco-tourism:nationalite>
         <eco-tourism:nationalite rdf:datatype="xsd:string">TN</eco-tourism:nationalite>
         <eco-tourism:nom rdf:datatype="internal:anonymous-constants">Habib</eco-tourism:nom>
         <eco-tourism:nom rdf:datatype="xsd:string">Habib</eco-tourism:nom>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://example.org/eco-tourism#Touriste_Emma -->
+
+    <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Touriste_Emma">
+        <rdf:type rdf:resource="http://example.org/eco-tourism#Touriste"/>
+        <rdf:type rdf:resource="http://example.org/eco-tourism#User"/>
+        <eco-tourism:seDeplacePar rdf:resource="http://example.org/eco-tourism#Transport_VeloElectrique"/>
+        <eco-tourism:age rdf:datatype="internal:anonymous-constants">30</eco-tourism:age>
+        <eco-tourism:age rdf:datatype="xsd:integer">30</eco-tourism:age>
+        <eco-tourism:email rdf:datatype="internal:anonymous-constants">emma.green@travel.de</eco-tourism:email>
+        <eco-tourism:email rdf:datatype="xsd:string">emma.green@travel.de</eco-tourism:email>
+        <eco-tourism:nationalite rdf:datatype="internal:anonymous-constants">German</eco-tourism:nationalite>
+        <eco-tourism:nationalite rdf:datatype="xsd:string">German</eco-tourism:nationalite>
+        <eco-tourism:nom rdf:datatype="internal:anonymous-constants">Emma Schmidt</eco-tourism:nom>
+        <eco-tourism:nom rdf:datatype="xsd:string">Emma Schmidt</eco-tourism:nom>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://example.org/eco-tourism#Touriste_Luca -->
+
+    <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Touriste_Luca">
+        <rdf:type rdf:resource="http://example.org/eco-tourism#Touriste"/>
+        <rdf:type rdf:resource="http://example.org/eco-tourism#User"/>
+        <eco-tourism:seDeplacePar rdf:resource="http://example.org/eco-tourism#Transport_Metro"/>
+        <eco-tourism:age rdf:datatype="internal:anonymous-constants">27</eco-tourism:age>
+        <eco-tourism:age rdf:datatype="xsd:integer">27</eco-tourism:age>
+        <eco-tourism:email rdf:datatype="internal:anonymous-constants">luca.rossi@tourism.it</eco-tourism:email>
+        <eco-tourism:email rdf:datatype="xsd:string">luca.rossi@tourism.it</eco-tourism:email>
+        <eco-tourism:nationalite rdf:datatype="internal:anonymous-constants">Italian</eco-tourism:nationalite>
+        <eco-tourism:nationalite rdf:datatype="xsd:string">Italian</eco-tourism:nationalite>
+        <eco-tourism:nom rdf:datatype="internal:anonymous-constants">Luca Rossi</eco-tourism:nom>
+        <eco-tourism:nom rdf:datatype="xsd:string">Luca Rossi</eco-tourism:nom>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://example.org/eco-tourism#Touriste_Amina -->
+
+    <owl:NamedIndividual rdf:about="http://example.org/eco-tourism#Touriste_Amina">
+        <rdf:type rdf:resource="http://example.org/eco-tourism#Touriste"/>
+        <rdf:type rdf:resource="http://example.org/eco-tourism#User"/>
+        <eco-tourism:seDeplacePar rdf:resource="http://example.org/eco-tourism#Transport_TrottinetteElectrique"/>
+        <eco-tourism:age rdf:datatype="internal:anonymous-constants">22</eco-tourism:age>
+        <eco-tourism:age rdf:datatype="xsd:integer">22</eco-tourism:age>
+        <eco-tourism:email rdf:datatype="internal:anonymous-constants">amina.eco@tourism.ma</eco-tourism:email>
+        <eco-tourism:email rdf:datatype="xsd:string">amina.eco@tourism.ma</eco-tourism:email>
+        <eco-tourism:nationalite rdf:datatype="internal:anonymous-constants">Moroccan</eco-tourism:nationalite>
+        <eco-tourism:nationalite rdf:datatype="xsd:string">Moroccan</eco-tourism:nationalite>
+        <eco-tourism:nom rdf:datatype="internal:anonymous-constants">Amina El Fassi</eco-tourism:nom>
+        <eco-tourism:nom rdf:datatype="xsd:string">Amina El Fassi</eco-tourism:nom>
     </owl:NamedIndividual>
     
 
