@@ -1,5 +1,6 @@
 from flask import Blueprint
 from controllers.energie_renouvelable_controller import EnergieRenouvelableController
+from config import NAMESPACE
 
 # Create a Blueprint for energy routes
 energie_bp = Blueprint('energie', __name__)
@@ -13,14 +14,20 @@ def create_energie():
 def get_energies():
     return EnergieRenouvelableController.get_all()
 
-@energie_bp.route('/<path:uri>', methods=['GET'])
-def get_energie(uri):
+@energie_bp.route('/<id>', methods=['GET'])
+def get_energie(id):
+    # Convert ID to full URI
+    uri = f"{NAMESPACE}EnergieRenouvelable_{id}"
     return EnergieRenouvelableController.get(uri)
 
-@energie_bp.route('/<path:uri>', methods=['PUT'])
-def update_energie(uri):
+@energie_bp.route('/<id>', methods=['PUT'])
+def update_energie(id):
+    # Convert ID to full URI
+    uri = f"{NAMESPACE}EnergieRenouvelable_{id}"
     return EnergieRenouvelableController.update(uri)
 
-@energie_bp.route('/<path:uri>', methods=['DELETE'])
-def delete_energie(uri):
+@energie_bp.route('/<id>', methods=['DELETE'])
+def delete_energie(id):
+    # Convert ID to full URI
+    uri = f"{NAMESPACE}EnergieRenouvelable_{id}"
     return EnergieRenouvelableController.delete(uri)

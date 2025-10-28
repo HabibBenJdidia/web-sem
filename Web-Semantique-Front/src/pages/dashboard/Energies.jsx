@@ -19,7 +19,7 @@ import {
   Tooltip
 } from "@material-tailwind/react";
 import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
-import api from "@/services/api";
+import { getEnergies, createEnergie, updateEnergie, deleteEnergie } from "@/services/energieService";
 import { useAuth } from "@/context/AuthContext";
 
 export function Energies() {
@@ -31,9 +31,7 @@ export function Energies() {
   const [formData, setFormData] = useState({
     nom: "",
     type: "solaire",
-    description: "",
-    capacite: "",
-    localisation: ""
+    description: ""
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -48,6 +46,13 @@ export function Energies() {
     { value: 'autre', label: 'Autre' }
   ];
 
+  // Helper function to extract ID from URI
+  const extractIdFromUri = (uri) => {
+    if (!uri) return null;
+    const parts = uri.split('EnergieRenouvelable_');
+    return parts.length > 1 ? parts[1] : null;
+  };
+
   useEffect(() => {
     loadEnergies();
   }, []);
@@ -55,12 +60,48 @@ export function Energies() {
   const loadEnergies = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/api/energies');
-      setEnergies(response.data || []);
       setError("");
+      
+      console.log('=== LOADING ENERGIES ===');
+      const data = await getEnergies();
+      console.log('Component received data:', data);
+      console.log('Data type:', typeof data);
+      console.log('Is array?', Array.isArray(data));
+      
+      // Handle the response
+      let processedData = [];
+      
+      if (Array.isArray(data)) {
+        processedData = data.map(energie => {
+          console.log('Processing energie:', energie);
+          return {
+            ...energie,
+            id: energie.id || extractIdFromUri(energie.uri) || energie.uri
+          };
+        });
+      } else if (data && typeof data === 'object') {
+        // If it's an object, check for common wrapper properties
+        if (data.energies) {
+          processedData = Array.isArray(data.energies) ? data.energies : [];
+        } else if (data.data) {
+          processedData = Array.isArray(data.data) ? data.data : [];
+        } else if (data.results) {
+          processedData = Array.isArray(data.results) ? data.results : [];
+        }
+      }
+      
+      console.log('Processed data:', processedData);
+      console.log('Number of energies:', processedData.length);
+      
+      setEnergies(processedData);
+      
     } catch (error) {
-      console.error("Erreur lors du chargement des énergies:", error);
+      console.error("=== ERROR LOADING ENERGIES ===");
+      console.error("Error object:", error);
+      console.error("Error message:", error.message);
+      console.error("Error response:", error.response);
       setError("Erreur lors du chargement des énergies. Veuillez réessayer.");
+      setEnergies([]);
     } finally {
       setLoading(false);
     }
@@ -86,9 +127,7 @@ export function Energies() {
     setFormData({
       nom: "",
       type: "solaire",
-      description: "",
-      capacite: "",
-      localisation: ""
+      description: ""
     });
     setFormDialog(true);
   };
@@ -98,9 +137,7 @@ export function Energies() {
     setFormData({
       nom: energie.nom || "",
       type: energie.type || "solaire",
-      description: energie.description || "",
-      capacite: energie.capacite || "",
-      localisation: energie.localisation || ""
+      description: energie.description || ""
     });
     setFormDialog(true);
   };
@@ -114,25 +151,33 @@ export function Energies() {
     e.preventDefault();
     try {
       setLoading(true);
+      setError("");
+      
+      console.log('Submitting form with data:', formData);
       
       if (selectedEnergie) {
-        // Mise à jour d'une énergie existante
-        await api.put(`/api/energies/${encodeURIComponent(selectedEnergie.uri)}`, formData);
+        const id = selectedEnergie.id || extractIdFromUri(selectedEnergie.uri);
+        console.log('Updating energie with id:', id);
+        
+        if (!id) {
+          throw new Error("ID de l'énergie introuvable");
+        }
+        
+        await updateEnergie(id, formData);
         setSuccess("Énergie mise à jour avec succès");
       } else {
-        // Création d'une nouvelle énergie
-        await api.post('/api/energies', formData);
+        console.log('Creating new energie');
+        await createEnergie(formData);
         setSuccess("Énergie créée avec succès");
       }
       
       setFormDialog(false);
-      loadEnergies();
+      await loadEnergies();
       
-      // Effacer le message de succès après 3 secondes
       setTimeout(() => setSuccess(""), 3000);
     } catch (error) {
-      console.error("Erreur lors de la sauvegarde:", error);
-      setError("Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.");
+      console.error("Error saving:", error);
+      setError(error.response?.data?.error || "Une erreur est survenue lors de la sauvegarde.");
     } finally {
       setLoading(false);
     }
@@ -143,22 +188,29 @@ export function Energies() {
     
     try {
       setLoading(true);
-      await api.delete(`/api/energies/${encodeURIComponent(selectedEnergie.uri)}`);
+      setError("");
+      
+      const id = selectedEnergie.id || extractIdFromUri(selectedEnergie.uri);
+      console.log('Deleting energie with id:', id);
+      
+      if (!id) {
+        throw new Error("ID de l'énergie introuvable");
+      }
+      
+      await deleteEnergie(id);
       setSuccess("Énergie supprimée avec succès");
       setDeleteDialog(false);
-      loadEnergies();
+      await loadEnergies();
       
-      // Effacer le message de succès après 3 secondes
       setTimeout(() => setSuccess(""), 3000);
     } catch (error) {
-      console.error("Erreur lors de la suppression:", error);
-      setError("Erreur lors de la suppression de l'énergie. Veuillez réessayer.");
+      console.error("Error deleting:", error);
+      setError(error.response?.data?.error || "Erreur lors de la suppression de l'énergie.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Styles pour les cellules du tableau
   const cellClasses = "p-4 border-b border-blue-gray-50";
   const headerCellClasses = "p-4 border-b border-blue-gray-100 bg-blue-gray-50/50 text-left";
 
@@ -178,7 +230,7 @@ export function Energies() {
                 Gestion des Énergies Renouvelables
               </Typography>
               <Typography variant="small" className="text-white/80">
-                Gérez les différentes sources d'énergie renouvelable
+                Gérez les différentes sources d'énergie renouvelable ({energies.length} énergie{energies.length !== 1 ? 's' : ''})
               </Typography>
             </div>
             <Button
@@ -227,12 +279,7 @@ export function Energies() {
                     </th>
                     <th className={headerCellClasses}>
                       <Typography variant="small" color="blue-gray" className="font-semibold">
-                        Capacité (MW)
-                      </Typography>
-                    </th>
-                    <th className={headerCellClasses}>
-                      <Typography variant="small" color="blue-gray" className="font-semibold">
-                        Localisation
+                        Description
                       </Typography>
                     </th>
                     <th className={headerCellClasses}></th>
@@ -240,59 +287,60 @@ export function Energies() {
                 </thead>
                 <tbody>
                   {energies.length > 0 ? (
-                    energies.map((energie, index) => (
-                      <tr key={index} className="hover:bg-blue-gray-50/50">
-                        <td className={cellClasses}>
-                          <Typography variant="small" color="blue-gray" className="font-normal">
-                            {energie.nom || '-'}
-                          </Typography>
-                        </td>
-                        <td className={cellClasses}>
-                          <Typography variant="small" color="blue-gray" className="font-normal">
-                            {typesEnergie.find(t => t.value === energie.type)?.label || energie.type || '-'}
-                          </Typography>
-                        </td>
-                        <td className={cellClasses}>
-                          <Typography variant="small" color="blue-gray" className="font-normal">
-                            {energie.capacite ? `${energie.capacite} MW` : '-'}
-                          </Typography>
-                        </td>
-                        <td className={cellClasses}>
-                          <Typography variant="small" color="blue-gray" className="font-normal">
-                            {energie.localisation || '-'}
-                          </Typography>
-                        </td>
-                        <td className={`${cellClasses} w-24`}>
-                          <div className="flex items-center gap-2">
-                            <Tooltip content="Modifier">
-                              <IconButton
-                                variant="text"
-                                color="blue-gray"
-                                size="sm"
-                                onClick={() => handleEditEnergie(energie)}
-                              >
-                                <PencilIcon className="h-4 w-4" />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip content="Supprimer">
-                              <IconButton
-                                variant="text"
-                                color="red"
-                                size="sm"
-                                onClick={() => handleDeleteClick(energie)}
-                              >
-                                <TrashIcon className="h-4 w-4" />
-                              </IconButton>
-                            </Tooltip>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                    energies.map((energie, index) => {
+                      const key = energie.id || energie.uri || `energie-${index}`;
+                      return (
+                        <tr key={key} className="hover:bg-blue-gray-50/50">
+                          <td className={cellClasses}>
+                            <Typography variant="small" color="blue-gray" className="font-normal">
+                              {energie.nom || '-'}
+                            </Typography>
+                          </td>
+                          <td className={cellClasses}>
+                            <Typography variant="small" color="blue-gray" className="font-normal">
+                              {typesEnergie.find(t => t.value === energie.type)?.label || energie.type || '-'}
+                            </Typography>
+                          </td>
+                          <td className={cellClasses}>
+                            <Typography variant="small" color="blue-gray" className="font-normal">
+                              {energie.description || '-'}
+                            </Typography>
+                          </td>
+                          <td className={`${cellClasses} w-24`}>
+                            <div className="flex items-center gap-2">
+                              <Tooltip content="Modifier">
+                                <IconButton
+                                  variant="text"
+                                  color="blue-gray"
+                                  size="sm"
+                                  onClick={() => handleEditEnergie(energie)}
+                                >
+                                  <PencilIcon className="h-4 w-4" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip content="Supprimer">
+                                <IconButton
+                                  variant="text"
+                                  color="red"
+                                  size="sm"
+                                  onClick={() => handleDeleteClick(energie)}
+                                >
+                                  <TrashIcon className="h-4 w-4" />
+                                </IconButton>
+                              </Tooltip>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   ) : (
                     <tr>
-                      <td colSpan="5" className="p-4 text-center">
+                      <td colSpan="4" className="p-8 text-center">
                         <Typography variant="small" color="blue-gray" className="font-normal">
                           Aucune énergie enregistrée
+                        </Typography>
+                        <Typography variant="small" color="gray" className="mt-2">
+                          Cliquez sur "Ajouter une énergie" pour commencer
                         </Typography>
                       </td>
                     </tr>
@@ -304,7 +352,7 @@ export function Energies() {
         </CardBody>
       </Card>
 
-      {/* Formulaire d'ajout/modification */}
+      {/* Form Dialog */}
       <Dialog 
         open={formDialog} 
         handler={() => !loading && setFormDialog(false)}
@@ -353,43 +401,6 @@ export function Energies() {
                     </Option>
                   ))}
                 </Select>
-              </div>
-              
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-2 font-medium">
-                  Capacité (MW) *
-                </Typography>
-                <Input
-                  type="number"
-                  name="capacite"
-                  value={formData.capacite}
-                  onChange={handleInputChange}
-                  required
-                  placeholder="Ex: 10.5"
-                  step="0.01"
-                  min="0"
-                  className="!border-t-blue-gray-200 focus:!border-t-gray-900"
-                  labelProps={{
-                    className: "before:content-none after:content-none",
-                  }}
-                />
-              </div>
-              
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-2 font-medium">
-                  Localisation *
-                </Typography>
-                <Input
-                  name="localisation"
-                  value={formData.localisation}
-                  onChange={handleInputChange}
-                  required
-                  placeholder="Ville, région, pays"
-                  className="!border-t-blue-gray-200 focus:!border-t-gray-900"
-                  labelProps={{
-                    className: "before:content-none after:content-none",
-                  }}
-                />
               </div>
               
               <div className="md:col-span-2">
@@ -442,7 +453,7 @@ export function Energies() {
         </DialogBody>
       </Dialog>
 
-      {/* Boîte de dialogue de confirmation de suppression */}
+      {/* Delete Dialog */}
       <Dialog 
         open={deleteDialog}
         handler={() => !loading && setDeleteDialog(false)}
