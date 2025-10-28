@@ -483,13 +483,20 @@ Réponds maintenant de manière CONVERSATIONNELLE UNIQUEMENT (pas de JSON, pas d
                     else:
                         empreinte_category = "Élevée"
                 
+                # Determine transport category (EcoTransport or TransportNonMotorise)
+                transport_type = result.get('type', {}).get('value', 'N/A')
+                transport_category = "EcoTransport"  # Default
+                if transport_type in ["Vélo", "Marche", "Marche à pied", "TransportNonMotorise"]:
+                    transport_category = "TransportNonMotorise"
+                
                 transport = {
                     'nom': result.get('nom', {}).get('value', 'N/A'),
                     'type': result.get('type', {}).get('value', 'N/A'),
+                    'category': transport_category,  # EcoTransport or TransportNonMotorise
                     'emission': result.get('emission', {}).get('value', 'N/A'),
                     'empreinte_uri': result.get('empreinteURI', {}).get('value'),
                     'empreinte_valeur_kg': valeur_co2_kg if valeur_co2_kg else 'N/A',
-                    'empreinte_category': empreinte_category
+                    'empreinte_category': empreinte_category  # Zéro émission, Faible, Moyenne, Élevée
                 }
                 transports.append(transport)
             
@@ -510,8 +517,8 @@ Réponds maintenant de manière CONVERSATIONNELLE UNIQUEMENT (pas de JSON, pas d
         for i, t in enumerate(real_data, 1):
             empreinte_info = ""
             if t.get('empreinte_valeur_kg') and t['empreinte_valeur_kg'] != 'N/A':
-                empreinte_info = f", Empreinte Carbone: {t['empreinte_valeur_kg']} kg CO₂ (Catégorie: {t['empreinte_category']})"
-            data_summary += f"{i}. Nom: {t['nom']}, Type: {t['type']}, Émission CO₂: {t['emission']} g/km{empreinte_info}\n"
+                empreinte_info = f", Empreinte Carbone: {t['empreinte_valeur_kg']} kg CO₂ (Niveau d'impact: {t['empreinte_category']})"
+            data_summary += f"{i}. Nom: {t['nom']}, Catégorie Transport: {t['category']}, Type: {t['type']}, Émission CO₂: {t['emission']} g/km{empreinte_info}\n"
         
         # Create AI prompt with real data
         ai_prompt = f"""Tu es un assistant transport écologique intelligent.
@@ -519,14 +526,20 @@ Réponds maintenant de manière CONVERSATIONNELLE UNIQUEMENT (pas de JSON, pas d
 DONNÉES RÉELLES DE LA BASE DE DONNÉES (NE PAS INVENTER D'AUTRES DONNÉES):
 {data_summary}
 
+VOCABULAIRE IMPORTANT:
+- "Catégorie de transport" ou "Catégorie" = EcoTransport (transports motorisés) OU TransportNonMotorise (sans moteur)
+- "Niveau d'impact" ou "Empreinte carbone" = Zéro émission, Faible, Moyenne, Élevée
+- "Type" = Vélo, Train, Bus, Moto, etc.
+
 QUESTION DE L'UTILISATEUR:
 {question}
 
 INSTRUCTIONS STRICTES:
 1. Utilise UNIQUEMENT les données ci-dessus (noms: {', '.join([t['nom'] for t in real_data])})
 2. N'INVENTE AUCUN autre transport qui n'est pas dans la liste
-3. Réponds de manière conversationnelle, dynamique et naturelle en français
-4. Adapte ta réponse à la question spécifique posée
+3. Si la question parle de "catégories de transport", réponds avec EcoTransport et TransportNonMotorise (PAS Faible/Moyenne/Élevée)
+4. Réponds de manière conversationnelle, dynamique et naturelle en français
+5. Adapte ta réponse à la question spécifique posée
 5. Si la question porte sur un transport spécifique, donne ses détails complets (émission ET empreinte carbone)
 6. Si la question demande une liste, liste tous les transports réels avec leur catégorie d'empreinte
 7. Si la question demande le plus écologique, compare les émissions ET les empreintes carbone
