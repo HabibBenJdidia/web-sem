@@ -7,6 +7,7 @@ from ai import GeminiAgent
 from auth_routes import auth_bp
 from email_service import init_mail
 from routes.energie_renouvelable_routes import energie_bp
+from routes.empreinte_carbone_routes import empreinte_carbone_bp
 import re
 import os
 
@@ -51,6 +52,7 @@ ai_agent = GeminiAgent(manager)
 # Register blueprints
 app.register_blueprint(auth_bp)
 app.register_blueprint(energie_bp, url_prefix='/api/energie')
+app.register_blueprint(empreinte_carbone_bp, url_prefix='/api/empreinte_carbone')
 
 # Helper function to parse SPARQL results into user objects
 def parse_users_from_sparql(results):

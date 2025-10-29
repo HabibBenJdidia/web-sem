@@ -177,6 +177,11 @@ class SPARQLManager:
     # DELETE
     def delete(self, uri):
         """Delete an entity and all its properties"""
+        # First, check if the entity exists
+        existing_entity = self.get_by_uri(uri)
+        if not existing_entity:
+            return {"success": False, "error": "Entity not found"}
+
         query = f"""
         PREFIX eco: <{NAMESPACE}>
         

@@ -10,5 +10,5 @@ class EmpreinteCarbone(BaseModel):
         triples = f"<{self.uri}> a <{NAMESPACE}EmpreinteCarbone> .\n"
         triples += f'<{self.uri}> <{NAMESPACE}id> {self.id} .\n'
         if self.valeur_co2_kg is not None:
-            triples += f'<{self.uri}> <{NAMESPACE}valeurCO2kg> {self.valeur_co2_kg} .\n'
+            triples += f'<{self.uri}> <{NAMESPACE}valeur_co2_kg> \"{self.valeur_co2_kg}\"^^<{NAMESPACE}xsd:float> .\n'
         return triples
