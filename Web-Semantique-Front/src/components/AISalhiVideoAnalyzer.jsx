@@ -183,7 +183,15 @@ export function AISalhiVideoAnalyzer() {
       }
 
       const result = await response.json();
-      setAnalysis(result);
+      
+      // Map API response to expected format
+      const mappedResult = {
+        ...result,
+        vibe: result.vibe_analysis || result.vibe,
+        recommendations: result.event_recommendations || result.recommendations || []
+      };
+      
+      setAnalysis(mappedResult);
 
     } catch (err) {
       setError(`Erreur d'analyse: ${err.message}`);
