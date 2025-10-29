@@ -277,17 +277,21 @@ SELECT (SUM(?co2) as ?total_co2) WHERE {
                 # Check if response contains SPARQL - if yes, execute it
                 response_text = self._process_and_execute_sparql(response.text, message)
                 
+                # Ensure response_text is not None
+                if response_text is None:
+                    response_text = "Désolé, je n'ai pas pu générer une réponse."
+                
                 # Initialize history with first exchange
                 self.chat_history = [
-                    full_prompt,
-                    response_text
+                    str(full_prompt),
+                    str(response_text)
                 ]
             else:
                 # For subsequent messages, add to history
                 self.chat_history.append(f"User: {message}")
                 
-                # Create conversation context
-                conversation = "\n\n".join(self.chat_history)
+                # Create conversation context - ensure all items are strings
+                conversation = "\n\n".join([str(item) for item in self.chat_history if item is not None])
                 
                 # Generate response
                 response = self.client.models.generate_content(
@@ -299,8 +303,12 @@ SELECT (SUM(?co2) as ?total_co2) WHERE {
                 # Check if response contains SPARQL - if yes, execute it
                 response_text = self._process_and_execute_sparql(response.text, message)
                 
+                # Ensure response_text is not None
+                if response_text is None:
+                    response_text = "Désolé, je n'ai pas pu générer une réponse."
+                
                 # Add response to history
-                self.chat_history.append(f"Assistant: {response_text}")
+                self.chat_history.append(f"Assistant: {str(response_text)}")
             
             return response_text
         except Exception as e:
@@ -312,6 +320,10 @@ SELECT (SUM(?co2) as ?total_co2) WHERE {
         Returns the AI response with actual data instead of just the query
         """
         try:
+            # Handle None or empty response
+            if not ai_response:
+                return "Désolé, je n'ai pas pu générer une réponse."
+            
             # Check if response contains SPARQL query
             if '```sparql' in ai_response.lower() or 'PREFIX eco:' in ai_response:
                 # Extract SPARQL query
@@ -322,21 +334,27 @@ SELECT (SUM(?co2) as ?total_co2) WHERE {
                     sparql_query = sparql_query.split('```')[1].split('```')[0].strip()
                 
                 # Execute the query
-                results = self.sparql_manager.execute_query(sparql_query)
-                
-                if results and len(results) > 0:
-                    # Format results in a human-readable way
-                    formatted_response = self._format_query_results(results, user_message)
-                    return formatted_response
-                else:
-                    return "Je n'ai trouvé aucun résultat correspondant à votre question dans la base de connaissances. Voulez-vous reformuler votre question ?"
+                try:
+                    results = self.sparql_manager.execute_query(sparql_query)
+                    
+                    if results and len(results) > 0:
+                        # Format results in a human-readable way
+                        formatted_response = self._format_query_results(results, user_message)
+                        return formatted_response if formatted_response else "Je n'ai pas pu formater les résultats."
+                    else:
+                        return "Je n'ai trouvé aucun résultat correspondant à votre question dans la base de connaissances. Voulez-vous reformuler votre question ?"
+                except Exception as query_error:
+                    print(f"Error executing SPARQL query: {query_error}")
+                    return f"Désolé, j'ai rencontré une erreur lors de l'exécution de la requête. Veuillez reformuler votre question."
             
             # If no SPARQL detected, return original response
             return ai_response
         except Exception as e:
-            print(f"Error executing SPARQL in chat: {e}")
+            print(f"Error processing SPARQL in chat: {e}")
+            import traceback
+            traceback.print_exc()
             # Return original response if query execution fails
-            return ai_response
+            return ai_response if ai_response else "Erreur lors du traitement de votre question."
     
     def _format_query_results(self, results: List[Dict], user_message: str) -> str:
         """
