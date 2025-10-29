@@ -1806,10 +1806,10 @@ def ai_chat():
         message = data.get('message', '')
         
         print(f"[AI Chat] Received message: {message}")
-        
+    
         if not message:
             return jsonify({"error": "Message is required"}), 400
-        
+    
         response = aisalhi_agent.chat_message(message)
         print(f"[AI Chat] Response generated: {len(response)} chars")
         
