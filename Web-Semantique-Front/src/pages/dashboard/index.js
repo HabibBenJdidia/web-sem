@@ -7,3 +7,5 @@ export { default as Transport } from "./transport";
 export { default as Notifications } from "./notifications";
 export { default as Destinations } from "./destinations";
 export { default as Hebergements } from "./hebergements";
+export { Restaurants } from "./restaurants";
+export { Produits } from "./produits";

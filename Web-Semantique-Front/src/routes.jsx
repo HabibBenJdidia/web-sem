@@ -22,6 +22,10 @@ import {
   Hebergements
 } from "@/pages/dashboard";
 
+import { Restaurants } from "@/pages/dashboard/restaurants";
+import { Produits } from "@/pages/dashboard/produits";
+import { AIBSilaPage } from "@/pages/AIBSilaPage";
+
 import { 
   SignIn, 
   SignUp, 
@@ -78,19 +82,19 @@ export const routes = [
         icon: <BuildingStorefrontIcon {...icon} />,
         name: "Restaurants",
         path: "/restaurants",
-        element: <div>Restaurants Dashboard (Coming Soon)</div>,
+        element: <Restaurants />,
       },
       {
         icon: <ShoppingBagIcon {...icon} />,
         name: "Produits Locaux",
         path: "/produits",
-        element: <div>Produits Locaux Dashboard (Coming Soon)</div>,
+        element: <Produits />,
       },
       {
         icon: <MicrophoneIcon {...icon} />,
         name: "AI BSila",
         path: "/ai-bsila",
-        element: <div>AI BSila Assistant (Coming Soon)</div>,
+        element: <AIBSilaPage />,
       },
       {
         icon: <InformationCircleIcon {...icon} />,
