@@ -1475,15 +1475,24 @@ def parse_evenements_from_sparql(results):
 
         # Mapper les propriétés
         if predicate == 'id':
-            evenements_dict[uri]['id'] = int(obj)
+            try:
+                evenements_dict[uri]['id'] = int(float(obj))
+            except (ValueError, TypeError):
+                evenements_dict[uri]['id'] = None
         elif predicate == 'nom':
             evenements_dict[uri]['nom'] = obj
         elif predicate == 'eventDate':
             evenements_dict[uri]['event_date'] = obj
         elif predicate == 'eventDureeHeures':
-            evenements_dict[uri]['event_duree_heures'] = int(obj)
+            try:
+                evenements_dict[uri]['event_duree_heures'] = int(float(obj))
+            except (ValueError, TypeError):
+                evenements_dict[uri]['event_duree_heures'] = None
         elif predicate == 'eventPrix':
-            evenements_dict[uri]['event_prix'] = float(obj)
+            try:
+                evenements_dict[uri]['event_prix'] = float(obj)
+            except (ValueError, TypeError):
+                evenements_dict[uri]['event_prix'] = None
         elif predicate == 'aLieuDans':
             evenements_dict[uri]['a_lieu_dans'] = obj
 
