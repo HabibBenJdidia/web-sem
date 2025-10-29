@@ -57,7 +57,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
           <XMarkIcon strokeWidth={2.5} className="h-5 w-5 text-white" />
         </IconButton>
       </div>
-      <div className="m-4">
+      <div className="m-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 180px)' }}>
         {routes.map(({ layout, title, pages }, key) => {
           // Skip auth pages in sidebar
           if (layout === "auth") return null;

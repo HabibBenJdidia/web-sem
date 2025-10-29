@@ -54,12 +54,7 @@ export const routes = [
         path: "/home",
         element: <Home />,
       },
-      {
-        icon: <UserCircleIcon {...icon} />,
-        name: "Profil",
-        path: "/profile",
-        element: <Profile />,
-      },
+  
       {
         icon: <UsersIcon {...icon} />,
         name: "Utilisateurs",
@@ -108,12 +103,7 @@ export const routes = [
         path: "/reservations",
         element: <Reservations />,
       },
-      {
-        icon: <InformationCircleIcon {...icon} />,
-        name: "Gestion Admin",
-        path: "/notifications",
-        element: <Notifications />,
-      },
+    
       {
         icon: <SparklesIcon {...icon} />,
         name: "Activités",
