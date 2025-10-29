@@ -8,17 +8,21 @@ async function fetchData(url, options = {}) {
   const token = localStorage.getItem('token');
   
   const headers = {
-    'Content-Type': 'application/json',
     ...(token && { 'Authorization': `Bearer ${token}` }),
     ...options.headers
   };
+
+  // Only set Content-Type for non-FormData requests
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   const config = {
     ...options,
     headers
   };
 
-  if (config.body && typeof config.body === 'object') {
+  if (config.body && !(config.body instanceof FormData) && typeof config.body === 'object') {
     config.body = JSON.stringify(config.body);
   }
 
@@ -76,9 +80,21 @@ export const getEmpreinteCarboneById = async (id) => {
  * @returns {Promise<Object>} The created empreinte carbone entry data
  */
 export const createEmpreinteCarbone = async (empreinteCarboneData) => {
-  // Backend only accepts valeur_co2_kg field
+  // Handle FormData for file uploads
+  if (empreinteCarboneData instanceof FormData) {
+    return fetchData(EMPREINTE_CARBONE_BASE_URL, {
+      method: 'POST',
+      body: empreinteCarboneData,
+      // Don't set Content-Type for FormData, let browser set it with boundary
+    });
+  }
+  
+  // Handle JSON data - backend expects all fields
   const backendData = {
-    valeur_co2_kg: empreinteCarboneData.valeur_co2_kg
+    valeur_co2_kg: empreinteCarboneData.valeur_co2_kg,
+    name: empreinteCarboneData.name,
+    description: empreinteCarboneData.description || '',
+    image: empreinteCarboneData.image || ''
   };
   
   return fetchData(EMPREINTE_CARBONE_BASE_URL, {
@@ -94,10 +110,31 @@ export const createEmpreinteCarbone = async (empreinteCarboneData) => {
  * @returns {Promise<Object>} The updated empreinte carbone entry data
  */
 export const updateEmpreinteCarbone = async (id, empreinteCarboneData) => {
-  // Backend only accepts valeur_co2_kg field for updates
-  const backendData = {
-    valeur_co2_kg: empreinteCarboneData.valeur_co2_kg
-  };
+  // Handle FormData for file uploads
+  if (empreinteCarboneData instanceof FormData) {
+    return fetchData(`${EMPREINTE_CARBONE_BASE_URL}/${id}`, {
+      method: 'PUT',
+      body: empreinteCarboneData,
+      // Don't set Content-Type for FormData, let browser set it with boundary
+    });
+  }
+  
+  // Handle JSON data - backend expects all fields that need to be updated
+  const backendData = {};
+  
+  // Only include fields that are provided (partial update support)
+  if (empreinteCarboneData.valeur_co2_kg !== undefined) {
+    backendData.valeur_co2_kg = empreinteCarboneData.valeur_co2_kg;
+  }
+  if (empreinteCarboneData.name !== undefined) {
+    backendData.name = empreinteCarboneData.name;
+  }
+  if (empreinteCarboneData.description !== undefined) {
+    backendData.description = empreinteCarboneData.description;
+  }
+  if (empreinteCarboneData.image !== undefined) {
+    backendData.image = empreinteCarboneData.image;
+  }
   
   return fetchData(`${EMPREINTE_CARBONE_BASE_URL}/${id}`, {
     method: 'PUT',

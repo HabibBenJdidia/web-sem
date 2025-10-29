@@ -8,6 +8,7 @@ from auth_routes import auth_bp
 from email_service import init_mail
 from routes.energie_renouvelable_routes import energie_bp
 from routes.empreinte_carbone_routes import empreinte_carbone_bp
+from werkzeug.exceptions import RequestEntityTooLarge
 import re
 import os
 
@@ -30,6 +31,27 @@ cors.init_app(
     },
     supports_credentials=True
 )
+
+# File upload configuration
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB max file size
+UPLOAD_FOLDER = 'uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Configure Flask to handle multipart/form-data properly
+app.config['WTF_CSRF_ENABLED'] = False  # Disable CSRF for API endpoints
+
+# Serve uploaded files
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    from flask import send_from_directory
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+# Handle file too large error
+@app.errorhandler(RequestEntityTooLarge)
+def handle_file_too_large(e):
+    return jsonify({'error': 'File too large. Maximum size is 5MB.'}), 413
 
 # Handle OPTIONS requests for all routes
 @app.before_request
