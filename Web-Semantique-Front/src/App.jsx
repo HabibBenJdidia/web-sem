@@ -10,6 +10,7 @@ import { ProduitsBrowse } from "@/pages/ProduitsBrowse";
 import { MyReservations } from "@/pages/MyReservations";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { GuestRoute } from "@/components/GuestRoute";
+import { Activities, NaturalZones } from "@/pages/client";
 
 function App() {
   return (
@@ -26,6 +27,11 @@ function App() {
           </ProtectedRoute>
         } 
       />
+      
+      {/* Client Pages - Public Access */}
+      <Route path="/client/activities" element={<Activities />} />
+      <Route path="/client/natural-zones" element={<NaturalZones />} />
+      
       <Route 
         path="/profile" 
         element={
@@ -50,14 +56,7 @@ function App() {
           </ProtectedRoute>
         } 
       />
-      <Route 
-        path="/auth/*" 
-        element={
-          <GuestRoute>
-            <Auth />
-          </GuestRoute>
-        } 
-      />
+      <Route path="/auth/*" element={<Auth />} />
       <Route path="/access-denied" element={<AccessDenied />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

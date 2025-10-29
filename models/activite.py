@@ -13,15 +13,16 @@ class Activite(BaseModel):
     
     def to_sparql_insert(self):
         triples = f"<{self.uri}> a <{NAMESPACE}Activite> .\n"
-        triples += f'<{self.uri}> <{NAMESPACE}id> {self.id} .\n'
+        if self.id is not None:
+            triples += f'<{self.uri}> <{NAMESPACE}id> "{self.id}"^^xsd:integer .\n'
         if self.nom:
             triples += f'<{self.uri}> <{NAMESPACE}nom> "{self.nom}"^^xsd:string .\n'
         if self.difficulte:
             triples += f'<{self.uri}> <{NAMESPACE}difficulte> "{self.difficulte}"^^xsd:string .\n'
-        if self.duree_heures:
-            triples += f'<{self.uri}> <{NAMESPACE}dureeHeures> {self.duree_heures} .\n'
-        if self.prix:
-            triples += f'<{self.uri}> <{NAMESPACE}prix> {self.prix} .\n'
+        if self.duree_heures is not None:
+            triples += f'<{self.uri}> <{NAMESPACE}dureeHeures> "{self.duree_heures}"^^xsd:double .\n'
+        if self.prix is not None:
+            triples += f'<{self.uri}> <{NAMESPACE}prix> "{self.prix}"^^xsd:double .\n'
         if self.est_dans_zone:
             triples += f'<{self.uri}> <{NAMESPACE}estDansZone> <{self.est_dans_zone}> .\n'
         return triples

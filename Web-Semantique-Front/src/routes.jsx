@@ -11,6 +11,8 @@ import {
   ShoppingBagIcon,
   MicrophoneIcon,
   CalendarDaysIcon,
+  MapIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/solid";
 
 import { 
@@ -21,7 +23,9 @@ import {
   Notifications, 
   Destinations,
   Hebergements,
-  Reservations
+  Reservations,
+  ActivitiesAdmin, 
+  ZonesAdmin
 } from "@/pages/dashboard";
 
 import { Restaurants } from "@/pages/dashboard/restaurants";
@@ -109,6 +113,18 @@ export const routes = [
         name: "Gestion Admin",
         path: "/notifications",
         element: <Notifications />,
+      },
+      {
+        icon: <SparklesIcon {...icon} />,
+        name: "activities",
+        path: "/activities",
+        element: <ActivitiesAdmin />,
+      },
+      {
+        icon: <MapIcon {...icon} />,
+        name: "natural zones",
+        path: "/zones",
+        element: <ZonesAdmin />,
       },
     ],
   },

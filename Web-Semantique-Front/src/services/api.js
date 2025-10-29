@@ -78,6 +78,44 @@ class ApiService {
     localStorage.removeItem('user');
   }
 
+  // ==================== PARTICIPATIONS ====================
+
+  async getParticipations() {
+    return this.fetch('/participations');
+  }
+
+  async addParticipation(activityUri) {
+    return this.fetch('/participations', {
+      method: 'POST',
+      body: JSON.stringify({ activity_uri: activityUri }),
+    });
+  }
+
+  async removeParticipation(activityUri) {
+    return this.fetch(`/participations/${encodeURIComponent(activityUri)}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // ==================== VISITS ====================
+
+  async getVisits() {
+    return this.fetch('/visits');
+  }
+
+  async addVisit(zoneUri) {
+    return this.fetch('/visits', {
+      method: 'POST',
+      body: JSON.stringify({ zone_uri: zoneUri }),
+    });
+  }
+
+  async removeVisit(zoneUri) {
+    return this.fetch(`/visits/${encodeURIComponent(zoneUri)}`, {
+      method: 'DELETE',
+    });
+  }
+
   // ==================== TOURISTE ENDPOINTS ====================
 
   /**
@@ -224,6 +262,13 @@ class ApiService {
   }
 
   /**
+   * Get activity by URI
+   */
+  async getActivite(uri) {
+    return this.fetch(`/activite/${encodeURIComponent(uri)}`);
+  }
+
+  /**
    * Get activities by difficulty
    */
   async getActivitesByDifficulty(difficulty) {
@@ -237,6 +282,70 @@ class ApiService {
     return this.fetch('/activite', {
       method: 'POST',
       body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Update activity
+   */
+  async updateActivite(uri, data) {
+    return this.fetch(`/activite/${encodeURIComponent(uri)}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Delete activity
+   */
+  async deleteActivite(uri) {
+    return this.fetch(`/activite/${encodeURIComponent(uri)}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // ==================== ZONE NATURELLE ENDPOINTS ====================
+
+  /**
+   * Get all natural zones
+   */
+  async getZonesNaturelles() {
+    return this.fetch('/zone-naturelle');
+  }
+
+  /**
+   * Get natural zone by URI
+   */
+  async getZoneNaturelle(uri) {
+    return this.fetch(`/zone-naturelle/${encodeURIComponent(uri)}`);
+  }
+
+  /**
+   * Create new natural zone
+   */
+  async createZoneNaturelle(data) {
+    return this.fetch('/zone-naturelle', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Update natural zone
+   */
+  async updateZoneNaturelle(uri, data) {
+    return this.fetch(`/zone-naturelle/${encodeURIComponent(uri)}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Delete natural zone
+   */
+  async deleteZoneNaturelle(uri) {
+    return this.fetch(`/zone-naturelle/${encodeURIComponent(uri)}`, {
+      method: 'DELETE',
     });
   }
 

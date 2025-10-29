@@ -9,7 +9,8 @@ class ZoneNaturelle(BaseModel):
     
     def to_sparql_insert(self):
         triples = f"<{self.uri}> a <{NAMESPACE}ZoneNaturelle> .\n"
-        triples += f'<{self.uri}> <{NAMESPACE}id> {self.id} .\n'
+        if self.id is not None:
+            triples += f'<{self.uri}> <{NAMESPACE}id> "{self.id}"^^xsd:integer .\n'
         if self.nom:
             triples += f'<{self.uri}> <{NAMESPACE}nom> "{self.nom}"^^xsd:string .\n'
         if self.type:

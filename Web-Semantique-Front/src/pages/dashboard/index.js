@@ -10,3 +10,5 @@ export { default as Hebergements } from "./hebergements";
 export { Restaurants } from "./restaurants";
 export { Produits } from "./produits";
 export { default as Reservations } from "./reservations";
+export { ActivitiesAdmin } from "./activities-admin";
+export { ZonesAdmin } from "./zones-admin";
