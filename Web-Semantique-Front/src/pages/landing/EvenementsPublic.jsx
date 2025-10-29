@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from "@/services/api";
+import { useAuth } from "@/context/AuthContext";
 import './landing.css';
 
 export function EvenementsPublic() {
@@ -10,6 +11,8 @@ export function EvenementsPublic() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedVille, setSelectedVille] = useState("all");
   const [filterDate, setFilterDate] = useState("all"); // all, upcoming, past
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchEvenements();
@@ -303,7 +306,10 @@ export function EvenementsPublic() {
                               <span className="text-success small fw-semibold">
                                 ✓ Inscriptions ouvertes
                               </span>
-                              <button className="btn btn-sm btn-primary">
+                              <button 
+                                className="btn btn-sm btn-primary"
+                                onClick={() => handleRegister(evt)}
+                              >
                                 S'inscrire →
                               </button>
                             </>
