@@ -2,8 +2,8 @@ from models.base_model import BaseModel
 from config import NAMESPACE
 
 class Restaurant(BaseModel):
-    def __init__(self, uri=None, nom=None, situe_dans=None, sert=None, **kwargs):
-        super().__init__(uri, **kwargs)
+    def __init__(self, id=None, uri=None, nom=None, situe_dans=None, sert=None, **kwargs):
+        super().__init__(id=id, uri=uri, **kwargs)
         self.nom = nom
         self.situe_dans = situe_dans
         self.sert = sert or []

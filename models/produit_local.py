@@ -2,8 +2,8 @@ from models.base_model import BaseModel
 from config import NAMESPACE
 
 class ProduitLocal(BaseModel):
-    def __init__(self, uri=None, nom=None, saison=None, bio=None, **kwargs):
-        super().__init__(uri, **kwargs)
+    def __init__(self, id=None, uri=None, nom=None, saison=None, bio=None, **kwargs):
+        super().__init__(id=id, uri=uri, **kwargs)
         self.nom = nom
         self.saison = saison
         self.bio = bio
