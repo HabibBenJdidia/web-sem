@@ -375,6 +375,11 @@ Return as JSON array.
                 config=self.generation_config
             )
             
+            # Check if response or response.text is None
+            if not response or not hasattr(response, 'text') or response.text is None:
+                print(f"[AISalhi] Error: Invalid response object: {response}")
+                return [{'error': 'Invalid response from AI model'}]
+            
             print(f"[AISalhi] Recommend activities response: {response.text[:500]}")
             
             # Try to parse JSON response
