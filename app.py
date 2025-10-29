@@ -1925,7 +1925,7 @@ def analyze_video():
         app.logger.info(f"Vidéo sauvegardée: {video_path}, taille: {os.path.getsize(video_path)} bytes")
         
         # Use the AISalhi agent method for video analysis
-        analysis_result = ai_agent.analyze_video_vibe(video_path, user_message)
+        analysis_result = aisalhi_agent.analyze_video_vibe(video_path, user_message)
         
         # Nettoyer le fichier temporaire
         try:
