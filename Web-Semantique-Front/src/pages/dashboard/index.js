@@ -4,3 +4,4 @@ export * from "@/pages/dashboard/tables";
 export * from "@/pages/dashboard/users";
 export * from "@/pages/dashboard/notifications";
 export * from "@/pages/dashboard/Energies";
+export { default as EmpreinteCarbone } from "@/pages/dashboard/EmpreinteCarbone";

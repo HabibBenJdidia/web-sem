@@ -3,9 +3,10 @@ import {
   UserCircleIcon,
   UsersIcon,
   InformationCircleIcon,
-  BoltIcon
+  BoltIcon,
+  ChartBarIcon
 } from "@heroicons/react/24/solid";
-import { Home, Profile, Users, Notifications, Energies } from "@/pages/dashboard";
+import { Home, Profile, Users, Notifications, Energies, EmpreinteCarbone } from "@/pages/dashboard";
 import { SignIn, SignUp, ForgotPassword, ResetPassword, VerifyEmail } from "@/pages/auth";
 
 const icon = {
@@ -45,6 +46,12 @@ export const routes = [
         name: "Énergies",
         path: "/energies",
         element: <Energies />,
+      },
+      {
+        icon: <ChartBarIcon {...icon} />,
+        name: "Empreinte Carbone",
+        path: "/empreinte-carbone",
+        element: <EmpreinteCarbone />,
       },
     ],
   },
