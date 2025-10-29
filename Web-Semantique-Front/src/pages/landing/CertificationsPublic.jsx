@@ -41,9 +41,12 @@ export function CertificationsPublic() {
   const certificationTypes = [...new Set(certifications.map(c => c.type_certification || c.type_certif))].filter(Boolean);
 
   return (
-    <div className="certifications-public-page">
+    <div className="certifications-public-page landing-page">
+      {/* Navbar */}
+      <PublicNavbar />
+      
       {/* Header */}
-      <section className="py-5 bg-gradient-to-br from-green-50 to-blue-50">
+      <section className="py-5 bg-gradient-to-br from-green-50 to-blue-50" style={{ marginTop: '80px' }}>
         <div className="container">
           <div className="row align-items-center">
             <div className="col-12 text-center">
