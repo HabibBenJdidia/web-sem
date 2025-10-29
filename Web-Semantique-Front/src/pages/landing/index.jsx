@@ -1568,5 +1568,3 @@ const handlePaysChange = (pays) => {
 }
 
 export default LandingPage;
-
-export default LandingPage;

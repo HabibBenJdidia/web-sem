@@ -167,14 +167,28 @@ export function ProduitsBrowse() {
           <div className="navbar-collapse">
             <ul className="navbar-nav ms-auto pt-2 pt-lg-0 font-base align-items-lg-center align-items-start">
               <li className="nav-item px-3 px-xl-4">
-                <Link className="nav-link fw-medium" to="/">Home</Link>
+                <a className="nav-link fw-medium" href="/#service">Service</a>
+              </li>
+              <li className="nav-item px-3 px-xl-4">
+                <a className="nav-link fw-medium" href="/#destination">Destination</a>
+              </li>
+              <li className="nav-item px-3 px-xl-4">
+                <Link className="nav-link fw-medium" to="/transport">Transport</Link>
               </li>
               <li className="nav-item px-3 px-xl-4">
                 <Link className="nav-link fw-medium" to="/restaurants">Restaurants</Link>
               </li>
               <li className="nav-item px-3 px-xl-4">
-                <Link className="nav-link fw-medium" to="/produits">Local Products</Link>
+                <Link className="nav-link fw-medium" to="/produits">Produits</Link>
               </li>
+              
+              {user && user.type === 'touriste' && (
+                <li className="nav-item px-3 px-xl-4">
+                  <Link className="nav-link fw-medium" to="/my-reservations">
+                    Mes Réservations
+                  </Link>
+                </li>
+              )}
               
               {!user ? (
                 <>
