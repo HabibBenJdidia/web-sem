@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import ApiService from "@/services/api"; // Adjust the import path based on your project structure
+import "@/components/Navbar.css";
 import "./landing.css";
 
 export function LandingPage() {
   const [openNav, setOpenNav] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
 
   // State for Destination CRUD
@@ -380,7 +381,7 @@ const handlePaysChange = (pays) => {
           >
             <span className="navbar-toggler-icon"></span>
           </button>
-          <div className="navbar-collapse">
+          <div className="navbar-collapse" id="navbarSupportedContent">
             <ul className="navbar-nav ms-auto pt-2 pt-lg-0 font-base align-items-lg-center align-items-start">
               <li className="nav-item px-3 px-xl-4">
                 <a className="nav-link fw-medium" href="#service">
@@ -398,12 +399,21 @@ const handlePaysChange = (pays) => {
                 </a>
               </li>
               <li className="nav-item px-3 px-xl-4">
+                <Link className="nav-link fw-medium" to="/transport">
+                  Transport
+                </Link>
+              </li>
+              <li className="nav-item px-3 px-xl-4">
                 <a className="nav-link fw-medium" href="#testimonial">
                   Testimonial
                 </a>
               </li>
-
-              {!user ? (
+              
+              {loading ? (
+                <li className="nav-item px-3 px-xl-4">
+                  <span className="nav-link fw-medium" style={{ opacity: 0.5 }}>Loading...</span>
+                </li>
+              ) : !user ? (
                 <>
                   <li className="nav-item px-3 px-xl-4">
                     <Link className="nav-link fw-medium" to="/auth/sign-in">
@@ -1178,107 +1188,6 @@ const handlePaysChange = (pays) => {
           </div>
         </section>
 
-        {/* CRUD Section for Destinations */}
-        <section className="pt-5" id="crud-destinations">
-          <div className="container">
-            <div className="mb-7 text-center">
-              <h5 className="text-secondary">Gestion des Destinations</h5>
-              <h3 className="fs-xl-10 fs-lg-8 fs-7 fw-bold font-cursive text-capitalize">
-                Ajouter, Modifier ou Supprimer des Destinations
-              </h3>
-            </div>
-            <div className="row">
-              <div className="col-12 mb-4">
-                <form
-                  onSubmit={createOrUpdateDestination}
-                  className="card p-4 shadow"
-                >
-                  <div className="mb-3">
-                    <label className="form-label">Nom</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={nomDest}
-                      onChange={(e) => setNomDest(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Pays</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={paysDest}
-                      onChange={(e) => setPaysDest(e.target.value)}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Climat</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={climatDest}
-                      onChange={(e) => setClimatDest(e.target.value)}
-                    />
-                  </div>
-                  <button type="submit" className="btn btn-primary">
-                    {editingDestUri ? "Mettre à jour" : "Ajouter"}
-                  </button>
-                  {editingDestUri && (
-                    <button
-                      type="button"
-                      className="btn btn-secondary ms-2"
-                      onClick={() => {
-                        setEditingDestUri(null);
-                        setNomDest("");
-                        setPaysDest("");
-                        setClimatDest("");
-                      }}
-                    >
-                      Annuler
-                    </button>
-                  )}
-                </form>
-              </div>
-              <div className="col-12">
-                <div className="card p-4 shadow">
-                  <h4>Liste des Destinations</h4>
-                  {destinations.length === 0 ? (
-                    <p>Aucune destination trouvée.</p>
-                  ) : (
-                    <ul className="list-group">
-                      {destinations.map((dest) => (
-                        <li
-                          key={dest.uri}
-                          className="list-group-item d-flex justify-content-between align-items-center"
-                        >
-                          <span>
-                            {dest.nom} ({dest.uri}) - Pays: {dest.pays}, Climat:{" "}
-                            {dest.climat}
-                          </span>
-                          <div>
-                            <button
-                              className="btn btn-warning btn-sm me-2"
-                              onClick={() => editDestination(dest.uri)}
-                            >
-                              Modifier
-                            </button>
-                            <button
-                              className="btn btn-danger btn-sm"
-                              onClick={() => deleteDestination(dest.uri)}
-                            >
-                              Supprimer
-                            </button>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* CRUD Section for Hebergements */}
         <section className="pt-5" id="crud-hebergements">

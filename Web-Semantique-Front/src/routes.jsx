@@ -3,18 +3,20 @@ import {
   HomeIcon,
   UserCircleIcon,
   UsersIcon,
+  TruckIcon,
   InformationCircleIcon,
   BuildingOfficeIcon,
-  MapPinIcon, // CORRIGÉ
+  MapPinIcon,
 } from "@heroicons/react/24/solid";
 
 import { 
   Home, 
   Profile, 
   Users, 
+  Transport,
   Notifications, 
-  Destinations,     // AJOUTÉ
-  Hebergements      // AJOUTÉ
+  Destinations,
+  Hebergements
 } from "@/pages/dashboard";
 
 import { 
@@ -52,10 +54,10 @@ export const routes = [
         element: <Users />,
       },
       {
-        icon: <InformationCircleIcon {...icon} />,
-        name: "Gestion Admin",
-        path: "/notifications",
-        element: <Notifications />,
+        icon: <TruckIcon {...icon} />,
+        name: "Transport",
+        path: "/transport",
+        element: <Transport />,
       },
       {
         icon: <MapPinIcon className="h-5 w-5 text-inherit" />,
@@ -68,6 +70,12 @@ export const routes = [
         name: "Hébergements",
         path: "/hebergements",
         element: <Hebergements />,
+      },
+      {
+        icon: <InformationCircleIcon {...icon} />,
+        name: "Gestion Admin",
+        path: "/notifications",
+        element: <Notifications />,
       },
     ],
   },

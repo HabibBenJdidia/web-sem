@@ -66,6 +66,13 @@
   justify-content: flex-end;
 }
 
+/* Force navbar to show on desktop */
+@media (min-width: 992px) {
+  .landing-page .navbar-collapse {
+    display: flex !important;
+  }
+}
+
 .landing-page .navbar-brand {
   display: inline-block !important;
   padding-top: 0.3125rem;

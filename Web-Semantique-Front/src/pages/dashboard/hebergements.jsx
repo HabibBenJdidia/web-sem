@@ -223,10 +223,10 @@ export function Hebergements() {
     setNomHebergement(hebergement.nom || "");
     setType(hebergement.type || "");
     setPrix(hebergement.prix || "");
-    setNbChambres(hebergement.nb_chambres || "");
-    setNiveauEco(hebergement.niveau_eco || "");
+    setNbChambres(hebergement.nbChambres || hebergement.nb_chambres || "");
+    setNiveauEco(hebergement.niveauEco || hebergement.niveau_eco || "");
     setSelectedPays(hebergement.destination?.pays || "");
-    setSelectedDestination(hebergement.situe_dans || "");
+    setSelectedDestination(hebergement.destination?.uri || hebergement.situe_dans || "");
     setEditingHebergementUri(uri);
     setOpenDialog(true);
   };
@@ -344,8 +344,8 @@ export function Hebergements() {
                   <div className="space-y-1 text-sm text-gray-600">
                     <div><strong>Type :</strong> {h.type || "N/A"}</div>
                     <div><strong>Prix :</strong> {h.prix ? `${h.prix}€` : "N/A"}</div>
-                    {h.nb_chambres && <div><strong>Chambres :</strong> {h.nb_chambres}</div>}
-                    <div><strong>Éco :</strong> {h.niveau_eco || "N/A"}</div>
+                    {(h.nbChambres || h.nb_chambres) && <div><strong>Chambres :</strong> {h.nbChambres || h.nb_chambres}</div>}
+                    <div><strong>Éco :</strong> {h.niveauEco || h.niveau_eco || "N/A"}</div>
                     {h.destination && h.destination.nom !== "Destination inconnue" && (
                       <div className="mt-3 p-2 bg-blue-50 rounded flex items-center gap-1 text-blue-800 text-xs">
                         <MapPinIcon className="h-4 w-4" />

@@ -59,6 +59,16 @@
 .navbar .navbar-collapse {
   display: flex !important;
   flex-basis: auto !important;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Force navbar to show on desktop */
+@media (min-width: 992px) {
+  .navbar .navbar-collapse {
+    display: flex !important;
+  }
 }
 
 /* Navigation items */
