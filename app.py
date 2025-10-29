@@ -1900,16 +1900,22 @@ def analyze_video():
         return jsonify({"status": "ok"}), 200
         
     try:
+        print("[VIDEO] Starting video analysis endpoint")
         # Get user message if provided
         user_message = request.form.get('message', '')
+        print(f"[VIDEO] User message: {user_message}")
         
         # Vérifier si un fichier vidéo est présent
         if 'video' not in request.files:
+            print("[VIDEO] Error: No video file in request")
             return jsonify({"error": "Aucun fichier vidéo fourni"}), 400
         
         video_file = request.files['video']
         if video_file.filename == '':
+            print("[VIDEO] Error: Empty filename")
             return jsonify({"error": "Nom de fichier vide"}), 400
+        
+        print(f"[VIDEO] Video filename: {video_file.filename}")
         
         # Créer un répertoire temporaire pour stocker la vidéo
         import tempfile
@@ -1920,12 +1926,18 @@ def analyze_video():
         file_ext = os.path.splitext(video_file.filename)[1] or '.webm'
         video_path = os.path.join(temp_dir, f'recording{file_ext}')
         
+        print(f"[VIDEO] Saving to: {video_path}")
+        
         # Sauvegarder le fichier vidéo temporairement
         video_file.save(video_path)
-        app.logger.info(f"Vidéo sauvegardée: {video_path}, taille: {os.path.getsize(video_path)} bytes")
+        file_size = os.path.getsize(video_path)
+        app.logger.info(f"Vidéo sauvegardée: {video_path}, taille: {file_size} bytes")
+        print(f"[VIDEO] File saved, size: {file_size} bytes")
         
         # Use the AISalhi agent method for video analysis
+        print("[VIDEO] Calling aisalhi_agent.analyze_video_vibe()")
         analysis_result = aisalhi_agent.analyze_video_vibe(video_path, user_message)
+        print(f"[VIDEO] Analysis result type: {type(analysis_result)}")
         
         # Nettoyer le fichier temporaire
         try:
