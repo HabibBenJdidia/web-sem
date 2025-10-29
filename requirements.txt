@@ -8,3 +8,5 @@ google-genai
 PyJWT==2.8.0
 flask-mail==0.9.1
 packaging>=21.0
+gTTS==2.3.2
+elevenlabs==1.11.0

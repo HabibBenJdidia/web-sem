@@ -3,8 +3,8 @@ from flask_cors import CORS
 from Mangage import SPARQLManager
 from models import *
 from config import NAMESPACE
-from ai import AISalhi
-from auth_routes import auth_bp
+from ai import GeminiAgent, AISalhi, AIBSilaAgent
+from auth_routes import auth_bp, token_required
 from email_service import init_mail
 import re
 import os
@@ -34,8 +34,10 @@ CORS(app, resources={
 init_mail(app)
 
 manager = SPARQLManager()
-# Initialize AISalhi - Advanced AI Assistant
-ai_agent = AISalhi(manager)
+# Initialize AI Agents
+ai_agent = GeminiAgent(manager)  # Original AI agent
+aisalhi_agent = AISalhi(manager)  # Advanced AISalhi agent
+bsila_agent = AIBSilaAgent(manager)  # BSila voice assistant
 
 # Register authentication blueprint
 app.register_blueprint(auth_bp)
@@ -108,7 +110,47 @@ def home():
         "documentation": "https://github.com/your-repo/docs"
     })
 
-# Helper function to parse SPARQL results into user objects
+# Helper function to parse SPARQL SELECT results into user objects
+def parse_users_from_query_results(results):
+    """Parse SPARQL SELECT query results into structured user objects (OPTIMIZED)"""
+    users_dict = {}
+    
+    for result in results:
+        user_uri = result.get('user', {}).get('value', '')
+        
+        if user_uri not in users_dict:
+            users_dict[user_uri] = {
+                'uri': user_uri,
+                'nom': None,
+                'email': None,
+                'age': None,
+                'nationalite': None,
+                'type': None
+            }
+        
+        # Get user properties from SELECT columns
+        if result.get('nom'):
+            users_dict[user_uri]['nom'] = result['nom'].get('value')
+        
+        if result.get('email'):
+            users_dict[user_uri]['email'] = result['email'].get('value')
+        
+        if result.get('age'):
+            age_value = result['age'].get('value')
+            users_dict[user_uri]['age'] = age_value
+        
+        if result.get('nationalite'):
+            users_dict[user_uri]['nationalite'] = result['nationalite'].get('value')
+        
+        if result.get('type'):
+            type_uri = result['type'].get('value')
+            # Extract type name from URI (e.g., "http://example.org/eco-tourism#Touriste" -> "Touriste")
+            if '#' in type_uri:
+                users_dict[user_uri]['type'] = type_uri.split('#')[1]
+    
+    return list(users_dict.values())
+
+# Legacy helper function (kept for backward compatibility if needed)
 def parse_users_from_sparql(results):
     """Parse SPARQL triple results into structured user objects (LEGACY)"""
     users_dict = {}

@@ -8,3 +8,8 @@ export * from "@/pages/dashboard/Evenements";
 export * from "@/pages/dashboard/Overview";
 export * from "@/pages/dashboard/AISalhiDashboard";
 export * from "@/pages/dashboard/video-analyzer";
+export * from "@/pages/dashboard/restaurants";
+export * from "@/pages/dashboard/produits";
+export * from "@/pages/dashboard/reservations";
+export * from "@/pages/dashboard/activities-admin";
+export * from "@/pages/dashboard/zones-admin";
