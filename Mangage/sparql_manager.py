@@ -169,12 +169,22 @@ class SPARQLManager:
         return self.execute_update(query)
     
     def update_property(self, uri, property_name, new_value, is_string=True):
-        """Update property with automatic formatting"""
-        if is_string:
-            value_str = f'"{new_value}"^^xsd:string'
+        """Update property with automatic formatting - handles both update and insert"""
+        # Format value based on type
+        if new_value is None:
+            value_str = '""^^xsd:string'
+        elif is_string:
+            # Escape special characters
+            escaped_value = str(new_value).replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n')
+            value_str = f'"{escaped_value}"^^xsd:string'
+        elif isinstance(new_value, float):
+            value_str = f'"{new_value}"^^xsd:float'
+        elif isinstance(new_value, int):
+            value_str = f'"{new_value}"^^xsd:integer'
         else:
-            value_str = str(new_value)
+            value_str = f'"{new_value}"'
         
+        # First, try to delete existing value (if any), then insert new value
         query = f"""
         PREFIX eco: <{NAMESPACE}>
         PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
@@ -182,11 +192,12 @@ class SPARQLManager:
         DELETE {{
             <{uri}> <{NAMESPACE}{property_name}> ?old .
         }}
-        INSERT {{
-            <{uri}> <{NAMESPACE}{property_name}> {value_str} .
-        }}
         WHERE {{
-            <{uri}> <{NAMESPACE}{property_name}> ?old .
+            OPTIONAL {{ <{uri}> <{NAMESPACE}{property_name}> ?old . }}
+        }} ;
+        
+        INSERT DATA {{
+            <{uri}> <{NAMESPACE}{property_name}> {value_str} .
         }}
         """
         return self.execute_update(query)
