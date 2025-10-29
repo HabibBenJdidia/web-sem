@@ -19,6 +19,21 @@ class SPARQLManager:
         except Exception as e:
             return {"error": str(e)}
     
+    def execute_ask(self, query):
+        """Execute SPARQL ASK query - returns True/False"""
+        try:
+            from SPARQLWrapper import JSON as SPARQL_JSON
+            sparql = SPARQLWrapper(FUSEKI_QUERY_ENDPOINT)
+            sparql.setHTTPAuth(BASIC)
+            sparql.setCredentials(FUSEKI_USER, FUSEKI_PASSWORD)
+            sparql.setQuery(query)
+            sparql.setReturnFormat(SPARQL_JSON)
+            results = sparql.query().convert()
+            return results.get('boolean', False)
+        except Exception as e:
+            print(f"Error executing ASK query: {e}")
+            return False
+    
     def execute_update(self, query):
         """Execute SPARQL INSERT/DELETE/UPDATE query using requests directly"""
         try:

@@ -10,6 +10,7 @@ import {
   BuildingStorefrontIcon,
   ShoppingBagIcon,
   MicrophoneIcon,
+  CalendarDaysIcon,
 } from "@heroicons/react/24/solid";
 
 import { 
@@ -19,7 +20,8 @@ import {
   Transport,
   Notifications, 
   Destinations,
-  Hebergements
+  Hebergements,
+  Reservations
 } from "@/pages/dashboard";
 
 import { Restaurants } from "@/pages/dashboard/restaurants";
@@ -95,6 +97,12 @@ export const routes = [
         name: "AI BSila",
         path: "/ai-bsila",
         element: <AIBSilaPage />,
+      },
+      {
+        icon: <CalendarDaysIcon {...icon} />,
+        name: "Réservations",
+        path: "/reservations",
+        element: <Reservations />,
       },
       {
         icon: <InformationCircleIcon {...icon} />,

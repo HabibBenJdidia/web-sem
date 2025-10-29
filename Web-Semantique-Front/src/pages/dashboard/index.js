@@ -9,3 +9,4 @@ export { default as Destinations } from "./destinations";
 export { default as Hebergements } from "./hebergements";
 export { Restaurants } from "./restaurants";
 export { Produits } from "./produits";
+export { default as Reservations } from "./reservations";

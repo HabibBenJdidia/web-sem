@@ -60,7 +60,7 @@ export function Navbar() {
               <Link className="nav-link fw-medium" to="/produits">Produits</Link>
             </li>
             
-            {user && user.type === 'touriste' && (
+            {user && user.type === 'Touriste' && (
               <li className="nav-item px-3 px-xl-4">
                 <Link className="nav-link fw-medium" to="/my-reservations">
                   Mes Réservations

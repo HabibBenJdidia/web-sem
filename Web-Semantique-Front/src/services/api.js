@@ -417,6 +417,40 @@ class ApiService {
       method: 'DELETE',
     });
   }
+
+  // ==================== RESERVATIONS ====================
+  
+  async getAllReservations() {
+    return this.fetch('/reservation-restaurant');
+  }
+
+  async getTouristeReservations(touristeUri) {
+    return this.fetch(`/reservations-restaurant/touriste/${encodeURIComponent(touristeUri)}`);
+  }
+
+  async getReservation(uri) {
+    return this.fetch(`/reservation-restaurant/${encodeURIComponent(uri)}`);
+  }
+
+  async createReservation(data) {
+    return this.fetch('/reservation-restaurant', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateReservationStatus(uri, statut) {
+    return this.fetch(`/reservation-restaurant/${encodeURIComponent(uri)}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ statut }),
+    });
+  }
+
+  async deleteReservation(uri) {
+    return this.fetch(`/reservation-restaurant/${encodeURIComponent(uri)}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 export default new ApiService();

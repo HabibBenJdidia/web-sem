@@ -741,21 +741,56 @@ def get_restaurant(uri):
 @app.route('/restaurant/<path:uri>', methods=['PUT'])
 def update_restaurant(uri):
     """Update a restaurant"""
-    data = request.json
-    updates = {}
-    if 'nom' in data:
-        updates['nom'] = data['nom']
-    if 'situe_dans' in data:
-        updates['situe_dans'] = data['situe_dans']
-    if 'sert' in data:
-        updates['sert'] = data['sert']
-    
-    for key, value in updates.items():
-        result = manager.update_property(uri, key, value, is_string=(key in ['nom']))
-        if result.get('error'):
-            return jsonify(result), 500
-    
-    return jsonify({"message": "Restaurant updated successfully", "uri": uri})
+    try:
+        data = request.json
+        
+        # Build the SPARQL update query
+        delete_triples = []
+        insert_triples = []
+        
+        # Update nom
+        if 'nom' in data:
+            delete_triples.append(f"<{uri}> <{NAMESPACE}nom> ?oldNom .")
+            insert_triples.append(f'<{uri}> <{NAMESPACE}nom> "{data["nom"]}"^^xsd:string .')
+        
+        # Update situe_dans (URI)
+        if 'situe_dans' in data:
+            delete_triples.append(f"<{uri}> <{NAMESPACE}situeDans> ?oldDest .")
+            insert_triples.append(f'<{uri}> <{NAMESPACE}situeDans> <{data["situe_dans"]}> .')
+        
+        # Update sert (list of URIs)
+        if 'sert' in data:
+            delete_triples.append(f"<{uri}> <{NAMESPACE}sert> ?oldProduit .")
+            for produit_uri in data['sert']:
+                if produit_uri:  # Skip empty strings
+                    insert_triples.append(f'<{uri}> <{NAMESPACE}sert> <{produit_uri}> .')
+        
+        # Build and execute the query
+        if delete_triples and insert_triples:
+            query = f"""
+            PREFIX ns: <{NAMESPACE}>
+            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+            
+            DELETE {{
+                {' '.join(delete_triples)}
+            }}
+            INSERT {{
+                {' '.join(insert_triples)}
+            }}
+            WHERE {{
+                OPTIONAL {{ <{uri}> <{NAMESPACE}nom> ?oldNom }}
+                OPTIONAL {{ <{uri}> <{NAMESPACE}situeDans> ?oldDest }}
+                OPTIONAL {{ <{uri}> <{NAMESPACE}sert> ?oldProduit }}
+            }}
+            """
+            result = manager.execute_update(query)
+            
+            if result.get('error'):
+                return jsonify(result), 500
+        
+        return jsonify({"message": "Restaurant updated successfully", "uri": uri})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/restaurant/<path:uri>', methods=['DELETE'])
 def delete_restaurant(uri):
@@ -795,21 +830,55 @@ def get_produit(uri):
 @app.route('/produit/<path:uri>', methods=['PUT'])
 def update_produit(uri):
     """Update a product"""
-    data = request.json
-    updates = {}
-    if 'nom' in data:
-        updates['nom'] = data['nom']
-    if 'saison' in data:
-        updates['saison'] = data['saison']
-    if 'bio' in data:
-        updates['bio'] = data['bio']
-    
-    for key, value in updates.items():
-        result = manager.update_property(uri, key, value, is_string=(key in ['nom', 'saison']))
-        if result.get('error'):
-            return jsonify(result), 500
-    
-    return jsonify({"message": "Product updated successfully", "uri": uri})
+    try:
+        data = request.json
+        
+        # Build the SPARQL update query
+        delete_triples = []
+        insert_triples = []
+        
+        # Update nom
+        if 'nom' in data:
+            delete_triples.append(f"<{uri}> <{NAMESPACE}nom> ?oldNom .")
+            insert_triples.append(f'<{uri}> <{NAMESPACE}nom> "{data["nom"]}"^^xsd:string .')
+        
+        # Update saison
+        if 'saison' in data:
+            delete_triples.append(f"<{uri}> <{NAMESPACE}saison> ?oldSaison .")
+            insert_triples.append(f'<{uri}> <{NAMESPACE}saison> "{data["saison"]}"^^xsd:string .')
+        
+        # Update bio (boolean)
+        if 'bio' in data:
+            delete_triples.append(f"<{uri}> <{NAMESPACE}bio> ?oldBio .")
+            bio_value = "true" if data['bio'] else "false"
+            insert_triples.append(f'<{uri}> <{NAMESPACE}bio> {bio_value} .')
+        
+        # Build and execute the query
+        if delete_triples and insert_triples:
+            query = f"""
+            PREFIX ns: <{NAMESPACE}>
+            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+            
+            DELETE {{
+                {' '.join(delete_triples)}
+            }}
+            INSERT {{
+                {' '.join(insert_triples)}
+            }}
+            WHERE {{
+                OPTIONAL {{ <{uri}> <{NAMESPACE}nom> ?oldNom }}
+                OPTIONAL {{ <{uri}> <{NAMESPACE}saison> ?oldSaison }}
+                OPTIONAL {{ <{uri}> <{NAMESPACE}bio> ?oldBio }}
+            }}
+            """
+            result = manager.execute_update(query)
+            
+            if result.get('error'):
+                return jsonify(result), 500
+        
+        return jsonify({"message": "Product updated successfully", "uri": uri})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/produit/<path:uri>', methods=['DELETE'])
 def delete_produit(uri):
@@ -1056,6 +1125,22 @@ def ai_help():
     })
 
 # ==================== RESERVATION RESTAURANT ROUTES ====================
+
+@app.route('/reservation-restaurant', methods=['GET'])
+def get_all_reservations():
+    """Get all restaurant reservations"""
+    try:
+        query = f"""
+            PREFIX ns: <{NAMESPACE}>
+            SELECT ?s ?p ?o WHERE {{
+                ?s a ns:ReservationRestaurant .
+                ?s ?p ?o .
+            }}
+        """
+        results = manager.execute_query(query)
+        return jsonify(results)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/reservation-restaurant', methods=['POST'])
 def create_reservation_restaurant():

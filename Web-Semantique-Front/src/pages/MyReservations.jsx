@@ -48,8 +48,16 @@ export function MyReservations() {
     try {
       setLoading(true);
       setError(null);
+      
+      if (!user || !user.uri) {
+        setError("User information is incomplete. Please log in again.");
+        setLoading(false);
+        return;
+      }
+      
       const data = await api.getTouristeReservations(user.uri);
-      setReservations(data || []);
+      console.log("Reservations data:", data);
+      setReservations(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error fetching reservations:", err);
       setError("Failed to load reservations. Please try again.");
