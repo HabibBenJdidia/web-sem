@@ -23,4 +23,5 @@ from .zone_naturelle import ZoneNaturelle
 from .evenement import Evenement
 from .festival import Festival
 from .foire import Foire
+from .reservation_restaurant import ReservationRestaurant
 

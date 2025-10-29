@@ -14,6 +14,7 @@ NAMESPACE = "http://example.org/eco-tourism#"
 
 # AI Configuration
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+ELEVENLABS_API_KEY = os.getenv('ELEVENLABS_API_KEY')
 
 # Transport Pricing Configuration (Realistic pricing model)
 TRANSPORT_PRICING = {

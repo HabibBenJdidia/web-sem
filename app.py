@@ -4,6 +4,7 @@ from Mangage import SPARQLManager
 from models import *
 from config import NAMESPACE
 from ai import GeminiAgent
+from ai.aiBSila import AIBSilaAgent
 from auth_routes import auth_bp
 from email_service import init_mail
 import re
@@ -16,8 +17,9 @@ CORS(app)
 init_mail(app)
 
 manager = SPARQLManager()
-# Initialize AI Agent
+# Initialize AI Agents
 ai_agent = GeminiAgent(manager)
+bsila_agent = AIBSilaAgent(manager)
 
 # Register authentication blueprint
 app.register_blueprint(auth_bp)
@@ -968,6 +970,314 @@ def ai_help():
                 }
             }
         }
+    })
+
+# ==================== RESERVATION RESTAURANT ROUTES ====================
+
+@app.route('/reservation-restaurant', methods=['POST'])
+def create_reservation_restaurant():
+    """Create a new restaurant reservation with conflict checking"""
+    try:
+        data = request.json
+        
+        # Required fields validation
+        required_fields = ['touriste', 'restaurant', 'date_reservation', 'heure', 'nombre_personnes']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({"error": f"Missing required field: {field}"}), 400
+        
+        restaurant_uri = data['restaurant']
+        touriste_uri = data['touriste']
+        date_reservation = data['date_reservation']
+        heure = data['heure']
+        nombre_personnes = data['nombre_personnes']
+        
+        # 1. Check if tourist already has a reservation at this time
+        tourist_available = ReservationRestaurant.check_tourist_conflict(
+            manager, 
+            touriste_uri, 
+            date_reservation, 
+            heure
+        )
+        
+        if not tourist_available:
+            return jsonify({
+                "error": "Vous avez déjà une réservation à cette heure",
+                "message": "You already have a reservation at this time"
+            }), 409
+        
+        # 2. Check restaurant capacity
+        capacity_available, current_reserved, max_capacity, capacity_message = ReservationRestaurant.check_restaurant_capacity(
+            manager, 
+            restaurant_uri, 
+            date_reservation, 
+            heure,
+            nombre_personnes
+        )
+        
+        if not capacity_available:
+            return jsonify({
+                "error": "Le restaurant est complet pour ce créneau horaire",
+                "message": capacity_message,
+                "current_reserved": current_reserved,
+                "max_capacity": max_capacity
+            }), 409
+        
+        # Create the reservation
+        reservation = ReservationRestaurant(
+            touriste=touriste_uri,
+            restaurant=restaurant_uri,
+            date_reservation=date_reservation,
+            heure=heure,
+            nombre_personnes=nombre_personnes,
+            statut=data.get('statut', 'en_attente'),
+            notes_speciales=data.get('notes_speciales'),
+            telephone=data.get('telephone'),
+            email=data.get('email')
+        )
+        
+        result = manager.create(reservation)
+        
+        if result.get('error'):
+            return jsonify({"error": result['error']}), 500
+        
+        return jsonify({
+            "message": "Reservation created successfully",
+            "uri": reservation.uri,
+            "statut": "en_attente"
+        }), 201
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/reservation-restaurant/<path:uri>', methods=['GET'])
+def get_reservation_restaurant(uri):
+    """Get reservation details by URI"""
+    try:
+        query = f"""
+            PREFIX ns: <{NAMESPACE}>
+            SELECT ?p ?o WHERE {{
+                <{uri}> ?p ?o .
+            }}
+        """
+        results = manager.execute_query(query)
+        return jsonify(results)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/reservations-restaurant/touriste/<path:touriste_uri>', methods=['GET'])
+def get_touriste_reservations(touriste_uri):
+    """Get all reservations for a tourist"""
+    try:
+        query = f"""
+            PREFIX ns: <{NAMESPACE}>
+            SELECT ?s ?p ?o WHERE {{
+                ?s a ns:ReservationRestaurant .
+                ?s ns:reservePar <{touriste_uri}> .
+                ?s ?p ?o .
+            }}
+        """
+        results = manager.execute_query(query)
+        
+        # Parse results into structured reservations
+        reservations_map = {}
+        for result in results:
+            uri = result.get('s', {}).get('value', '')
+            predicate = result.get('p', {}).get('value', '')
+            obj = result.get('o', {}).get('value', '')
+            
+            if uri not in reservations_map:
+                reservations_map[uri] = {'uri': uri}
+            
+            if '#' in predicate:
+                prop_name = predicate.split('#')[1]
+                reservations_map[uri][prop_name] = obj
+        
+        return jsonify(list(reservations_map.values()))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/reservation-restaurant/<path:uri>/status', methods=['PUT'])
+def update_reservation_status(uri):
+    """Update reservation status"""
+    try:
+        data = request.json
+        new_status = data.get('statut')
+        
+        if not new_status:
+            return jsonify({"error": "Missing 'statut' field"}), 400
+        
+        valid_statuses = ['en_attente', 'confirmee', 'annulee']
+        if new_status not in valid_statuses:
+            return jsonify({"error": f"Invalid status. Must be one of: {valid_statuses}"}), 400
+        
+        result = manager.update_property(uri, 'statut', new_status, is_string=True)
+        
+        if result.get('error'):
+            return jsonify({"error": result['error']}), 500
+        
+        return jsonify({"message": "Reservation status updated", "statut": new_status})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/reservation-restaurant/<path:uri>', methods=['DELETE'])
+def delete_reservation(uri):
+    """Delete a reservation"""
+    try:
+        result = manager.delete(uri)
+        
+        if result.get('error'):
+            return jsonify({"error": result['error']}), 500
+        
+        return jsonify({"message": "Reservation deleted successfully"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ==================== AI BSILA VOICE ASSISTANT ENDPOINTS ====================
+
+@app.route('/ai-bsila/voice-query', methods=['POST'])
+def bsila_voice_query():
+    """AI BSila Voice Query - Main endpoint"""
+    try:
+        data = request.get_json()
+        user_query = data.get('query')
+        
+        if not user_query:
+            return jsonify({"error": "Query is required"}), 400
+        
+        result = bsila_agent.process_voice_query(user_query)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/ai-bsila/speech-to-text', methods=['POST'])
+def bsila_speech_to_text():
+    """Convert audio to text using ElevenLabs"""
+    try:
+        if 'audio' not in request.files:
+            return jsonify({"error": "Audio file is required"}), 400
+        
+        audio_file = request.files['audio']
+        result = bsila_agent.speech_to_text(audio_file)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/ai-bsila/restaurants', methods=['GET'])
+def bsila_get_restaurants():
+    """Get all restaurants with voice response"""
+    try:
+        result = bsila_agent.get_restaurants()
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/ai-bsila/restaurants/eco', methods=['GET'])
+def bsila_get_eco_restaurants():
+    """Get ecological restaurants"""
+    try:
+        result = bsila_agent.get_eco_restaurants()
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/ai-bsila/products', methods=['GET'])
+def bsila_get_products():
+    """Get all local products"""
+    try:
+        result = bsila_agent.get_local_products()
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/ai-bsila/products/bio', methods=['GET'])
+def bsila_get_bio_products():
+    """Get organic products"""
+    try:
+        result = bsila_agent.get_bio_products()
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/ai-bsila/products/season/<season>', methods=['GET'])
+def bsila_get_products_by_season(season):
+    """Get products by season"""
+    try:
+        result = bsila_agent.get_products_by_season(season)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/ai-bsila/restaurant-products', methods=['GET'])
+def bsila_get_restaurant_products():
+    """Get restaurants and their products"""
+    try:
+        restaurant_name = request.args.get('restaurant')
+        result = bsila_agent.get_restaurant_products(restaurant_name)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/ai-bsila/voices', methods=['GET'])
+def bsila_get_voices():
+    """Get list of available voices"""
+    try:
+        result = bsila_agent.get_available_voices()
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/ai-bsila/voice/set', methods=['POST'])
+def bsila_set_voice():
+    """Set the voice for text-to-speech"""
+    try:
+        data = request.get_json()
+        voice_key = data.get('voice_key')
+        
+        if not voice_key:
+            return jsonify({"error": "voice_key is required"}), 400
+        
+        result = bsila_agent.set_voice(voice_key)
+        if result["success"]:
+            return jsonify(result)
+        else:
+            return jsonify(result), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/ai-bsila/reset', methods=['POST'])
+def bsila_reset():
+    """Reset BSila chat session"""
+    try:
+        result = bsila_agent.reset_chat()
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/ai-bsila/help', methods=['GET'])
+def bsila_help():
+    """Get help information about AI BSila"""
+    return jsonify({
+        "name": "AI BSila Voice Assistant",
+        "description": "Assistant vocal intelligent pour restaurants et produits locaux",
+        "endpoints": {
+            "POST /ai-bsila/voice-query": "Requête vocale principale",
+            "POST /ai-bsila/speech-to-text": "Audio vers texte",
+            "GET /ai-bsila/restaurants": "Liste tous les restaurants",
+            "GET /ai-bsila/restaurants/eco": "Restaurants écologiques",
+            "GET /ai-bsila/products": "Tous les produits locaux",
+            "GET /ai-bsila/products/bio": "Produits biologiques",
+            "GET /ai-bsila/products/season/<season>": "Produits par saison",
+            "GET /ai-bsila/restaurant-products": "Produits servis dans un restaurant",
+            "GET /ai-bsila/voices": "Liste des voix disponibles",
+            "POST /ai-bsila/voice/set": "Changer de voix"
+        },
+        "features": [
+            "Assistant vocal avec 60+ voix ElevenLabs",
+            "Recherche par nom, localisation, produit",
+            "Réponses duales (vocal + data)",
+            "Speech-to-text intégré"
+        ]
     })
 
 if __name__ == '__main__':
