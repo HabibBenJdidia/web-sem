@@ -26,13 +26,18 @@ export function CertificationsPublic() {
   };
 
   const filteredCertifications = certifications.filter((cert) => {
-    const matchSearch = cert.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       cert.organisme_certificateur?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchType = selectedType === "all" || cert.type_certification === selectedType;
+    // Support both old schema (label_nom, organisme) and new schema (nom, organisme_certificateur)
+    const nom = cert.nom || cert.label_nom || '';
+    const organisme = cert.organisme_certificateur || cert.organisme || '';
+    const type = cert.type_certification || cert.type_certif || '';
+    
+    const matchSearch = nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                       organisme.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchType = selectedType === "all" || type === selectedType;
     return matchSearch && matchType;
   });
 
-  const certificationTypes = [...new Set(certifications.map(c => c.type_certification))].filter(Boolean);
+  const certificationTypes = [...new Set(certifications.map(c => c.type_certification || c.type_certif))].filter(Boolean);
 
   return (
     <div className="certifications-public-page">
@@ -128,11 +133,11 @@ export function CertificationsPublic() {
                     <div className="card-header bg-success text-white">
                       <div className="d-flex align-items-center justify-content-between">
                         <h5 className="card-title mb-0 fw-bold">
-                           {cert.nom}
+                           {cert.nom || cert.label_nom || 'Certification'}
                         </h5>
-                        {cert.certification_valide && (
+                        {(cert.certification_valide || cert.annee_obtention) && (
                           <span className="badge bg-light text-success">
-                            ✓ Valide
+                            ✓ {cert.annee_obtention ? new Date(cert.annee_obtention).getFullYear() : 'Valide'}
                           </span>
                         )}
                       </div>
@@ -141,10 +146,10 @@ export function CertificationsPublic() {
                     {/* Card Body */}
                     <div className="card-body">
                       {/* Type */}
-                      {cert.type_certification && (
+                      {(cert.type_certification || cert.type_certif) && (
                         <div className="mb-3">
                           <span className="badge bg-success bg-opacity-10 text-success px-3 py-2">
-                            📋 {cert.type_certification}
+                            📋 {cert.type_certification || cert.type_certif}
                           </span>
                         </div>
                       )}
@@ -153,7 +158,7 @@ export function CertificationsPublic() {
                       <div className="mb-3">
                         <h6 className="text-muted mb-1 small">ORGANISME CERTIFICATEUR</h6>
                         <p className="mb-0 fw-semibold">
-                          🏢 {cert.organisme_certificateur || "Non spécifié"}
+                          🏢 {cert.organisme_certificateur || cert.organisme || "Non spécifié"}
                         </p>
                       </div>
 
