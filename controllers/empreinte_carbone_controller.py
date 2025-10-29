@@ -126,8 +126,13 @@ class EmpreinteCarboneController:
             
             empreinte_data = {'uri': uri}
             
+            # Extract ID from URI - handle both patterns
             if 'EmpreinteCarbone_' in uri:
                 empreinte_data['id'] = uri.split('EmpreinteCarbone_')[1]
+            elif 'Empreinte_' in uri:
+                empreinte_data['id'] = uri.split('Empreinte_')[1]
+            elif '#' in uri:
+                empreinte_data['id'] = uri.split('#')[-1]
             
             for binding in results:
                 pred = binding.get('p', {}).get('value')
@@ -136,10 +141,17 @@ class EmpreinteCarboneController:
                     continue
                 prop_name = pred.split('#')[-1] if '#' in pred else pred.split('/')[-1]
                 
-                if prop_name in ['name', 'description', 'image']:
+                # Handle different property names
+                if prop_name in ['valeur_co2_kg', 'valeurCO2kg']:
+                    try:
+                        empreinte_data['valeur_co2_kg'] = float(obj)
+                    except ValueError:
+                        empreinte_data['valeur_co2_kg'] = obj
+                elif prop_name in ['name', 'description', 'image']:
                     empreinte_data[prop_name] = obj
                 elif prop_name != 'type' or 'EmpreinteCarbone' not in obj:
-                    empreinte_data[prop_name] = obj
+                    if prop_name != 'type':
+                        empreinte_data[prop_name] = obj
             
             return jsonify(empreinte_data)
         except Exception as e:

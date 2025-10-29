@@ -26,12 +26,20 @@ def get_empreintes_carbone():
 
 @empreinte_carbone_bp.route('/<id>', methods=['GET'])
 def get_empreinte_carbone(id):
-    uri = f"{NAMESPACE}EmpreinteCarbone_{id}"
+    # Handle both old pattern (Empreinte_xxx) and new pattern (EmpreinteCarbone_xxx)
+    if not id.startswith('http'):
+        uri = f"{NAMESPACE}Empreinte_{id}"
+    else:
+        uri = id
     return controller.get(uri)
 
 @empreinte_carbone_bp.route('/<id>', methods=['PUT'])
 def update_empreinte_carbone(id):
-    uri = f"{NAMESPACE}EmpreinteCarbone_{id}"
+    # Handle both old pattern (Empreinte_xxx) and new pattern (EmpreinteCarbone_xxx)
+    if not id.startswith('http'):
+        uri = f"{NAMESPACE}Empreinte_{id}"
+    else:
+        uri = id
     # Handle both JSON and multipart form data
     if request.files and request.files.get('image'):
         # Handle file upload - pass both form data and image file
@@ -50,5 +58,9 @@ def update_empreinte_carbone(id):
 
 @empreinte_carbone_bp.route('/<id>', methods=['DELETE'])
 def delete_empreinte_carbone(id):
-    uri = f"{NAMESPACE}EmpreinteCarbone_{id}"
+    # Handle both old pattern (Empreinte_xxx) and new pattern (EmpreinteCarbone_xxx)
+    if not id.startswith('http'):
+        uri = f"{NAMESPACE}Empreinte_{id}"
+    else:
+        uri = id
     return controller.delete(uri)
