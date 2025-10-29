@@ -73,6 +73,29 @@ export function EvenementsPublic() {
     return new Date(dateString) >= new Date();
   };
 
+  const handleRegister = (evt) => {
+    if (!user) {
+      // User not logged in, redirect to sign-in
+      alert("Vous devez vous connecter pour vous inscrire à cet événement.");
+      navigate('/auth/sign-in', { 
+        state: { 
+          from: '/public/evenements',
+          message: 'Connectez-vous pour vous inscrire à l\'événement' 
+        } 
+      });
+    } else {
+      // User is logged in, show confirmation
+      const confirmMsg = `Souhaitez-vous vous inscrire à l'événement "${evt.nom}" ?\n\nDate: ${new Date(evt.event_date).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}\nDurée: ${evt.event_duree_heures}h\nPrix: ${evt.event_prix}€`;
+      
+      if (window.confirm(confirmMsg)) {
+        // TODO: Implement actual registration logic with backend
+        alert(`✅ Inscription confirmée !\n\nVous êtes maintenant inscrit à "${evt.nom}".\nVous recevrez un email de confirmation prochainement.`);
+        // In a real implementation, you would call an API endpoint here:
+        // await api.registerToEvent(evt.id, user.uri);
+      }
+    }
+  };
+
   const filteredEvenements = evenements.filter((evt) => {
     const matchSearch = evt.nom?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchVille = selectedVille === "all" || evt.a_lieu_dans === selectedVille;
