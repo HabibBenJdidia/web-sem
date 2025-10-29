@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Dashboard, Auth } from "@/layouts";
-import { LandingPage } from "@/pages/landing";
+import { LandingPage, CertificationsPublic, EvenementsPublic } from "@/pages/landing";
 import { ChangePassword } from "@/pages/ChangePassword";
 import { Profile } from "@/pages/Profile";
 import { AccessDenied } from "@/pages/AccessDenied";
@@ -16,23 +16,12 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route path="/transport" element={<TransportPublic />} />
-      <Route path="/restaurants" element={<RestaurantsBrowse />} />
-      <Route path="/produits" element={<ProduitsBrowse />} />
-      <Route 
-        path="/my-reservations" 
-        element={
-          <ProtectedRoute allowedRoles={["Touriste"]}>
-            <MyReservations />
-          </ProtectedRoute>
-        } 
-      />
       
-      {/* Client Pages - Public Access */}
-      <Route path="/client/activities" element={<Activities />} />
-      <Route path="/client/natural-zones" element={<NaturalZones />} />
-      
-      <Route 
+      {/* Pages publiques (Front-office) */}
+      <Route path="/public/certifications" element={<CertificationsPublic />} />
+        <Route path="/public/evenements" element={<EvenementsPublic />} />
+        
+        <Route 
         path="/profile" 
         element={
           <ProtectedRoute>

@@ -1,132 +1,232 @@
-# 🚀 Quick Start Guide - Activities & Natural Zones
+# 🚀 Guide de Démarrage Rapide
 
-## Step 1: Start Fuseki (if not running)
-```bash
-# Fuseki should be running on http://localhost:3030
-# Dataset name: ecotourism
-```
+## ⚡ Lancement en 3 étapes
 
-## Step 2: Start Backend
-```bash
-cd c:\Users\nourh\OneDrive\Bureau\web_sem\web-sem
+### Étape 1️⃣ : Démarrer le Backend
+```powershell
+# Ouvrir un terminal PowerShell
+cd c:\Users\houss\Desktop\ws\web-sem
+
+# Démarrer Flask
 python app.py
 ```
-✅ Backend running on `http://localhost:8000`
 
-## Step 3: Start Frontend
-```bash
-cd c:\Users\nourh\OneDrive\Bureau\web_sem\web-sem\Web-Semantique-Front
+✅ **Succès** : Vous devriez voir :
+```
+* Running on http://0.0.0.0:8000
+* Running on http://127.0.0.1:8000
+```
+
+### Étape 2️⃣ : Démarrer le Frontend
+```powershell
+# Ouvrir un NOUVEAU terminal PowerShell
+cd c:\Users\houss\Desktop\ws\web-sem\Web-Semantique-Front
+
+# Démarrer Vite
 npm run dev
 ```
-✅ Frontend running on `http://localhost:5173`
 
-## Step 4: Access Your Pages
+✅ **Succès** : Vous devriez voir :
+```
+  VITE v4.5.0  ready in XXX ms
 
-### 🌐 Client Pages (Public - No Login Required)
-1. **Activities Page**: http://localhost:5173/client/activities
-2. **Natural Zones Page**: http://localhost:5173/client/natural-zones
-
-### 🔐 Admin Pages (Guide Login Required)
-1. Login as Guide at: http://localhost:5173/auth/sign-in
-2. Go to Dashboard
-3. Click "Activities" or "Natural Zones" in sidebar
-
-### 🏠 Landing Page
-http://localhost:5173/
-- Scroll to "Activities & Natural Zones" section
-- Click buttons to access client pages
-
-## 📝 Quick Test
-
-### Create a Natural Zone
-1. Go to http://localhost:5173/client/natural-zones
-2. Click "Add Zone"
-3. Enter:
-   - Name: "Parc National Ifrane"
-   - Type: "Parc National"
-4. Click "Create"
-
-### Create an Activity
-1. Go to http://localhost:5173/client/activities
-2. Click "Add Activity"
-3. Enter:
-   - Name: "Mountain Hiking"
-   - Difficulty: "Moyenne"
-   - Duration: 4.5
-   - Price: 45
-   - Zone: Select "Parc National Ifrane"
-4. Click "Create"
-
-## ✅ Verify in Fuseki
-Go to http://localhost:3030/ecotourism/query
-
-Run this query:
-```sparql
-PREFIX eco: <http://example.org/eco-tourism#>
-SELECT * WHERE {
-  ?s a eco:Activite .
-  ?s ?p ?o .
-}
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
 ```
 
-You should see your activity data!
+### Étape 3️⃣ : Tester l'Application
 
-## 🎯 What You Can Do
+1. **Ouvrir le navigateur** : http://localhost:5173
 
-### Client Interface
-- ✅ View all activities/zones
-- ✅ Search by name
-- ✅ Create new items
-- ✅ Edit existing items
-- ✅ Delete items
-- ✅ See relationships (Activity → Zone)
+2. **Se connecter** (ou créer un compte)
 
-### Admin Interface
-- ✅ Table view with all data
-- ✅ Search and filter
-- ✅ Full CRUD operations
-- ✅ Success/Error notifications
-- ✅ Statistics display
+3. **Accéder au Dashboard** :
+   - Cliquez sur "Dashboard" dans le menu
+   - Vous verrez le menu latéral avec les nouvelles options :
+     - ✓ **Certifications** (icône badge vert)
+     - 📅 **Événements** (icône calendrier bleu)
+     - 📊 **Vue d'ensemble** (icône graphique)
 
-## 🔗 API Endpoints
+## 🎯 Test Rapide
 
-### Activities
-- `GET /activite` - Get all
-- `POST /activite` - Create
-- `PUT /activite/<uri>` - Update
-- `DELETE /activite/<uri>` - Delete
+### Test Certifications
 
-### Natural Zones
-- `GET /zone-naturelle` - Get all
-- `POST /zone-naturelle` - Create
-- `PUT /zone-naturelle/<uri>` - Update
-- `DELETE /zone-naturelle/<uri>` - Delete
+1. Cliquez sur **"Certifications"** dans le menu
+2. Cliquez sur **"+ Ajouter"**
+3. Remplissez le formulaire :
+   - Label : `Écolabel Test`
+   - Organisme : `Commission Européenne`
+   - Année : `2024`
+4. Cliquez sur **"Créer"**
+5. ✅ Vous devriez voir une notification de succès
 
-## 🎨 Features Highlights
+### Test Événements
 
-1. **No Static Data** - Everything from Fuseki SPARQL
-2. **Real-time Updates** - Changes reflect immediately
-3. **Beautiful UI** - Material Tailwind components
-4. **Responsive** - Works on all devices
-5. **Search** - Filter by name in real-time
-6. **Relationships** - Link activities to zones
+1. Cliquez sur **"Événements"** dans le menu
+2. Cliquez sur **"+ Ajouter"**
+3. Remplissez le formulaire :
+   - Nom : `Festival Écologique`
+   - Date : Sélectionnez une date future
+   - Durée : `6`
+   - Prix : `50`
+   - Lieu : Sélectionnez une ville
+4. Cliquez sur **"Créer"**
+5. ✅ Vous devriez voir l'événement dans la liste
 
-## 🐛 Common Issues
+### Test Vue d'Ensemble
 
-**Problem**: Can't see data
-- **Solution**: Check Fuseki is running and dataset exists
+1. Cliquez sur **"Vue d'ensemble"** dans le menu
+2. Vous verrez :
+   - 📊 Cartes de statistiques en haut
+   - 📅 Onglets : Événements à venir / Certifications récentes / Analyses
+   - 📈 Graphiques et métriques
 
-**Problem**: CORS error
-- **Solution**: Make sure backend is running on port 8000
+## 🔧 Commandes Utiles
 
-**Problem**: "Cannot connect"
-- **Solution**: Verify both backend and frontend are running
+### Backend
+```powershell
+# Tester les endpoints
+.\test_certifications_evenements.ps1
 
-## 📞 Need Help?
+# Vérifier le health check
+curl http://localhost:8000/health
+```
 
-Check the full documentation in `README_ACTIVITIES_ZONES.md`
+### Frontend
+```powershell
+# Installer les dépendances
+npm install
 
----
+# Démarrer en mode dev
+npm run dev
 
-**Your Module**: Activities (Activités) & Natural Zones (Zones Naturelles)
-**Status**: ✅ Complete and Ready to Use!
+# Build pour production
+npm run build
+```
+
+## 📱 Navigation dans l'Application
+
+```
+🏠 Page d'accueil (/)
+    └─→ 🔐 Connexion (/auth/sign-in)
+            └─→ 📊 Dashboard (/dashboard)
+                    ├─→ 🏠 Home (/dashboard/home)
+                    ├─→ 📊 Vue d'ensemble (/dashboard/overview) ✨ NOUVEAU
+                    ├─→ 👤 Profile (/dashboard/profile)
+                    ├─→ 👥 Users (/dashboard/tables)
+                    ├─→ ✓ Certifications (/dashboard/certifications) ✨ NOUVEAU
+                    ├─→ 📅 Événements (/dashboard/evenements) ✨ NOUVEAU
+                    └─→ 🔔 Notifications (/dashboard/notifications)
+```
+
+## 🎨 Aperçu des Fonctionnalités
+
+### Page Certifications
+- ✅ Tableau avec colonnes : ID, Label, Organisme, Année, Actions
+- 🔍 Recherche en temps réel
+- ➕ Création via modal
+- ✏️ Édition
+- 🗑️ Suppression avec confirmation
+- 🎨 Design vert (écologie)
+
+### Page Événements
+- ✅ Tableau avec : ID, Nom, Date, Durée, Prix, Lieu, Actions
+- 🔍 Recherche par nom
+- 📅 Date picker natif
+- ⏱️ Icônes pour durée et prix
+- 📍 Chips pour les lieux
+- 🎨 Design bleu (événements)
+
+### Vue d'Ensemble
+- 📊 4 cartes de statistiques
+- 📅 Événements à venir (top 5)
+- ✓ Certifications récentes (top 5)
+- 📈 Analyses (organismes, prix)
+- 🎨 Design mixte avec onglets
+
+## ⚠️ Prérequis
+
+### Backend
+- ✅ Python 3.8+
+- ✅ Flask
+- ✅ Flask-CORS
+- ✅ Fuseki server running
+
+### Frontend
+- ✅ Node.js 16+
+- ✅ npm ou yarn
+- ✅ Material Tailwind
+- ✅ Hero Icons
+
+## 🐛 Problèmes Courants
+
+### Backend ne démarre pas
+```powershell
+# Vérifier Python
+python --version
+
+# Installer les dépendances
+pip install -r requirements.txt
+```
+
+### Frontend ne démarre pas
+```powershell
+# Nettoyer et réinstaller
+rm -r node_modules
+rm package-lock.json
+npm install
+```
+
+### Erreur CORS
+```python
+# Dans app.py, vérifiez :
+from flask_cors import CORS
+CORS(app)  # Doit être présent
+```
+
+### Page blanche
+```javascript
+// Ouvrir la console (F12) et vérifier les erreurs
+// Vérifier que l'API est accessible
+fetch('http://localhost:8000/health')
+  .then(r => r.json())
+  .then(console.log)
+```
+
+## 📚 Documentation Complète
+
+Pour plus de détails, consultez :
+- 📖 `INTEGRATION_COMPLETE.md` - Documentation complète
+- 📖 `GUIDE_CERTIFICATIONS_EVENEMENTS.md` - Guide détaillé
+- 📖 `GUIDE_UTILISATION.md` - Guide général de l'API
+
+## ✨ Fonctionnalités Ajoutées
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| API Certifications | CRUD complet | ✅ |
+| API Événements | CRUD complet | ✅ |
+| UI Certifications | Interface moderne | ✅ |
+| UI Événements | Interface moderne | ✅ |
+| Vue d'ensemble | Statistiques & Analytics | ✅ |
+| Toast notifications | Système custom | ✅ |
+| Recherche | Temps réel | ✅ |
+| Validation | Frontend + Backend | ✅ |
+
+## 🎉 C'est Parti !
+
+Vous êtes prêt à utiliser l'application ! 
+
+```powershell
+# Terminal 1 : Backend
+python app.py
+
+# Terminal 2 : Frontend
+cd Web-Semantique-Front
+npm run dev
+
+# Ouvrir le navigateur
+start http://localhost:5173
+```
+
+**Bon développement ! 🚀**

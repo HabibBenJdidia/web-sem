@@ -1,4 +1,4 @@
-from .gemini_agent import GeminiAgent
+from .aisalhi_agent import AISalhi
 
-__all__ = ['GeminiAgent']
+__all__ = ['AISalhi']
 

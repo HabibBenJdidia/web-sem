@@ -467,96 +467,92 @@ class ApiService {
     });
   }
 
-  // ==================== RESTAURANTS ====================
-  
-  async getRestaurants() {
-    return this.fetch('/restaurant');
+  // ==================== CERTIFICATION ECO ENDPOINTS ====================
+
+  /**
+   * Get all certifications
+   */
+  async getCertifications() {
+    return this.fetch('/certification');
   }
 
-  async getRestaurant(uri) {
-    return this.fetch(`/restaurant/${encodeURIComponent(uri)}`);
+  /**
+   * Get certification by ID
+   */
+  async getCertificationById(id) {
+    return this.fetch(`/certification/id/${id}`);
   }
 
-  async createRestaurant(data) {
-    return this.fetch('/restaurant', {
+  /**
+   * Create new certification
+   */
+  async createCertification(data) {
+    return this.fetch('/certification', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async updateRestaurant(uri, data) {
-    return this.fetch(`/restaurant/${encodeURIComponent(uri)}`, {
+  /**
+   * Update certification by ID
+   */
+  async updateCertificationById(id, data) {
+    return this.fetch(`/certification/id/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
-  async deleteRestaurant(uri) {
-    return this.fetch(`/restaurant/${encodeURIComponent(uri)}`, {
+  /**
+   * Delete certification by ID
+   */
+  async deleteCertificationById(id) {
+    return this.fetch(`/certification/id/${id}`, {
       method: 'DELETE',
     });
   }
 
-  // ==================== PRODUITS LOCAUX ====================
-  
-  async getProduits() {
-    return this.fetch('/produit-local');
+  // ==================== EVENEMENT ENDPOINTS ====================
+
+  /**
+   * Get all events
+   */
+  async getEvenements() {
+    return this.fetch('/evenement');
   }
 
-  async getProduit(uri) {
-    return this.fetch(`/produit-local/${encodeURIComponent(uri)}`);
+  /**
+   * Get event by ID
+   */
+  async getEvenementById(id) {
+    return this.fetch(`/evenement/id/${id}`);
   }
 
-  async createProduit(data) {
-    return this.fetch('/produit-local', {
+  /**
+   * Create new event
+   */
+  async createEvenement(data) {
+    return this.fetch('/evenement', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async updateProduit(uri, data) {
-    return this.fetch(`/produit-local/${encodeURIComponent(uri)}`, {
+  /**
+   * Update event by ID
+   */
+  async updateEvenementById(id, data) {
+    return this.fetch(`/evenement/id/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
-  async deleteProduit(uri) {
-    return this.fetch(`/produit-local/${encodeURIComponent(uri)}`, {
-      method: 'DELETE',
-    });
-  }
-
-  // ==================== RESERVATIONS ====================
-  
-  async getAllReservations() {
-    return this.fetch('/reservation-restaurant');
-  }
-
-  async getTouristeReservations(touristeUri) {
-    return this.fetch(`/reservations-restaurant/touriste/${encodeURIComponent(touristeUri)}`);
-  }
-
-  async getReservation(uri) {
-    return this.fetch(`/reservation-restaurant/${encodeURIComponent(uri)}`);
-  }
-
-  async createReservation(data) {
-    return this.fetch('/reservation-restaurant', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updateReservationStatus(uri, statut) {
-    return this.fetch(`/reservation-restaurant/${encodeURIComponent(uri)}/status`, {
-      method: 'PUT',
-      body: JSON.stringify({ statut }),
-    });
-  }
-
-  async deleteReservation(uri) {
-    return this.fetch(`/reservation-restaurant/${encodeURIComponent(uri)}`, {
+  /**
+   * Delete event by ID
+   */
+  async deleteEvenementById(id) {
+    return this.fetch(`/evenement/id/${id}`, {
       method: 'DELETE',
     });
   }

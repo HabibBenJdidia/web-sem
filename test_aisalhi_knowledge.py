@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Test Gemini's Complete Knowledge of the System
+Test AISalhi's Complete Knowledge of the System
 """
 import requests
 import json
@@ -9,7 +9,7 @@ import json
 base = "http://localhost:8000"
 
 print("="*70)
-print("TESTING GEMINI'S COMPLETE KNOWLEDGE OF ECO-TOURISM SYSTEM")
+print("TESTING AISALHI'S COMPLETE KNOWLEDGE OF ECO-TOURISM SYSTEM")
 print("="*70)
 
 # Test 1: Ask about all available classes
@@ -98,12 +98,12 @@ response = r.json()
 print(f"Response:\n{response['response'][:500]}...")
 
 print("\n" + "="*70)
-print("[SUCCESS] GEMINI KNOWLEDGE TEST COMPLETED!")
+print("[SUCCESS] AISALHI KNOWLEDGE TEST COMPLETED!")
 print("="*70)
-print("\nGemini now has COMPLETE knowledge of:")
+print("\nAISalhi now has COMPLETE knowledge of:")
 print("  - All 25+ entity classes (base and specialized)")
 print("  - All properties (data and object properties)")
-print("  - All relationships between entities")
+print("  - All relationships between entities)")
 print("  - All CRUD endpoints (POST, GET, PUT, DELETE)")
 print("  - All search functions")
 print("  - SPARQL query generation")

@@ -1,0 +1,627 @@
+{
+	"info": {
+		"_postman_id": "eco-tourism-evenement-cert-v2",
+		"name": "Eco-Tourism - Evenement & CertificationEco API",
+		"description": "Collection Postman complète pour tester les endpoints CRUD des entités Evenement et CertificationEco. IMPORTANT: Les URIs contenant # doivent être encodées en URL (%23).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Evenement",
+			"item": [
+				{
+					"name": "1. CREATE Evenement",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nom\": \"Festival Eco-Nature\",\n  \"event_date\": \"2024-06-15\",\n  \"event_duree_heures\": 8,\n  \"event_prix\": 50.0,\n  \"a_lieu_dans\": \"http://example.org/eco-tourism#Ville_Tunis\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/evenement",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"evenement"
+							]
+						},
+						"description": "Créer un nouvel événement. Retourne l'URI de l'événement créé."
+					},
+					"response": []
+				},
+				{
+					"name": "2. GET All Evenements",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/evenement",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"evenement"
+							]
+						},
+						"description": "Récupérer tous les événements"
+					},
+					"response": []
+				},
+				{
+					"name": "3. GET Evenement by URI",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/evenement/http%3A%2F%2Fexample.org%2Feco-tourism%23Evenement_1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"evenement",
+								"http%3A%2F%2Fexample.org%2Feco-tourism%23Evenement_1"
+							]
+						},
+						"description": "Récupérer un événement spécifique par son URI ENCODÉE. L'URI doit être encodée en URL (# devient %23, : devient %3A, / devient %2F). Utilisez la variable {{evenement_uri_encoded}} pour automatiser."
+					},
+					"response": []
+				},
+				{
+					"name": "4. UPDATE Evenement",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nom\": \"Grand Festival Eco-Nature 2024\",\n  \"event_date\": \"2024-06-20\",\n  \"event_duree_heures\": 12,\n  \"event_prix\": 75.0,\n  \"a_lieu_dans\": \"http://example.org/eco-tourism#Ville_Tunis\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/evenement/http%3A%2F%2Fexample.org%2Feco-tourism%23Evenement_1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"evenement",
+								"http%3A%2F%2Fexample.org%2Feco-tourism%23Evenement_1"
+							]
+						},
+						"description": "Mettre à jour un événement existant. L'URI doit être encodée. Utilisez {{evenement_uri_encoded}} pour automatiser."
+					},
+					"response": []
+				},
+				{
+					"name": "5. DELETE Evenement",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/evenement/http%3A%2F%2Fexample.org%2Feco-tourism%23Evenement_1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"evenement",
+								"http%3A%2F%2Fexample.org%2Feco-tourism%23Evenement_1"
+							]
+						},
+						"description": "Supprimer un événement. L'URI doit être encodée. Utilisez {{evenement_uri_encoded}} pour automatiser."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints CRUD pour l'entité Evenement"
+		},
+		{
+			"name": "CertificationEco",
+			"item": [
+				{
+					"name": "1. CREATE CertificationEco",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"label_nom\": \"Green Key\",\n  \"organisme\": \"Foundation for Environmental Education\",\n  \"annee_obtention\": \"2024-01-15\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/certification",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"certification"
+							]
+						},
+						"description": "Créer une nouvelle certification écologique. Retourne l'URI de la certification créée."
+					},
+					"response": []
+				},
+				{
+					"name": "2. GET All CertificationEco",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/certification",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"certification"
+							]
+						},
+						"description": "Récupérer toutes les certifications écologiques"
+					},
+					"response": []
+				},
+				{
+					"name": "3. GET CertificationEco by URI",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/certification/http%3A%2F%2Fexample.org%2Feco-tourism%23CertificationEco_1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"certification",
+								"http%3A%2F%2Fexample.org%2Feco-tourism%23CertificationEco_1"
+							]
+						},
+						"description": "Récupérer une certification spécifique par son URI ENCODÉE. L'URI doit être encodée en URL. Utilisez {{certification_uri_encoded}} pour automatiser."
+					},
+					"response": []
+				},
+				{
+					"name": "4. UPDATE CertificationEco",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"label_nom\": \"Green Key Premium\",\n  \"organisme\": \"FEE International\",\n  \"annee_obtention\": \"2024-03-20\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/certification/http%3A%2F%2Fexample.org%2Feco-tourism%23CertificationEco_1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"certification",
+								"http%3A%2F%2Fexample.org%2Feco-tourism%23CertificationEco_1"
+							]
+						},
+						"description": "Mettre à jour une certification existante. L'URI doit être encodée. Utilisez {{certification_uri_encoded}} pour automatiser."
+					},
+					"response": []
+				},
+				{
+					"name": "5. DELETE CertificationEco",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/certification/http%3A%2F%2Fexample.org%2Feco-tourism%23CertificationEco_1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"certification",
+								"http%3A%2F%2Fexample.org%2Feco-tourism%23CertificationEco_1"
+							]
+						},
+						"description": "Supprimer une certification. L'URI doit être encodée. Utilisez {{certification_uri_encoded}} pour automatiser."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints CRUD pour l'entité CertificationEco"
+		},
+		{
+			"name": "Exemples Complets",
+			"item": [
+				{
+					"name": "Scénario Evenement Complet",
+					"item": [
+						{
+							"name": "1. Créer Evenement Test",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Sauvegarder l'URI pour les requêtes suivantes",
+											"var jsonData = pm.response.json();",
+											"if (jsonData.uri) {",
+											"    pm.collectionVariables.set(\"evenement_uri\", jsonData.uri);",
+											"    pm.test(\"Evenement créé avec succès\", function () {",
+											"        pm.expect(jsonData.success).to.be.true;",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"nom\": \"Journee Mondiale de l'Environnement\",\n  \"event_date\": \"2024-06-05\",\n  \"event_duree_heures\": 6,\n  \"event_prix\": 0,\n  \"a_lieu_dans\": \"http://example.org/eco-tourism#Ville_Tunis\"\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8000/evenement",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"evenement"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2. Lire Evenement",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Encoder l'URI avant l'envoi",
+											"const uri = pm.collectionVariables.get(\"evenement_uri\");",
+											"if (uri) {",
+											"    const encodedUri = encodeURIComponent(uri);",
+											"    pm.collectionVariables.set(\"evenement_uri_encoded\", encodedUri);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8000/evenement/{{evenement_uri_encoded}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"evenement",
+										"{{evenement_uri_encoded}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "3. Modifier Evenement",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Encoder l'URI avant l'envoi",
+											"const uri = pm.collectionVariables.get(\"evenement_uri\");",
+											"if (uri) {",
+											"    const encodedUri = encodeURIComponent(uri);",
+											"    pm.collectionVariables.set(\"evenement_uri_encoded\", encodedUri);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"nom\": \"Grande Journee de l'Environnement 2024\",\n  \"event_date\": \"2024-06-05\",\n  \"event_duree_heures\": 10,\n  \"event_prix\": 10,\n  \"a_lieu_dans\": \"http://example.org/eco-tourism#Ville_Tunis\"\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8000/evenement/{{evenement_uri_encoded}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"evenement",
+										"{{evenement_uri_encoded}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "4. Supprimer Evenement",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Encoder l'URI avant l'envoi",
+											"const uri = pm.collectionVariables.get(\"evenement_uri\");",
+											"if (uri) {",
+											"    const encodedUri = encodeURIComponent(uri);",
+											"    pm.collectionVariables.set(\"evenement_uri_encoded\", encodedUri);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8000/evenement/{{evenement_uri_encoded}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"evenement",
+										"{{evenement_uri_encoded}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Scénario Certification Complet",
+					"item": [
+						{
+							"name": "1. Créer Certification Test",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Sauvegarder l'URI pour les requêtes suivantes",
+											"var jsonData = pm.response.json();",
+											"if (jsonData.uri) {",
+											"    pm.collectionVariables.set(\"certification_uri\", jsonData.uri);",
+											"    pm.test(\"Certification créée avec succès\", function () {",
+											"        pm.expect(jsonData.success).to.be.true;",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"label_nom\": \"Ecolabel Europeen\",\n  \"organisme\": \"Commission Europeenne\",\n  \"annee_obtention\": \"2024-02-10\"\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8000/certification",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"certification"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2. Lire Certification",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Encoder l'URI avant l'envoi",
+											"const uri = pm.collectionVariables.get(\"certification_uri\");",
+											"if (uri) {",
+											"    const encodedUri = encodeURIComponent(uri);",
+											"    pm.collectionVariables.set(\"certification_uri_encoded\", encodedUri);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8000/certification/{{certification_uri_encoded}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"certification",
+										"{{certification_uri_encoded}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "3. Modifier Certification",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Encoder l'URI avant l'envoi",
+											"const uri = pm.collectionVariables.get(\"certification_uri\");",
+											"if (uri) {",
+											"    const encodedUri = encodeURIComponent(uri);",
+											"    pm.collectionVariables.set(\"certification_uri_encoded\", encodedUri);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"label_nom\": \"Ecolabel Europeen Premium\",\n  \"organisme\": \"Commission Europeenne - DG ENV\",\n  \"annee_obtention\": \"2024-05-15\"\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8000/certification/{{certification_uri_encoded}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"certification",
+										"{{certification_uri_encoded}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "4. Supprimer Certification",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Encoder l'URI avant l'envoi",
+											"const uri = pm.collectionVariables.get(\"certification_uri\");",
+											"if (uri) {",
+											"    const encodedUri = encodeURIComponent(uri);",
+											"    pm.collectionVariables.set(\"certification_uri_encoded\", encodedUri);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8000/certification/{{certification_uri_encoded}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"certification",
+										"{{certification_uri_encoded}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "evenement_uri",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "evenement_uri_encoded",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "certification_uri",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "certification_uri_encoded",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

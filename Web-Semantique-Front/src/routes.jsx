@@ -5,40 +5,16 @@ import {
   UsersIcon,
   TruckIcon,
   InformationCircleIcon,
-  BuildingOfficeIcon,
-  MapPinIcon,
-  BuildingStorefrontIcon,
-  ShoppingBagIcon,
-  MicrophoneIcon,
+  CheckBadgeIcon,
   CalendarDaysIcon,
-  MapIcon,
+  ChartBarIcon,
   SparklesIcon,
+  VideoCameraIcon,
 } from "@heroicons/react/24/solid";
-
-import { 
-  Home, 
-  Profile, 
-  Users, 
-  Transport,
-  Notifications, 
-  Destinations,
-  Hebergements,
-  Reservations,
-  ActivitiesAdmin, 
-  ZonesAdmin
-} from "@/pages/dashboard";
-
-import { Restaurants } from "@/pages/dashboard/restaurants";
-import { Produits } from "@/pages/dashboard/produits";
-import { AIBSilaPage } from "@/pages/AIBSilaPage";
-
-import { 
-  SignIn, 
-  SignUp, 
-  ForgotPassword, 
-  ResetPassword, 
-  VerifyEmail 
-} from "@/pages/auth";
+import { Home, Profile, Users, Notifications, Certifications, Evenements, Overview, AISalhiDashboard } from "@/pages/dashboard";
+import { VideoAnalyzer } from "@/pages/dashboard/video-analyzer";
+import { SignIn, SignUp, ForgotPassword, ResetPassword, VerifyEmail } from "@/pages/auth";
+import { CertificationsPublic, EvenementsPublic } from "@/pages/landing";
 
 const icon = {
   className: "w-5 h-5 text-inherit",
@@ -54,7 +30,30 @@ export const routes = [
         path: "/home",
         element: <Home />,
       },
-  
+      {
+        icon: <ChartBarIcon {...icon} />,
+        name: "vue d'ensemble",
+        path: "/overview",
+        element: <Overview />,
+      },
+      {
+        icon: <SparklesIcon {...icon} />,
+        name: "AISalhi",
+        path: "/aisalhi",
+        element: <AISalhiDashboard />,
+      },
+      {
+        icon: <VideoCameraIcon {...icon} />,
+        name: "Analyse Vidéo",
+        path: "/video-analyzer",
+        element: <VideoAnalyzer />,
+      },
+      {
+        icon: <UserCircleIcon {...icon} />,
+        name: "profile",
+        path: "/profile",
+        element: <Profile />,
+      },
       {
         icon: <UsersIcon {...icon} />,
         name: "Utilisateurs",
@@ -62,59 +61,22 @@ export const routes = [
         element: <Users />,
       },
       {
-        icon: <TruckIcon {...icon} />,
-        name: "Transport",
-        path: "/transport",
-        element: <Transport />,
-      },
-      {
-        icon: <MapPinIcon className="h-5 w-5 text-inherit" />,
-        name: "Destinations",
-        path: "/destinations",
-        element: <Destinations />,
-      },
-      {
-        icon: <BuildingOfficeIcon className="h-5 w-5 text-inherit" />,
-        name: "Hébergements",
-        path: "/hebergements",
-        element: <Hebergements />,
-      },
-      {
-        icon: <BuildingStorefrontIcon {...icon} />,
-        name: "Restaurants",
-        path: "/restaurants",
-        element: <Restaurants />,
-      },
-      {
-        icon: <ShoppingBagIcon {...icon} />,
-        name: "Produits Locaux",
-        path: "/produits",
-        element: <Produits />,
-      },
-      {
-        icon: <MicrophoneIcon {...icon} />,
-        name: "AI BSila",
-        path: "/ai-bsila",
-        element: <AIBSilaPage />,
+        icon: <CheckBadgeIcon {...icon} />,
+        name: "certifications",
+        path: "/certifications",
+        element: <Certifications />,
       },
       {
         icon: <CalendarDaysIcon {...icon} />,
-        name: "Réservations",
-        path: "/reservations",
-        element: <Reservations />,
-      },
-    
-      {
-        icon: <SparklesIcon {...icon} />,
-        name: "Activités",
-        path: "/activities",
-        element: <ActivitiesAdmin />,
+        name: "événements",
+        path: "/evenements",
+        element: <Evenements />,
       },
       {
-        icon: <MapIcon {...icon} />,
-        name: "Zones Naturelles",
-        path: "/zones",
-        element: <ZonesAdmin />,
+        icon: <InformationCircleIcon {...icon} />,
+        name: "notifications",
+        path: "/notifications",
+        element: <Notifications />,
       },
     ],
   },
@@ -127,6 +89,24 @@ export const routes = [
       { name: "Mot de passe oublié", path: "/forgot-password", element: <ForgotPassword /> },
       { name: "Réinitialiser mot de passe", path: "/reset-password", element: <ResetPassword /> },
       { name: "Vérifier email", path: "/verify-email", element: <VerifyEmail /> },
+    ],
+  },
+  {
+    title: "public pages",
+    layout: "public",
+    pages: [
+      {
+        icon: <CheckBadgeIcon {...icon} />,
+        name: "certifications",
+        path: "/certifications",
+        element: <CertificationsPublic />,
+      },
+      {
+        icon: <CalendarDaysIcon {...icon} />,
+        name: "événements",
+        path: "/evenements",
+        element: <EvenementsPublic />,
+      },
     ],
   },
 ];

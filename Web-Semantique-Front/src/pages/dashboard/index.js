@@ -1,14 +1,10 @@
-// src/pages/dashboard/index.js
-export { default as Home } from "./home";
-export { default as Profile } from "./profile";
-export { default as Users } from "./users";
-export { default as Tables } from "./tables";
-export { default as Transport } from "./transport";
-export { default as Notifications } from "./notifications";
-export { default as Destinations } from "./destinations";
-export { default as Hebergements } from "./hebergements";
-export { Restaurants } from "./restaurants";
-export { Produits } from "./produits";
-export { default as Reservations } from "./reservations";
-export { ActivitiesAdmin } from "./activities-admin";
-export { ZonesAdmin } from "./zones-admin";
+export * from "@/pages/dashboard/home";
+export * from "@/pages/dashboard/profile";
+export * from "@/pages/dashboard/tables";
+export * from "@/pages/dashboard/users";
+export * from "@/pages/dashboard/notifications";
+export * from "@/pages/dashboard/Certifications";
+export * from "@/pages/dashboard/Evenements";
+export * from "@/pages/dashboard/Overview";
+export * from "@/pages/dashboard/AISalhiDashboard";
+export * from "@/pages/dashboard/video-analyzer";

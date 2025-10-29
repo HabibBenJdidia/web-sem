@@ -385,9 +385,20 @@ const handlePaysChange = (pays) => {
           <div className="navbar-collapse" id="navbarSupportedContent">
             <ul className="navbar-nav ms-auto pt-2 pt-lg-0 font-base align-items-lg-center align-items-start">
               <li className="nav-item px-3 px-xl-4">
-                <a className="nav-link fw-medium" href="#service">
-                  Service
-                </a>
+                <a className="nav-link fw-medium" href="#service">Service</a>
+              </li>
+              <li className="nav-item px-3 px-xl-4">
+                <a className="nav-link fw-medium" href="#destination">Destination</a>
+              </li>
+              <li className="nav-item px-3 px-xl-4">
+                <Link className="nav-link fw-medium" to="/public/certifications"> Certifications</Link>
+              </li>
+              <li className="nav-item px-3 px-xl-4">
+                <Link className="nav-link fw-medium" to="/public/evenements">Événements</Link>
+              </li>
+
+              <li className="nav-item px-3 px-xl-4">
+                <a className="nav-link fw-medium" href="#booking">Booking</a>
               </li>
               
               {/* Discover Dropdown */}
@@ -1663,3 +1674,7 @@ const handlePaysChange = (pays) => {
 }
 
 export default LandingPage;
+
+// Export des pages publiques
+export { default as CertificationsPublic } from './CertificationsPublic';
+export { default as EvenementsPublic } from './EvenementsPublic';
