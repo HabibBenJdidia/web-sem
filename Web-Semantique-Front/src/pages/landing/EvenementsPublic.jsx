@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
+import { PublicNavbar } from "@/components/PublicNavbar";
 import './landing.css';
 
 export function EvenementsPublic() {
@@ -113,9 +114,12 @@ export function EvenementsPublic() {
   const upcomingEvents = evenements.filter(e => isUpcoming(e.event_date));
 
   return (
-    <div className="evenements-public-page">
+    <div className="evenements-public-page landing-page">
+      {/* Navbar */}
+      <PublicNavbar />
+      
       {/* Hero Section */}
-      <section className="py-5 bg-gradient-to-br from-blue-50 to-indigo-50">
+      <section className="py-5 bg-gradient-to-br from-blue-50 to-indigo-50" style={{ marginTop: '80px' }}>
         <div className="container">
           <div className="row align-items-center">
             <div className="col-12 text-center">
