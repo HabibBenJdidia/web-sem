@@ -116,13 +116,13 @@ export const routes = [
       },
       {
         icon: <SparklesIcon {...icon} />,
-        name: "activities",
+        name: "Activités",
         path: "/activities",
         element: <ActivitiesAdmin />,
       },
       {
         icon: <MapIcon {...icon} />,
-        name: "natural zones",
+        name: "Zones Naturelles",
         path: "/zones",
         element: <ZonesAdmin />,
       },
