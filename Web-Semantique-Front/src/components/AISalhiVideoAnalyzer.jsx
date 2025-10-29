@@ -338,21 +338,82 @@ export function AISalhiVideoAnalyzer() {
             {/* Detected Vibe */}
             {analysis.vibe && (
               <div className="bg-purple-50 p-4 rounded-lg">
-                <Typography variant="h6" color="purple" className="mb-2">
+                <Typography variant="h6" color="purple" className="mb-3">
                   🎭 Ambiance Détectée
                 </Typography>
-                <div className="flex flex-wrap gap-2">
-                  {analysis.vibe.emotions?.map((emotion, idx) => (
-                    <Chip key={idx} value={emotion} color="purple" size="sm" />
-                  ))}
-                  {analysis.vibe.keywords?.map((keyword, idx) => (
-                    <Chip key={idx} value={keyword} color="blue" size="sm" variant="outlined" />
-                  ))}
+                
+                {/* Mood and Energy */}
+                <div className="mb-3">
+                  {analysis.vibe.mood && (
+                    <Chip value={`Ambiance: ${analysis.vibe.mood}`} color="purple" size="sm" className="mr-2 mb-2" />
+                  )}
+                  {analysis.vibe.energy_level && (
+                    <Chip value={`Énergie: ${analysis.vibe.energy_level}`} color="deep-purple" size="sm" className="mb-2" />
+                  )}
                 </div>
-                {analysis.vibe.description && (
-                  <Typography className="mt-2 text-sm">
-                    {analysis.vibe.description}
-                  </Typography>
+                
+                {/* Visual Description */}
+                {analysis.vibe.visual_description && (
+                  <div className="mb-3 p-3 bg-white rounded border border-purple-200">
+                    <Typography variant="small" className="font-bold text-purple-700 mb-1">
+                      👁️ Description Visuelle
+                    </Typography>
+                    <Typography className="text-sm text-gray-700">
+                      {analysis.vibe.visual_description}
+                    </Typography>
+                  </div>
+                )}
+                
+                {/* Audio Description */}
+                {analysis.vibe.audio_description && (
+                  <div className="mb-3 p-3 bg-white rounded border border-purple-200">
+                    <Typography variant="small" className="font-bold text-purple-700 mb-1">
+                      🔊 Description Audio
+                    </Typography>
+                    <Typography className="text-sm text-gray-700">
+                      {analysis.vibe.audio_description}
+                    </Typography>
+                  </div>
+                )}
+                
+                {/* Atmosphere */}
+                {analysis.vibe.atmosphere && (
+                  <div className="mb-3 p-3 bg-white rounded border border-purple-200">
+                    <Typography variant="small" className="font-bold text-purple-700 mb-1">
+                      🌟 Atmosphère
+                    </Typography>
+                    <Typography className="text-sm text-gray-700">
+                      {analysis.vibe.atmosphere}
+                    </Typography>
+                  </div>
+                )}
+                
+                {/* Keywords */}
+                {analysis.vibe.keywords && analysis.vibe.keywords.length > 0 && (
+                  <div>
+                    <Typography variant="small" className="font-bold text-purple-700 mb-2 block">
+                      🏷️ Mots-clés détectés
+                    </Typography>
+                    <div className="flex flex-wrap gap-2">
+                      {analysis.vibe.keywords.map((keyword, idx) => (
+                        <Chip key={idx} value={keyword} color="blue" size="sm" variant="outlined" />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Emotions */}
+                {analysis.vibe.emotions && analysis.vibe.emotions.length > 0 && (
+                  <div className="mt-3">
+                    <Typography variant="small" className="font-bold text-purple-700 mb-2 block">
+                      😊 Émotions détectées
+                    </Typography>
+                    <div className="flex flex-wrap gap-2">
+                      {analysis.vibe.emotions.map((emotion, idx) => (
+                        <Chip key={idx} value={emotion} color="purple" size="sm" />
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             )}
