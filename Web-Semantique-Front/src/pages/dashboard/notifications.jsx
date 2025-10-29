@@ -1,86 +1,46 @@
+// src/components/Notifications.jsx
 import React from "react";
 import {
-  Typography,
   Alert,
-  Card,
-  CardHeader,
-  CardBody,
+  Typography,
 } from "@material-tailwind/react";
-import { InformationCircleIcon } from "@heroicons/react/24/outline";
+import { 
+  CheckCircleIcon, 
+  XCircleIcon, 
+  ExclamationTriangleIcon, 
+  InformationCircleIcon 
+} from "@heroicons/react/24/outline";
 
-export function Notifications() {
-  const [showAlerts, setShowAlerts] = React.useState({
-    blue: true,
-    green: true,
-    orange: true,
-    red: true,
-  });
-  const [showAlertsWithIcon, setShowAlertsWithIcon] = React.useState({
-    blue: true,
-    green: true,
-    orange: true,
-    red: true,
-  });
-  const alerts = ["gray", "green", "orange", "red"];
+const iconMap = {
+  green: <CheckCircleIcon className="h-6 w-6" />,
+  red: <XCircleIcon className="h-6 w-6" />,
+  orange: <ExclamationTriangleIcon className="h-6 w-6" />,
+  blue: <InformationCircleIcon className="h-6 w-6" />,
+};
+
+export function Notifications({ alerts = [], onDismiss }) {
+  if (alerts.length === 0) return null;
 
   return (
-    <div className="mx-auto my-20 flex max-w-screen-lg flex-col gap-8">
-      <Card>
-        <CardHeader
-          color="transparent"
-          floated={false}
-          shadow={false}
-          className="m-0 p-4"
+    <div className="fixed top-4 right-4 z-[9999] space-y-3 max-w-sm">
+      {alerts.map((alert) => (
+        <Alert
+          key={alert.id}
+          open={alert.open}
+          color={alert.color}
+          onClose={() => onDismiss(alert.id)}
+          icon={iconMap[alert.color] || iconMap.blue}
+          className="shadow-xl animate-slide-in-right"
+          animate={{
+            mount: { y: 0, opacity: 1 },
+            unmount: { y: -100, opacity: 0 },
+          }}
         >
-          <Typography variant="h5" color="blue-gray">
-            Alerts
+          <Typography variant="small" className="font-medium">
+            {alert.message}
           </Typography>
-        </CardHeader>
-        <CardBody className="flex flex-col gap-4 p-4">
-          {alerts.map((color) => (
-            <Alert
-              key={color}
-              open={showAlerts[color]}
-              color={color}
-              onClose={() => setShowAlerts((current) => ({ ...current, [color]: false }))}
-            >
-              A simple {color} alert with an <a href="#">example link</a>. Give
-              it a click if you like.
-            </Alert>
-          ))}
-        </CardBody>
-      </Card>
-      <Card>
-        <CardHeader
-          color="transparent"
-          floated={false}
-          shadow={false}
-          className="m-0 p-4"
-        >
-          <Typography variant="h5" color="blue-gray">
-            Alerts with Icon
-          </Typography>
-        </CardHeader>
-        <CardBody className="flex flex-col gap-4 p-4">
-          {alerts.map((color) => (
-            <Alert
-              key={color}
-              open={showAlertsWithIcon[color]}
-              color={color}
-              icon={
-                <InformationCircleIcon strokeWidth={2} className="h-6 w-6" />
-              }
-              onClose={() => setShowAlertsWithIcon((current) => ({
-                ...current,
-                [color]: false,
-              }))}
-            >
-              A simple {color} alert with an <a href="#">example link</a>. Give
-              it a click if you like.
-            </Alert>
-          ))}
-        </CardBody>
-      </Card>
+        </Alert>
+      ))}
     </div>
   );
 }

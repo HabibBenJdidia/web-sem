@@ -22,49 +22,9 @@ ai_agent = GeminiAgent(manager)
 # Register authentication blueprint
 app.register_blueprint(auth_bp)
 
-# Helper function to parse SPARQL SELECT results into user objects
-def parse_users_from_query_results(results):
-    """Parse SPARQL SELECT query results into structured user objects (OPTIMIZED)"""
-    users_dict = {}
-    
-    for result in results:
-        user_uri = result.get('user', {}).get('value', '')
-        
-        if user_uri not in users_dict:
-            users_dict[user_uri] = {
-                'uri': user_uri,
-                'nom': None,
-                'email': None,
-                'age': None,
-                'nationalite': None,
-                'type': None
-            }
-        
-        # Get user properties from SELECT columns
-        if result.get('nom'):
-            users_dict[user_uri]['nom'] = result['nom'].get('value')
-        
-        if result.get('email'):
-            users_dict[user_uri]['email'] = result['email'].get('value')
-        
-        if result.get('age'):
-            age_value = result['age'].get('value')
-            users_dict[user_uri]['age'] = age_value
-        
-        if result.get('nationalite'):
-            users_dict[user_uri]['nationalite'] = result['nationalite'].get('value')
-        
-        if result.get('type'):
-            type_uri = result['type'].get('value')
-            # Extract type name from URI (e.g., "http://example.org/eco-tourism#Touriste" -> "Touriste")
-            if '#' in type_uri:
-                users_dict[user_uri]['type'] = type_uri.split('#')[1]
-    
-    return list(users_dict.values())
-
-# Legacy helper function (kept for backward compatibility if needed)
+# Helper function to parse SPARQL results into user objects
 def parse_users_from_sparql(results):
-    """Parse SPARQL triple results into structured user objects (LEGACY)"""
+    """Parse SPARQL triple results into structured user objects"""
     users_dict = {}
     
     for result in results:
@@ -79,7 +39,7 @@ def parse_users_from_sparql(results):
         if '#' in predicate:
             prop_name = predicate.split('#')[1]
             
-            if prop_name == 'type' and 'eco-tourism#' in obj:
+            if prop_name == 'type' and f'{NAMESPACE}' in obj:
                 users_dict[uri]['type'] = obj.split('#')[1]
             elif prop_name in ['nom', 'email', 'age', 'nationalite']:
                 users_dict[uri][prop_name] = obj
@@ -102,133 +62,62 @@ def clean_uri_name(name):
     cleaned = re.sub(r'_+', '_', cleaned)
     return cleaned
 
-def parse_transports_from_query_results(results):
-    """Parse SPARQL SELECT query results into structured transport objects with empreinte data"""
-    from models.empreinte_carbone import EmpreinteCarbone
+# Helper function to parse joined Hebergement and Destination data
+def parse_hebergements_with_destinations(hebergement_results):
+    hebergement_dict = {}
+    destination_dict = {}
     
-    transports_dict = {}
-    
-    for result in results:
-        transport_uri = result.get('transport', {}).get('value', '')
+    for result in hebergement_results:
+        s = result.get('s', {}).get('value', '')
+        p = result.get('p', {}).get('value', '')
+        o = result.get('o', {}).get('value', '')
         
-        if transport_uri not in transports_dict:
-            transports_dict[transport_uri] = {
-                'uri': transport_uri,
-                'nom': None,
-                'type': None,
-                'emission_co2_per_km': None,
-                'empreinte': None
-            }
-        
-        # Get transport properties
-        if result.get('nom'):
-            transports_dict[transport_uri]['nom'] = result['nom'].get('value')
-        
-        if result.get('type'):
-            transports_dict[transport_uri]['type'] = result['type'].get('value')
-        
-        if result.get('emission'):
-            emission_value = result['emission'].get('value')
-            transports_dict[transport_uri]['emission_co2_per_km'] = float(emission_value) if emission_value else 0.0
-        
-        # Get empreinte data if present
-        if result.get('empreinteURI') and result.get('valeurCO2kg'):
-            empreinte_uri = result['empreinteURI'].get('value')
-            valeur_co2_kg_str = result['valeurCO2kg'].get('value')
-            valeur_co2_kg = float(valeur_co2_kg_str) if valeur_co2_kg_str else 0.0
-            
-            transports_dict[transport_uri]['empreinte'] = {
-                'uri': empreinte_uri,
-                'valeur_co2_kg': valeur_co2_kg,
-                'is_faible': valeur_co2_kg <= 1.0,
-                'category': EmpreinteCarbone.get_category(valeur_co2_kg),
-                'category_color': EmpreinteCarbone.get_category_color(valeur_co2_kg)
-            }
+        if s.startswith(f'{NAMESPACE}Hebergement'):
+            if s not in hebergement_dict:
+                hebergement_dict[s] = {'uri': s}
+            prop_name = p.split('#')[1]
+            if prop_name in ['nom', 'type', 'prix', 'nbChambres', 'niveauEco', 'id']:
+                hebergement_dict[s][prop_name] = o
+            elif prop_name == 'situeDans':
+                hebergement_dict[s]['destinationUri'] = o
+        elif s.startswith(f'{NAMESPACE}Destination'):
+            if s not in destination_dict:
+                destination_dict[s] = {'uri': s}
+            prop_name = p.split('#')[1]
+            if prop_name in ['nom', 'pays', 'climat', 'id']:
+                destination_dict[s][prop_name] = o
     
-    return list(transports_dict.values())
-
-def parse_transports_from_sparql(results):
-    """Parse SPARQL triple results into structured transport objects with empreinte data (legacy)"""
-    from models.empreinte_carbone import EmpreinteCarbone
+    # Join the data
+    joined_results = []
+    for h in hebergement_dict.values():
+        dest_uri = h.get('destinationUri')
+        if dest_uri and dest_uri in destination_dict:
+            h['destination'] = destination_dict[dest_uri]
+        joined_results.append(h)
     
-    transports_dict = {}
-    empreintes_dict = {}
-    
-    for result in results:
-        uri = result.get('s', {}).get('value', '')
-        predicate = result.get('p', {}).get('value', '')
-        obj = result.get('o', {}).get('value', '')
-        
-        # Extract property name from URI
-        if '#' in predicate:
-            prop_name = predicate.split('#')[1]
-            
-            # Check if this is an EmpreinteCarbone entity
-            if 'Empreinte_' in uri:
-                if uri not in empreintes_dict:
-                    empreintes_dict[uri] = {'uri': uri}
-                
-                if prop_name == 'valeurCO2kg':
-                    empreintes_dict[uri]['valeur_co2_kg'] = float(obj) if obj else 0.0
-                elif prop_name == 'type' and 'EmpreinteCarboneFaible' in obj:
-                    empreintes_dict[uri]['is_faible'] = True
-            else:
-                # This is a Transport entity
-                if uri not in transports_dict:
-                    transports_dict[uri] = {'uri': uri}
-                
-                # Get the type property value (stored as string in RDF)
-                if prop_name == 'type':
-                    transports_dict[uri]['type'] = obj
-                elif prop_name in ['nom', 'emissionCO2PerKm', 'aEmpreinte']:
-                    if prop_name == 'emissionCO2PerKm':
-                        transports_dict[uri]['emission_co2_per_km'] = float(obj) if obj else 0.0
-                    elif prop_name == 'aEmpreinte':
-                        transports_dict[uri]['a_empreinte'] = obj
-                    else:
-                        transports_dict[uri][prop_name] = obj
-    
-    # Enrich transports with empreinte data
-    for transport in transports_dict.values():
-        if transport.get('a_empreinte') and transport['a_empreinte'] in empreintes_dict:
-            empreinte_data = empreintes_dict[transport['a_empreinte']]
-            transport['empreinte'] = {
-                'uri': empreinte_data.get('uri'),
-                'valeur_co2_kg': empreinte_data.get('valeur_co2_kg', 0.0),
-                'is_faible': empreinte_data.get('is_faible', False),
-                'category': EmpreinteCarbone.get_category(empreinte_data.get('valeur_co2_kg')),
-                'category_color': EmpreinteCarbone.get_category_color(empreinte_data.get('valeur_co2_kg'))
-            }
-    
-    return list(transports_dict.values())
+    return joined_results
 
 # USERS MANAGEMENT ENDPOINT
 @app.route('/users', methods=['GET'])
 def get_all_users():
-    """Get all users (Touristes and Guides) in a structured format - OPTIMIZED"""
+    """Get all users (Touristes and Guides) in a structured format"""
     try:
-        # Custom SPARQL query to get both Touristes and Guides in ONE query
-        query = f"""
-        PREFIX eco: <{NAMESPACE}>
-        SELECT ?user ?nom ?email ?age ?nationalite ?type WHERE {{
-            ?user a ?type .
-            FILTER (?type = eco:Touriste || ?type = eco:Guide)
-            OPTIONAL {{ ?user eco:nom ?nom . }}
-            OPTIONAL {{ ?user eco:email ?email . }}
-            OPTIONAL {{ ?user eco:age ?age . }}
-            OPTIONAL {{ ?user eco:nationalite ?nationalite . }}
-        }}
-        """
+        # Get all tourists
+        touriste_results = manager.get_all('Touriste')
+        # Get all guides
+        guide_results = manager.get_all('Guide')
         
-        results = manager.execute_query(query)
-        users = parse_users_from_query_results(results)
+        # Combine results
+        all_results = touriste_results + guide_results
+        
+        # Parse into structured format
+        users = parse_users_from_sparql(all_results)
         
         return jsonify({
             'users': users,
             'total': len(users)
         })
     except Exception as e:
-        print(f"Error in get_all_users: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 # TOURISTE
@@ -296,15 +185,6 @@ def get_guide(uri):
     result = manager.get_by_uri(uri)
     return jsonify(result)
 
-@app.route('/guide/<path:uri>', methods=['PUT'])
-def update_guide(uri):
-    data = request.json
-    results = []
-    for key, value in data.items():
-        result = manager.update_property(uri, key, value, isinstance(value, str))
-        results.append(result)
-    return jsonify({"updates": results})
-
 @app.route('/guide/<path:uri>', methods=['DELETE'])
 def delete_guide(uri):
     result = manager.delete(uri)
@@ -313,25 +193,48 @@ def delete_guide(uri):
 # DESTINATION
 @app.route('/destination', methods=['POST'])
 def create_destination():
+    """Create a new Destination"""
     data = request.json
-    dest = Destination(
-        uri=f"{NAMESPACE}Destination_{clean_uri_name(data.get('nom'))}",
-        nom=data.get('nom'),
-        pays=data.get('pays'),
-        climat=data.get('climat')
-    )
+    if not data or not data.get('nom'):
+        return jsonify({"error": "Nom is required"}), 400
+    
+    dest = Destination(nom=data.get('nom'), pays=data.get('pays'), climat=data.get('climat'))
     result = manager.create(dest)
-    return jsonify(result)
+    return jsonify(result), 201
 
-@app.route('/destination', methods=['GET'])
+@app.route('/destination/<path:uri>', methods=['GET'])
+def get_destination(uri):
+    """Read a Destination by URI"""
+    result = manager.get_by_uri(uri)
+    if not result:
+        return jsonify({"error": "Destination not found"}), 404
+    return jsonify(result), 200
+
+@app.route('/destinations', methods=['GET'])
 def get_all_destinations():
+    """Read all Destinations"""
     result = manager.get_all('Destination')
-    return jsonify(result)
+    return jsonify(result), 200
+
+@app.route('/destination/<path:uri>', methods=['PUT'])
+def update_destination(uri):
+    """Update a Destination by URI"""
+    data = request.json
+    if not data:
+        return jsonify({"error": "Data required for update"}), 400
+    
+    updates = []
+    for key, value in data.items():
+        if key in ['nom', 'pays', 'climat']:
+            result = manager.update_property(uri, key, value, isinstance(value, str))
+            updates.append(result)
+    return jsonify({"updates": updates}), 200
 
 @app.route('/destination/<path:uri>', methods=['DELETE'])
 def delete_destination(uri):
+    """Delete a Destination by URI"""
     result = manager.delete(uri)
-    return jsonify(result)
+    return jsonify(result), 200
 
 # VILLE
 @app.route('/ville', methods=['POST'])
@@ -354,7 +257,11 @@ def get_all_villes():
 # HEBERGEMENT
 @app.route('/hebergement', methods=['POST'])
 def create_hebergement():
+    """Create a new Hebergement"""
     data = request.json
+    if not data or not data.get('nom'):
+        return jsonify({"error": "Nom is required"}), 400
+    
     heb = Hebergement(
         uri=f"{NAMESPACE}Hebergement_{clean_uri_name(data.get('nom'))}",
         nom=data.get('nom'),
@@ -362,21 +269,125 @@ def create_hebergement():
         prix=data.get('prix'),
         nb_chambres=data.get('nb_chambres'),
         niveau_eco=data.get('niveau_eco'),
-        situe_dans=data.get('situe_dans'),
+        situe_dans=data.get('situe_dans'),  # Link to Destination URI
         utilise_energie=data.get('utilise_energie')
     )
     result = manager.create(heb)
-    return jsonify(result)
+    return jsonify(result), 201
 
-@app.route('/hebergement', methods=['GET'])
+@app.route('/hebergement/<path:uri>', methods=['GET'])
+def get_hebergement(uri):
+    """Read a Hebergement by URI"""
+    result = manager.get_by_uri(uri)
+    if not result:
+        return jsonify({"error": "Hebergement not found"}), 404
+    return jsonify(result), 200
+
+@app.route('/hebergements', methods=['GET'])
 def get_all_hebergements():
-    result = manager.get_all('Hebergement')
-    return jsonify(result)
+    """Read all Hebergements with joined Destination data"""
+    try:
+        print("=" * 70)
+        print("GET /hebergements endpoint called")
+        
+        # Simple query to get all hebergements with their destinations
+        query = f"""
+            PREFIX eco: <{NAMESPACE}>
+            
+            SELECT ?hebUri ?hebNom ?hebType ?hebPrix ?hebChambres ?hebEco 
+                   ?destUri ?destNom ?destPays ?destClimat
+            WHERE {{
+                ?hebUri a eco:Hebergement .
+                
+                OPTIONAL {{ ?hebUri eco:nom ?hebNom }}
+                OPTIONAL {{ ?hebUri eco:type ?hebType }}
+                OPTIONAL {{ ?hebUri eco:prix ?hebPrix }}
+                OPTIONAL {{ ?hebUri eco:nbChambres ?hebChambres }}
+                OPTIONAL {{ ?hebUri eco:niveauEco ?hebEco }}
+                
+                OPTIONAL {{
+                    ?hebUri eco:situeDans ?destUri .
+                    ?destUri a eco:Destination .
+                    OPTIONAL {{ ?destUri eco:nom ?destNom }}
+                    OPTIONAL {{ ?destUri eco:pays ?destPays }}
+                    OPTIONAL {{ ?destUri eco:climat ?destClimat }}
+                }}
+            }}
+        """
+        
+        print("Executing query...")
+        results = manager.execute_query(query)
+        print(f"Query returned {len(results)} rows")
+        
+        if not results:
+            print("No hebergements found")
+            return jsonify({"status": "success", "data": []}), 200
+        
+        # Group results by hebergement URI
+        hebergements_dict = {}
+        
+        for row in results:
+            heb_uri = row.get('hebUri', {}).get('value', '')
+            
+            if not heb_uri:
+                continue
+            
+            if heb_uri not in hebergements_dict:
+                # Initialize hebergement
+                hebergements_dict[heb_uri] = {
+                    'uri': heb_uri,
+                    'nom': row.get('hebNom', {}).get('value', ''),
+                    'type': row.get('hebType', {}).get('value', ''),
+                    'prix': row.get('hebPrix', {}).get('value', ''),
+                    'nbChambres': row.get('hebChambres', {}).get('value', ''),
+                    'niveauEco': row.get('hebEco', {}).get('value', ''),
+                    'destination': None
+                }
+                
+                # Add destination if exists
+                dest_uri = row.get('destUri', {}).get('value', '')
+                if dest_uri:
+                    hebergements_dict[heb_uri]['destination'] = {
+                        'uri': dest_uri,
+                        'nom': row.get('destNom', {}).get('value', 'Non spécifié'),
+                        'pays': row.get('destPays', {}).get('value', ''),
+                        'climat': row.get('destClimat', {}).get('value', '')
+                    }
+        
+        hebergements_list = list(hebergements_dict.values())
+        
+        print(f"Processed {len(hebergements_list)} hebergements")
+        if hebergements_list:
+            print(f"First hebergement sample: {hebergements_list[0]}")
+        
+        return jsonify({"status": "success", "data": hebergements_list}), 200
+        
+    except Exception as e:
+        print("=" * 70)
+        print(f"ERROR in get_all_hebergements: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        print("=" * 70)
+        return jsonify({"status": "error", "message": str(e)}), 500
+@app.route('/hebergement/<path:uri>', methods=['PUT'])
+def update_hebergement(uri):
+    """Update a Hebergement by URI"""
+    data = request.json
+    if not data:
+        return jsonify({"error": "Data required for update"}), 400
+    
+    updates = []
+    for key, value in data.items():
+        if key in ['nom', 'type', 'prix', 'nb_chambres', 'niveau_eco', 'situe_dans', 'utilise_energie']:
+            result = manager.update_property(uri, key, value, isinstance(value, str))
+            updates.append(result)
+    return jsonify({"updates": updates}), 200
 
 @app.route('/hebergement/<path:uri>', methods=['DELETE'])
 def delete_hebergement(uri):
+    """Delete a Hebergement by URI"""
     result = manager.delete(uri)
-    return jsonify(result)
+    return jsonify(result), 200
 
 # ACTIVITE
 @app.route('/activite', methods=['POST'])
@@ -418,126 +429,13 @@ def create_transport():
 
 @app.route('/transport', methods=['GET'])
 def get_all_transports():
-    """Get all transports in a structured format with empreinte data"""
-    try:
-        # Custom SPARQL query to get transports WITH empreinte data
-        query = f"""
-        PREFIX eco: <{NAMESPACE}>
-        SELECT ?transport ?nom ?type ?emission ?empreinteURI ?valeurCO2kg WHERE {{
-            ?transport a eco:Transport .
-            OPTIONAL {{ ?transport eco:nom ?nom . }}
-            OPTIONAL {{ ?transport eco:type ?type . }}
-            OPTIONAL {{ ?transport eco:emissionCO2PerKm ?emission . }}
-            OPTIONAL {{ 
-                ?transport eco:aEmpreinte ?empreinteURI .
-                ?empreinteURI eco:valeurCO2kg ?valeurCO2kg .
-            }}
-        }}
-        """
-        
-        results = manager.execute_query(query)
-        transports = parse_transports_from_query_results(results)
-        
-        # Add pricing info to each transport
-        for transport_data in transports:
-            transport = Transport(
-                uri=transport_data['uri'],
-                nom=transport_data.get('nom'),
-                type_=transport_data.get('type'),
-                emission_co2_per_km=transport_data.get('emission_co2_per_km')
-            )
-            transport_data['price_per_km'] = transport.get_price_per_km()
-        
-        return jsonify({
-            'transports': transports,
-            'total': len(transports)
-        })
-    except Exception as e:
-        print(f"Error in get_all_transports: {str(e)}")
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/transport/<path:uri>', methods=['PUT'])
-def update_transport(uri):
-    data = request.json
-    # Delete existing entity
-    manager.delete(uri)
-    # Create updated entity
-    trans = Transport(
-        uri=uri,
-        nom=data.get('nom'),
-        type_=data.get('type'),
-        emission_co2_per_km=data.get('emission_co2_per_km')
-    )
-    result = manager.create(trans)
+    result = manager.get_all('Transport')
     return jsonify(result)
 
 @app.route('/transport/<path:uri>', methods=['DELETE'])
 def delete_transport(uri):
     result = manager.delete(uri)
     return jsonify(result)
-
-@app.route('/transport/calculate-price', methods=['POST'])
-def calculate_transport_price():
-    """
-    Calculate trip price for a transport
-    Request body: { "transport_type": "Train", "emission_co2_per_km": 30, "distance_km": 100 }
-    """
-    try:
-        data = request.json
-        transport_type = data.get('transport_type')
-        emission_co2 = data.get('emission_co2_per_km', 0)
-        distance = data.get('distance_km', 0)
-        
-        if not transport_type or distance <= 0:
-            return jsonify({'error': 'transport_type and distance_km required'}), 400
-        
-        transport = Transport(type_=transport_type, emission_co2_per_km=emission_co2)
-        price_breakdown = transport.calculate_price(distance)
-        
-        return jsonify({
-            'transport_type': transport_type,
-            'pricing': price_breakdown
-        })
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/transport/compare-prices', methods=['POST'])
-def compare_transport_prices():
-    """
-    Compare prices for multiple transports
-    Request body: { "transports": [{"type": "Train", "emission": 30}, ...], "distance_km": 100 }
-    """
-    try:
-        data = request.json
-        transports_data = data.get('transports', [])
-        distance = data.get('distance_km', 0)
-        
-        if not transports_data or distance <= 0:
-            return jsonify({'error': 'transports array and distance_km required'}), 400
-        
-        comparisons = []
-        for t_data in transports_data:
-            transport = Transport(
-                type_=t_data.get('type'),
-                emission_co2_per_km=t_data.get('emission', 0)
-            )
-            price = transport.calculate_price(distance)
-            comparisons.append({
-                'type': t_data.get('type'),
-                'pricing': price
-            })
-        
-        # Sort by total price
-        comparisons.sort(key=lambda x: x['pricing']['total'])
-        
-        return jsonify({
-            'distance_km': distance,
-            'comparisons': comparisons,
-            'cheapest': comparisons[0] if comparisons else None,
-            'most_expensive': comparisons[-1] if comparisons else None
-        })
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
 
 # RESTAURANT
 @app.route('/restaurant', methods=['POST'])
@@ -674,10 +572,7 @@ def search_events():
 def health():
     return jsonify({"status": "running"})
 
-# ============================================
 # AI AGENT ENDPOINTS
-# ============================================
-
 @app.route('/ai/chat', methods=['POST'])
 def ai_chat():
     """
@@ -788,7 +683,7 @@ def ai_help():
             "sparql": {
                 "url": "/ai/sparql",
                 "body": {
-                    "query": "PREFIX eco: <http://example.org/eco-tourism#>\nSELECT ?tourist ?name WHERE {\n  ?tourist a eco:Touriste .\n  ?tourist eco:nom ?name .\n}"
+                    "query": f"PREFIX {NAMESPACE[:-1]}: <{NAMESPACE}>\nSELECT ?tourist ?name WHERE {{\n  ?tourist a {NAMESPACE}Touriste .\n  ?tourist {NAMESPACE}nom ?name .\n}}"
                 }
             },
             "recommend": {
@@ -805,4 +700,3 @@ def ai_help():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000, debug=True)
-
