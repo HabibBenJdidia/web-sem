@@ -5,8 +5,11 @@ class BaseModel:
     _id_counter = {}
     
     def __init__(self, id=None, uri=None, **kwargs):
-        self.id = id or self._generate_id()
-        self.uri = uri or self.generate_uri()
+        # Generate ID first (always an integer)
+        self.id = id if isinstance(id, int) else self._generate_id()
+        # Generate URI - if uri is provided, use it directly
+        self.uri = uri if uri else self.generate_uri()
+        # Set other attributes
         for key, value in kwargs.items():
             setattr(self, key, value)
     

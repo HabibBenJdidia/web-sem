@@ -35,7 +35,7 @@ def generate_verification_token(email):
         'purpose': 'email_verification',
         'exp': datetime.utcnow() + timedelta(hours=24)  # 24 hours validity
     }
-    token = jwt.encode(payload, os.getenv('GEMINI_API_KEY', 'secret'), algorithm='HS256')
+    token = jwt.encode(payload, os.getenv('JWT_SECRET_KEY', 'secret'), algorithm='HS256')
     return token
 
 def generate_reset_token(email):
@@ -45,13 +45,13 @@ def generate_reset_token(email):
         'purpose': 'password_reset',
         'exp': datetime.utcnow() + timedelta(hours=1)  # 1 hour validity
     }
-    token = jwt.encode(payload, os.getenv('GEMINI_API_KEY', 'secret'), algorithm='HS256')
+    token = jwt.encode(payload, os.getenv('JWT_SECRET_KEY', 'secret'), algorithm='HS256')
     return token
 
 def verify_token(token, purpose='email_verification'):
     """Verify a token and return the email if valid"""
     try:
-        payload = jwt.decode(token, os.getenv('GEMINI_API_KEY', 'secret'), algorithms=['HS256'])
+        payload = jwt.decode(token, os.getenv('JWT_SECRET_KEY', 'secret'), algorithms=['HS256'])
         
         if payload.get('purpose') != purpose:
             return None

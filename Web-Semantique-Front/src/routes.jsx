@@ -3,9 +3,16 @@ import {
   UserCircleIcon,
   UsersIcon,
   InformationCircleIcon,
+  CheckBadgeIcon,
+  CalendarDaysIcon,
+  ChartBarIcon,
+  SparklesIcon,
+  VideoCameraIcon,
 } from "@heroicons/react/24/solid";
-import { Home, Profile, Users, Notifications } from "@/pages/dashboard";
+import { Home, Profile, Users, Notifications, Certifications, Evenements, Overview, AISalhiDashboard } from "@/pages/dashboard";
+import { VideoAnalyzer } from "@/pages/dashboard/video-analyzer";
 import { SignIn, SignUp, ForgotPassword, ResetPassword, VerifyEmail } from "@/pages/auth";
+import { CertificationsPublic, EvenementsPublic } from "@/pages/landing";
 
 const icon = {
   className: "w-5 h-5 text-inherit",
@@ -22,6 +29,24 @@ export const routes = [
         element: <Home />,
       },
       {
+        icon: <ChartBarIcon {...icon} />,
+        name: "vue d'ensemble",
+        path: "/overview",
+        element: <Overview />,
+      },
+      {
+        icon: <SparklesIcon {...icon} />,
+        name: "AISalhi",
+        path: "/aisalhi",
+        element: <AISalhiDashboard />,
+      },
+      {
+        icon: <VideoCameraIcon {...icon} />,
+        name: "Analyse Vidéo",
+        path: "/video-analyzer",
+        element: <VideoAnalyzer />,
+      },
+      {
         icon: <UserCircleIcon {...icon} />,
         name: "profile",
         path: "/profile",
@@ -32,6 +57,18 @@ export const routes = [
         name: "users",
         path: "/tables",
         element: <Users />,
+      },
+      {
+        icon: <CheckBadgeIcon {...icon} />,
+        name: "certifications",
+        path: "/certifications",
+        element: <Certifications />,
+      },
+      {
+        icon: <CalendarDaysIcon {...icon} />,
+        name: "événements",
+        path: "/evenements",
+        element: <Evenements />,
       },
       {
         icon: <InformationCircleIcon {...icon} />,
@@ -74,6 +111,24 @@ export const routes = [
         name: "verify email",
         path: "/verify-email",
         element: <VerifyEmail />,
+      },
+    ],
+  },
+  {
+    title: "public pages",
+    layout: "public",
+    pages: [
+      {
+        icon: <CheckBadgeIcon {...icon} />,
+        name: "certifications",
+        path: "/certifications",
+        element: <CertificationsPublic />,
+      },
+      {
+        icon: <CalendarDaysIcon {...icon} />,
+        name: "événements",
+        path: "/evenements",
+        element: <EvenementsPublic />,
       },
     ],
   },

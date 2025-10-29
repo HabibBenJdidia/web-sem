@@ -3,24 +3,110 @@ from flask_cors import CORS
 from Mangage import SPARQLManager
 from models import *
 from config import NAMESPACE
-from ai import GeminiAgent
+from ai import AISalhi
 from auth_routes import auth_bp
 from email_service import init_mail
 import re
 import os
+import sys
+
+# Force UTF-8 encoding
+if sys.platform == 'win32':
+    import codecs
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
 
 app = Flask(__name__)
-CORS(app)
+app.config['JSON_AS_ASCII'] = False  # Support non-ASCII characters in JSON
+
+# Configuration CORS plus permissive pour le développement
+CORS(app, resources={
+    r"/*": {
+        "origins": ["http://localhost:5173", "http://localhost:5174", "http://127.0.0.1:5173", "http://127.0.0.1:5174"],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True,
+        "max_age": 3600
+    }
+})
 
 # Initialize Flask-Mail
 init_mail(app)
 
 manager = SPARQLManager()
-# Initialize AI Agent
-ai_agent = GeminiAgent(manager)
+# Initialize AISalhi - Advanced AI Assistant
+ai_agent = AISalhi(manager)
 
 # Register authentication blueprint
 app.register_blueprint(auth_bp)
+
+# Root endpoint
+@app.route('/', methods=['GET'])
+def home():
+    return jsonify({
+        "message": "Eco-Tourism API",
+        "version": "1.0.0",
+        "endpoints": {
+            "health": "/health",
+            "auth": {
+                "register": "/auth/register (POST)",
+                "login": "/auth/login (POST)",
+                "profile": "/auth/profile (GET)",
+                "verify-email": "/auth/verify-email (POST)",
+                "forgot-password": "/auth/forgot-password (POST)",
+                "reset-password": "/auth/reset-password (POST)"
+            },
+            "touriste": {
+                "create": "/touriste (POST)",
+                "get_all": "/touriste (GET)",
+                "get_one": "/touriste/<uri> (GET)",
+                "update": "/touriste/<uri> (PUT)",
+                "delete": "/touriste/<uri> (DELETE)"
+            },
+            "guide": "/guide",
+            "destination": "/destination",
+            "ville": "/ville",
+            "hebergement": "/hebergement",
+            "activite": "/activite",
+            "transport": "/transport",
+            "restaurant": "/restaurant",
+            "produit_local": "/produit-local",
+            "certification": {
+                "create": "/certification (POST)",
+                "get_all": "/certification (GET)",
+                "get_by_id": "/certification/id/<id> (GET)",
+                "get_by_uri": "/certification/<uri> (GET)",
+                "update_by_id": "/certification/id/<id> (PUT)",
+                "update_by_uri": "/certification/<uri> (PUT)",
+                "delete_by_id": "/certification/id/<id> (DELETE)",
+                "delete_by_uri": "/certification/<uri> (DELETE)"
+            },
+            "evenement": {
+                "create": "/evenement (POST)",
+                "get_all": "/evenement (GET)",
+                "get_by_id": "/evenement/id/<id> (GET)",
+                "get_by_uri": "/evenement/<uri> (GET)",
+                "update_by_id": "/evenement/id/<id> (PUT)",
+                "update_by_uri": "/evenement/<uri> (PUT)",
+                "delete_by_id": "/evenement/id/<id> (DELETE)",
+                "delete_by_uri": "/evenement/<uri> (DELETE)"
+            },
+            "search": {
+                "by_name": "/search/name/<name>",
+                "eco_hebergements": "/search/eco-hebergements",
+                "bio_products": "/search/bio-products",
+                "zero_emission": "/search/zero-emission-transport"
+            },
+            "ai": {
+                "help": "/ai/help (GET)",
+                "chat": "/ai/chat (POST)",
+                "ask": "/ai/ask (POST)",
+                "sparql": "/ai/sparql (POST)",
+                "recommend": "/ai/recommend-activities (POST)"
+            }
+        },
+        "documentation": "https://github.com/your-repo/docs"
+    })
 
 # Helper function to parse SPARQL results into user objects
 def parse_users_from_sparql(results):
@@ -90,7 +176,6 @@ def get_all_users():
 def create_touriste():
     data = request.json
     touriste = Touriste(
-        uri=f"{NAMESPACE}Touriste_{clean_uri_name(data.get('nom'))}",
         nom=data.get('nom'),
         age=data.get('age'),
         nationalite=data.get('nationalite'),
@@ -99,6 +184,8 @@ def create_touriste():
         se_deplace_par=data.get('se_deplace_par', [])
     )
     result = manager.create(touriste)
+    if result.get('success'):
+        result['uri'] = touriste.uri
     return jsonify(result)
 
 @app.route('/touriste/<path:uri>', methods=['GET'])
@@ -318,29 +405,300 @@ def delete_produit(uri):
     return jsonify(result)
 
 # CERTIFICATION
+
+def parse_certifications(results):
+    certs = []
+    cert_dict = {}
+    for res in results:
+        uri = res['s']['value']
+        prop = res['p']['value'].split('#')[-1]
+        val = res['o']['value']
+
+        if uri not in cert_dict:
+            cert_dict[uri] = {"uri": uri, "id": None, "label_nom": None, "organisme": None, "annee_obtention": None}
+
+        if prop == "id":
+            cert_dict[uri]["id"] = int(val)
+        elif prop == "labelNom":
+            cert_dict[uri]["label_nom"] = val
+        elif prop == "organisme":
+            cert_dict[uri]["organisme"] = val
+        elif prop == "anneeObtention":
+            cert_dict[uri]["annee_obtention"] = val
+
+    # Convert dict to list
+    for uri, data in cert_dict.items():
+        certs.append(data)
+    
+    return certs
+
+# CERTIFICATION ECO
 @app.route('/certification', methods=['POST'])
 def create_certification():
     data = request.json
     cert = CertificationEco(
-        uri=f"{NAMESPACE}Certification_{clean_uri_name(data.get('label_nom'))}",
         label_nom=data.get('label_nom'),
         organisme=data.get('organisme'),
         annee_obtention=data.get('annee_obtention')
     )
     result = manager.create(cert)
+    if result.get('success'):
+        result['uri'] = cert.uri
     return jsonify(result)
 
 @app.route('/certification', methods=['GET'])
 def get_all_certifications():
-    result = manager.get_all('CertificationEco')
+    results = manager.get_all('CertificationEco')
+    parsed = parse_certifications(results)
+    return jsonify(parsed)
+
+
+
+@app.route('/certification/id/<int:cert_id>', methods=['GET'])
+def get_certification_by_id(cert_id):
+    """Get certification by numeric ID"""
+    # Query to find certification by ID
+    query = f"""
+    PREFIX eco: <{NAMESPACE}>
+    
+    SELECT ?uri ?p ?o
+    WHERE {{
+        ?uri a eco:CertificationEco .
+        ?uri eco:id {cert_id} .
+        ?uri ?p ?o .
+    }}
+    """
+    results = manager.execute_query(query)
+    
+    if not results:
+        return jsonify({"error": "Certification not found"}), 404
+    
+    # Parse results into a structured object
+    cert = {"uri": None, "id": cert_id, "label_nom": None, "organisme": None, "annee_obtention": None}
+    
+    for res in results:
+        if not cert["uri"]:
+            cert["uri"] = res['uri']['value']
+        
+        prop = res['p']['value'].split('#')[-1]
+        val = res['o']['value']
+        
+        if prop == "labelNom":
+            cert["label_nom"] = val
+        elif prop == "organisme":
+            cert["organisme"] = val
+        elif prop == "anneeObtention":
+            cert["annee_obtention"] = val
+    
+    return jsonify(cert)
+
+@app.route('/certification/<path:uri>', methods=['GET'])
+def get_certification(uri):
+    """Get certification by URI - handles both encoded and non-encoded URIs"""
+    from urllib.parse import unquote
+    
+    # Decode URI in case it's encoded
+    decoded_uri = unquote(uri)
+    
+    # If URI doesn't contain the namespace, it might have been truncated by the # character
+    # In this case, return an error with helpful message
+    if '#' not in decoded_uri and NAMESPACE.rstrip('#') in decoded_uri:
+        return jsonify({
+            "error": "Invalid URI format",
+            "message": "The URI appears to be truncated. Please encode the URI properly.",
+            "example": "Use /certification/id/<id> instead, or encode the full URI",
+            "received_uri": decoded_uri
+        }), 400
+    
+    results = manager.get_by_uri(decoded_uri)
+    
+    # Parse results into a structured object
+    if not results:
+        return jsonify({
+            "error": "Certification not found",
+            "message": "No certification found with this URI",
+            "uri": decoded_uri,
+            "tip": "Try using /certification/id/<id> endpoint or ensure the URI is properly encoded"
+        }), 404
+    
+    cert = {"uri": decoded_uri, "label_nom": None, "organisme": None, "annee_obtention": None}
+    for res in results:
+        prop = res['p']['value'].split('#')[-1]
+        val = res['o']['value']
+        
+        if prop == "labelNom":
+            cert["label_nom"] = val
+        elif prop == "organisme":
+            cert["organisme"] = val
+        elif prop == "anneeObtention":
+            cert["annee_obtention"] = val
+        elif prop == "id":
+            cert["id"] = int(val)
+    
+    return jsonify(cert)
+
+@app.route('/certification/id/<int:cert_id>', methods=['PUT'])
+def update_certification_by_id(cert_id):
+    """Update certification by numeric ID"""
+    data = request.json
+    
+    # First, find the URI for this ID
+    query = f"""
+    PREFIX eco: <{NAMESPACE}>
+    
+    SELECT ?uri
+    WHERE {{
+        ?uri a eco:CertificationEco .
+        ?uri eco:id {cert_id} .
+    }}
+    """
+    results = manager.execute_query(query)
+    
+    if not results:
+        return jsonify({"error": "Certification not found"}), 404
+    
+    uri = results[0]['uri']['value']
+    
+    # Delete old data
+    manager.delete(uri)
+    
+    # Create new data with same URI and ID
+    cert = CertificationEco(
+        uri=uri,
+        label_nom=data.get('label_nom'),
+        organisme=data.get('organisme'),
+        annee_obtention=data.get('annee_obtention')
+    )
+    # Restore the original ID
+    cert.id = cert_id
+    
+    result = manager.create(cert)
+    if result.get('success'):
+        result['uri'] = uri
+        result['id'] = cert_id
+    
     return jsonify(result)
+
+@app.route('/certification/<path:uri>', methods=['PUT'])
+def update_certification(uri):
+    """Update certification by URI - handles both encoded and non-encoded URIs"""
+    from urllib.parse import unquote
+    
+    data = request.json
+    
+    # Decode URI in case it's encoded
+    decoded_uri = unquote(uri)
+    
+    # Check if URI is valid
+    if '#' not in decoded_uri and NAMESPACE.rstrip('#') in decoded_uri:
+        return jsonify({
+            "error": "Invalid URI format",
+            "message": "The URI appears to be truncated. Please encode the URI properly.",
+            "example": "Use /certification/id/<id> instead, or encode the full URI",
+            "received_uri": decoded_uri
+        }), 400
+    
+    # Delete old data
+    delete_result = manager.delete(decoded_uri)
+    
+    # Create new data with same URI
+    cert = CertificationEco(
+        uri=decoded_uri,
+        label_nom=data.get('label_nom'),
+        organisme=data.get('organisme'),
+        annee_obtention=data.get('annee_obtention')
+    )
+    result = manager.create(cert)
+    
+    if result.get('success'):
+        result['uri'] = decoded_uri
+    
+    return jsonify(result)
+
+@app.route('/certification/id/<int:cert_id>', methods=['DELETE'])
+def delete_certification_by_id(cert_id):
+    """Delete certification by numeric ID"""
+    # First, find the URI for this ID
+    query = f"""
+    PREFIX eco: <{NAMESPACE}>
+    
+    SELECT ?uri
+    WHERE {{
+        ?uri a eco:CertificationEco .
+        ?uri eco:id {cert_id} .
+    }}
+    """
+    results = manager.execute_query(query)
+    
+    if not results:
+        return jsonify({"error": "Certification not found"}), 404
+    
+    uri = results[0]['uri']['value']
+    result = manager.delete(uri)
+    
+    if result.get('success'):
+        result['deleted_uri'] = uri
+        result['deleted_id'] = cert_id
+    
+    return jsonify(result)
+
+@app.route('/certification/<path:uri>', methods=['DELETE'])
+def delete_certification(uri):
+    """Delete certification by URI - handles both encoded and non-encoded URIs"""
+    from urllib.parse import unquote
+    
+    # Decode URI in case it's encoded
+    decoded_uri = unquote(uri)
+    
+    # Check if URI is valid
+    if '#' not in decoded_uri and NAMESPACE.rstrip('#') in decoded_uri:
+        return jsonify({
+            "error": "Invalid URI format",
+            "message": "The URI appears to be truncated. Please encode the URI properly.",
+            "example": "Use /certification/id/<id> instead, or encode the full URI",
+            "received_uri": decoded_uri
+        }), 400
+    
+    result = manager.delete(decoded_uri)
+    
+    if result.get('success'):
+        result['deleted_uri'] = decoded_uri
+    
+    return jsonify(result)
+
+def parse_evenements_from_sparql(results):
+    evenements_dict = {}
+
+    for result in results:
+        uri = result['s']['value']
+        predicate = result['p']['value'].split('#')[-1]  # dernier segment
+        obj = result['o'].get('value')
+
+        if uri not in evenements_dict:
+            evenements_dict[uri] = {'uri': uri, 'id': None}
+
+        # Mapper les propriétés
+        if predicate == 'id':
+            evenements_dict[uri]['id'] = int(obj)
+        elif predicate == 'nom':
+            evenements_dict[uri]['nom'] = obj
+        elif predicate == 'eventDate':
+            evenements_dict[uri]['event_date'] = obj
+        elif predicate == 'eventDureeHeures':
+            evenements_dict[uri]['event_duree_heures'] = int(obj)
+        elif predicate == 'eventPrix':
+            evenements_dict[uri]['event_prix'] = float(obj)
+        elif predicate == 'aLieuDans':
+            evenements_dict[uri]['a_lieu_dans'] = obj
+
+    return list(evenements_dict.values())
+
 
 # EVENEMENT
 @app.route('/evenement', methods=['POST'])
 def create_evenement():
     data = request.json
     event = Evenement(
-        uri=f"{NAMESPACE}Evenement_{clean_uri_name(data.get('nom'))}",
         nom=data.get('nom'),
         event_date=data.get('event_date'),
         event_duree_heures=data.get('event_duree_heures'),
@@ -348,16 +706,237 @@ def create_evenement():
         a_lieu_dans=data.get('a_lieu_dans')
     )
     result = manager.create(event)
+    if result.get('success'):
+        result['uri'] = event.uri
     return jsonify(result)
 
 @app.route('/evenement', methods=['GET'])
 def get_all_evenements():
-    result = manager.get_all('Evenement')
+    results = manager.get_all('Evenement')  # retourne les triplets bruts
+    evenements = parse_evenements_from_sparql(results)
+    return jsonify(evenements)
+
+@app.route('/evenement/id/<int:event_id>', methods=['GET'])
+def get_evenement_by_id(event_id):
+    """Get evenement by numeric ID"""
+    # Query to find evenement by ID
+    query = f"""
+    PREFIX eco: <{NAMESPACE}>
+    
+    SELECT ?uri ?p ?o
+    WHERE {{
+        ?uri a eco:Evenement .
+        ?uri eco:id {event_id} .
+        ?uri ?p ?o .
+    }}
+    """
+    results = manager.execute_query(query)
+    
+    if not results:
+        return jsonify({"error": "Evenement not found"}), 404
+    
+    # Parse results into a structured object
+    event = {"uri": None, "id": event_id, "nom": None, "event_date": None, "event_duree_heures": None, "event_prix": None, "a_lieu_dans": None}
+    
+    for res in results:
+        if not event["uri"]:
+            event["uri"] = res['uri']['value']
+        
+        prop = res['p']['value'].split('#')[-1]
+        val = res['o']['value']
+        
+        if prop == "nom":
+            event["nom"] = val
+        elif prop == "eventDate":
+            event["event_date"] = val
+        elif prop == "eventDureeHeures":
+            event["event_duree_heures"] = int(val)
+        elif prop == "eventPrix":
+            event["event_prix"] = float(val)
+        elif prop == "aLieuDans":
+            event["a_lieu_dans"] = val
+    
+    return jsonify(event)
+
+@app.route('/evenement/<path:uri>', methods=['GET'])
+def get_evenement(uri):
+    """Get evenement by URI - handles both encoded and non-encoded URIs"""
+    from urllib.parse import unquote
+    
+    # Decode URI in case it's encoded
+    decoded_uri = unquote(uri)
+    
+    # If URI doesn't contain the namespace, it might have been truncated by the # character
+    if '#' not in decoded_uri and NAMESPACE.rstrip('#') in decoded_uri:
+        return jsonify({
+            "error": "Invalid URI format",
+            "message": "The URI appears to be truncated. Please encode the URI properly.",
+            "example": "Use /evenement/id/<id> instead, or encode the full URI",
+            "received_uri": decoded_uri
+        }), 400
+    
+    results = manager.get_by_uri(decoded_uri)
+    
+    # Parse results into a structured object
+    if not results:
+        return jsonify({
+            "error": "Evenement not found",
+            "message": "No evenement found with this URI",
+            "uri": decoded_uri,
+            "tip": "Try using /evenement/id/<id> endpoint or ensure the URI is properly encoded"
+        }), 404
+    
+    event = {"uri": decoded_uri, "nom": None, "event_date": None, "event_duree_heures": None, "event_prix": None, "a_lieu_dans": None}
+    for res in results:
+        prop = res['p']['value'].split('#')[-1]
+        val = res['o']['value']
+        
+        if prop == "nom":
+            event["nom"] = val
+        elif prop == "eventDate":
+            event["event_date"] = val
+        elif prop == "eventDureeHeures":
+            event["event_duree_heures"] = val
+        elif prop == "eventPrix":
+            event["event_prix"] = val
+        elif prop == "aLieuDans":
+            event["a_lieu_dans"] = val
+        elif prop == "id":
+            event["id"] = int(val)
+    
+    return jsonify(event)
+
+@app.route('/evenement/id/<int:event_id>', methods=['PUT'])
+def update_evenement_by_id(event_id):
+    """Update evenement by numeric ID"""
+    data = request.json
+    
+    # First, find the URI for this ID
+    query = f"""
+    PREFIX eco: <{NAMESPACE}>
+    
+    SELECT ?uri
+    WHERE {{
+        ?uri a eco:Evenement .
+        ?uri eco:id {event_id} .
+    }}
+    """
+    results = manager.execute_query(query)
+    
+    if not results:
+        return jsonify({"error": "Evenement not found"}), 404
+    
+    uri = results[0]['uri']['value']
+    
+    # Delete old data
+    manager.delete(uri)
+    
+    # Create new data with same URI and ID
+    event = Evenement(
+        uri=uri,
+        nom=data.get('nom'),
+        event_date=data.get('event_date'),
+        event_duree_heures=data.get('event_duree_heures'),
+        event_prix=data.get('event_prix'),
+        a_lieu_dans=data.get('a_lieu_dans')
+    )
+    # Restore the original ID
+    event.id = event_id
+    
+    result = manager.create(event)
+    if result.get('success'):
+        result['uri'] = uri
+        result['id'] = event_id
+    
+    return jsonify(result)
+
+@app.route('/evenement/<path:uri>', methods=['PUT'])
+def update_evenement(uri):
+    """Update evenement by URI - handles both encoded and non-encoded URIs"""
+    from urllib.parse import unquote
+    
+    data = request.json
+    
+    # Decode URI in case it's encoded
+    decoded_uri = unquote(uri)
+    
+    # Check if URI is valid
+    if '#' not in decoded_uri and NAMESPACE.rstrip('#') in decoded_uri:
+        return jsonify({
+            "error": "Invalid URI format",
+            "message": "The URI appears to be truncated. Please encode the URI properly.",
+            "example": "Use /evenement/id/<id> instead, or encode the full URI",
+            "received_uri": decoded_uri
+        }), 400
+    
+    # Delete old data
+    manager.delete(decoded_uri)
+    
+    # Create new data with same URI
+    event = Evenement(
+        uri=decoded_uri,
+        nom=data.get('nom'),
+        event_date=data.get('event_date'),
+        event_duree_heures=data.get('event_duree_heures'),
+        event_prix=data.get('event_prix'),
+        a_lieu_dans=data.get('a_lieu_dans')
+    )
+    result = manager.create(event)
+    
+    if result.get('success'):
+        result['uri'] = decoded_uri
+    
+    return jsonify(result)
+
+@app.route('/evenement/id/<int:event_id>', methods=['DELETE'])
+def delete_evenement_by_id(event_id):
+    """Delete evenement by numeric ID"""
+    # First, find the URI for this ID
+    query = f"""
+    PREFIX eco: <{NAMESPACE}>
+    
+    SELECT ?uri
+    WHERE {{
+        ?uri a eco:Evenement .
+        ?uri eco:id {event_id} .
+    }}
+    """
+    results = manager.execute_query(query)
+    
+    if not results:
+        return jsonify({"error": "Evenement not found"}), 404
+    
+    uri = results[0]['uri']['value']
+    result = manager.delete(uri)
+    
+    if result.get('success'):
+        result['deleted_uri'] = uri
+        result['deleted_id'] = event_id
+    
     return jsonify(result)
 
 @app.route('/evenement/<path:uri>', methods=['DELETE'])
 def delete_evenement(uri):
-    result = manager.delete(uri)
+    """Delete evenement by URI - handles both encoded and non-encoded URIs"""
+    from urllib.parse import unquote
+    
+    # Decode URI in case it's encoded
+    decoded_uri = unquote(uri)
+    
+    # Check if URI is valid
+    if '#' not in decoded_uri and NAMESPACE.rstrip('#') in decoded_uri:
+        return jsonify({
+            "error": "Invalid URI format",
+            "message": "The URI appears to be truncated. Please encode the URI properly.",
+            "example": "Use /evenement/id/<id> instead, or encode the full URI",
+            "received_uri": decoded_uri
+        }), 400
+    
+    result = manager.delete(decoded_uri)
+    
+    if result.get('success'):
+        result['deleted_uri'] = decoded_uri
+    
     return jsonify(result)
 
 # SEARCH ENDPOINTS
@@ -416,14 +995,25 @@ def ai_chat():
     Chat with AI agent
     Body: {"message": "your question here"}
     """
-    data = request.json
-    message = data.get('message', '')
-    
-    if not message:
-        return jsonify({"error": "Message is required"}), 400
-    
-    result = ai_agent.process_message(message)
-    return jsonify(result)
+    try:
+        # Get JSON data with UTF-8 support
+        data = request.get_json(force=True)
+        message = data.get('message', '')
+        
+        print(f"[AI Chat] Received message: {message}")
+        
+        if not message:
+            return jsonify({"error": "Message is required"}), 400
+        
+        response = ai_agent.chat_message(message)
+        print(f"[AI Chat] Response generated: {len(response)} chars")
+        
+        return jsonify({"response": response}), 200
+    except Exception as e:
+        print(f"[AI Chat] Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/ai/ask', methods=['POST'])
 def ai_ask():
@@ -443,17 +1033,21 @@ def ai_ask():
 @app.route('/ai/sparql', methods=['POST'])
 def ai_sparql():
     """
-    Execute SPARQL query with AI explanation
-    Body: {"query": "SELECT * WHERE {...}"}
+    Generate SPARQL query from natural language
+    Body: {"query": "Find all eco-friendly hotels"}
     """
-    data = request.json
-    query = data.get('query', '')
-    
-    if not query:
-        return jsonify({"error": "SPARQL query is required"}), 400
-    
-    result = ai_agent.execute_sparql(query)
-    return jsonify(result)
+    try:
+        data = request.json
+        query = data.get('query', '')
+        
+        if not query:
+            return jsonify({"error": "Query is required"}), 400
+        
+        result = ai_agent.generate_sparql(query)
+        return jsonify(result)
+    except Exception as e:
+        print(f"Error in /ai/sparql: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/ai/recommend-activities', methods=['POST'])
 def ai_recommend_activities():
@@ -461,14 +1055,19 @@ def ai_recommend_activities():
     Get AI-powered activity recommendations
     Body: {
         "age": 30,
-        "nationalite": "TN",
-        "preferences": ["eco-friendly", "nature"],
-        "budget": 100
+        "nationalite": "France",
+        "preferences": ["nature", "écologie"],
+        "budget_min": 500,
+        "budget_max": 2000
     }
     """
-    data = request.json
-    result = ai_agent.suggest_activities(data)
-    return jsonify(result)
+    try:
+        data = request.json
+        result = ai_agent.recommend_activities(data)
+        return jsonify({"recommendations": result})
+    except Exception as e:
+        print(f"Error in /ai/recommend-activities: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/ai/eco-score/<entity_type>/<path:uri>', methods=['GET'])
 def ai_eco_score(entity_type, uri):
@@ -482,28 +1081,107 @@ def ai_eco_score(entity_type, uri):
 @app.route('/ai/reset', methods=['POST'])
 def ai_reset():
     """Reset AI chat session"""
-    result = ai_agent.reset_chat()
-    return jsonify(result)
+    try:
+        ai_agent.reset_chat()
+        return jsonify({"message": "Chat session reset successfully", "status": "success"})
+    except Exception as e:
+        print(f"Error in /ai/reset: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/ai/analyze-video', methods=['POST', 'OPTIONS'])
+def analyze_video():
+    """Analyse une vidéo avec audio pour détecter l'ambiance et recommander des événements"""
+    if request.method == 'OPTIONS':
+        return jsonify({"status": "ok"}), 200
+        
+    try:
+        # Get user message if provided
+        user_message = request.form.get('message', '')
+        
+        # Vérifier si un fichier vidéo est présent
+        if 'video' not in request.files:
+            return jsonify({"error": "Aucun fichier vidéo fourni"}), 400
+        
+        video_file = request.files['video']
+        if video_file.filename == '':
+            return jsonify({"error": "Nom de fichier vide"}), 400
+        
+        # Créer un répertoire temporaire pour stocker la vidéo
+        import tempfile
+        import os
+        
+        temp_dir = tempfile.mkdtemp()
+        # Support multiple video formats
+        file_ext = os.path.splitext(video_file.filename)[1] or '.webm'
+        video_path = os.path.join(temp_dir, f'recording{file_ext}')
+        
+        # Sauvegarder le fichier vidéo temporairement
+        video_file.save(video_path)
+        app.logger.info(f"Vidéo sauvegardée: {video_path}, taille: {os.path.getsize(video_path)} bytes")
+        
+        # Use the AISalhi agent method for video analysis
+        analysis_result = ai_agent.analyze_video_vibe(video_path, user_message)
+        
+        # Nettoyer le fichier temporaire
+        try:
+            os.remove(video_path)
+            os.rmdir(temp_dir)
+        except Exception as e:
+            app.logger.warning(f"Impossible de supprimer le fichier temporaire: {e}")
+        
+        # Check for errors in analysis
+        if 'error' in analysis_result:
+            app.logger.error(f"Erreur d'analyse IA: {analysis_result['error']}")
+            return jsonify({
+                "error": analysis_result['error'],
+                "vibe_analysis": {
+                    "mood": "unknown",
+                    "keywords": [],
+                    "visual_description": "Erreur lors de l'analyse"
+                },
+                "event_recommendations": []
+            }), 500
+        
+        app.logger.info("Analyse vidéo terminée avec succès")
+        return jsonify(analysis_result), 200
+        
+    except Exception as e:
+        app.logger.error(f"Erreur lors de l'analyse vidéo: {str(e)}")
+        import traceback
+        app.logger.error(traceback.format_exc())
+        return jsonify({
+            "error": f"Erreur lors de l'analyse: {str(e)}",
+            "vibe_analysis": {
+                "mood": "error",
+                "keywords": ["erreur", "analyse"],
+                "visual_description": f"Une erreur s'est produite: {str(e)}"
+            },
+            "event_recommendations": [],
+            "full_analysis": f"Erreur: {str(e)}"
+        }), 500
 
 @app.route('/ai/help', methods=['GET'])
 def ai_help():
     """Get AI capabilities and usage instructions"""
     return jsonify({
-        "name": "Eco-Tourism AI Agent",
-        "description": "Intelligent assistant powered by Google Gemini",
+        "name": "AISalhi",
+        "version": "1.0.0",
+        "description": "Intelligent Eco-Tourism Assistant powered by advanced AI",
         "capabilities": [
             "Natural language conversation about eco-tourism",
-            "Execute SPARQL queries",
-            "Search and retrieve data from knowledge base",
-            "Recommend activities based on tourist profiles",
-            "Calculate eco-friendliness scores",
-            "Explain complex ontology relationships"
+            "Generate SPARQL queries from natural language",
+            "Personalized activity recommendations",
+            "Eco-friendliness score calculation",
+            "Interactive chat with context memory",
+            "Knowledge base exploration",
+            "Video and audio analysis for vibe detection and event recommendations"
         ],
         "endpoints": {
             "POST /ai/chat": "Interactive chat (can execute actions)",
             "POST /ai/ask": "Simple question-answer",
             "POST /ai/sparql": "Execute SPARQL with AI explanation",
             "POST /ai/recommend-activities": "Get activity recommendations",
+            "POST /ai/analyze-video": "Analyze video/audio for vibe detection and event recommendations",
             "GET /ai/eco-score/<entity_type>/<uri>": "Calculate eco score",
             "POST /ai/reset": "Reset chat session",
             "GET /ai/help": "This help message"

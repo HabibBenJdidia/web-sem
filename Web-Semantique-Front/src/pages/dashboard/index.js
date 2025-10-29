@@ -3,3 +3,8 @@ export * from "@/pages/dashboard/profile";
 export * from "@/pages/dashboard/tables";
 export * from "@/pages/dashboard/users";
 export * from "@/pages/dashboard/notifications";
+export * from "@/pages/dashboard/Certifications";
+export * from "@/pages/dashboard/Evenements";
+export * from "@/pages/dashboard/Overview";
+export * from "@/pages/dashboard/AISalhiDashboard";
+export * from "@/pages/dashboard/video-analyzer";

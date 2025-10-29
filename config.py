@@ -12,5 +12,5 @@ FUSEKI_PASSWORD = os.getenv('FUSEKI_PASSWORD', 'admin')
 
 NAMESPACE = "http://example.org/eco-tourism#"
 
-# AI Configuration
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+# AISalhi AI Configuration
+AISALHI_API_KEY = os.getenv('AISALHI_API_KEY')

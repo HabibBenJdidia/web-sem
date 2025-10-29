@@ -264,6 +264,96 @@ class ApiService {
       body: JSON.stringify({ query }),
     });
   }
+
+  // ==================== CERTIFICATION ECO ENDPOINTS ====================
+
+  /**
+   * Get all certifications
+   */
+  async getCertifications() {
+    return this.fetch('/certification');
+  }
+
+  /**
+   * Get certification by ID
+   */
+  async getCertificationById(id) {
+    return this.fetch(`/certification/id/${id}`);
+  }
+
+  /**
+   * Create new certification
+   */
+  async createCertification(data) {
+    return this.fetch('/certification', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Update certification by ID
+   */
+  async updateCertificationById(id, data) {
+    return this.fetch(`/certification/id/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Delete certification by ID
+   */
+  async deleteCertificationById(id) {
+    return this.fetch(`/certification/id/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // ==================== EVENEMENT ENDPOINTS ====================
+
+  /**
+   * Get all events
+   */
+  async getEvenements() {
+    return this.fetch('/evenement');
+  }
+
+  /**
+   * Get event by ID
+   */
+  async getEvenementById(id) {
+    return this.fetch(`/evenement/id/${id}`);
+  }
+
+  /**
+   * Create new event
+   */
+  async createEvenement(data) {
+    return this.fetch('/evenement', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Update event by ID
+   */
+  async updateEvenementById(id, data) {
+    return this.fetch(`/evenement/id/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Delete event by ID
+   */
+  async deleteEvenementById(id) {
+    return this.fetch(`/evenement/id/${id}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 export default new ApiService();

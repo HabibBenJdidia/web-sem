@@ -53,10 +53,14 @@ export function LandingPage() {
                 <a className="nav-link fw-medium" href="#destination">Destination</a>
               </li>
               <li className="nav-item px-3 px-xl-4">
-                <a className="nav-link fw-medium" href="#booking">Booking</a>
+                <Link className="nav-link fw-medium" to="/public/certifications"> Certifications</Link>
               </li>
               <li className="nav-item px-3 px-xl-4">
-                <a className="nav-link fw-medium" href="#testimonial">Testimonial</a>
+                <Link className="nav-link fw-medium" to="/public/evenements">Événements</Link>
+              </li>
+
+              <li className="nav-item px-3 px-xl-4">
+                <a className="nav-link fw-medium" href="#booking">Booking</a>
               </li>
               
               {!user ? (
@@ -587,3 +591,7 @@ export function LandingPage() {
 }
 
 export default LandingPage;
+
+// Export des pages publiques
+export { default as CertificationsPublic } from './CertificationsPublic';
+export { default as EvenementsPublic } from './EvenementsPublic';
