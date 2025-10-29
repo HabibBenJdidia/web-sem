@@ -394,20 +394,28 @@ const handlePaysChange = (pays) => {
                 </a>
               </li>
               <li className="nav-item px-3 px-xl-4">
-                <a className="nav-link fw-medium" href="#booking">
-                  Booking
-                </a>
-              </li>
-              <li className="nav-item px-3 px-xl-4">
                 <Link className="nav-link fw-medium" to="/transport">
                   Transport
                 </Link>
               </li>
               <li className="nav-item px-3 px-xl-4">
-                <a className="nav-link fw-medium" href="#testimonial">
-                  Testimonial
-                </a>
+                <Link className="nav-link fw-medium" to="/restaurants">
+                  Restaurants
+                </Link>
               </li>
+              <li className="nav-item px-3 px-xl-4">
+                <Link className="nav-link fw-medium" to="/produits">
+                  Produits
+                </Link>
+              </li>
+              
+              {user && user.type === 'touriste' && (
+                <li className="nav-item px-3 px-xl-4">
+                  <Link className="nav-link fw-medium" to="/my-reservations">
+                    Mes Réservations
+                  </Link>
+                </li>
+              )}
               
               {loading ? (
                 <li className="nav-item px-3 px-xl-4">
@@ -1558,5 +1566,7 @@ const handlePaysChange = (pays) => {
     </div>
   );
 }
+
+export default LandingPage;
 
 export default LandingPage;

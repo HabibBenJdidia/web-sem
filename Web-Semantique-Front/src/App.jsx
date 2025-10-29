@@ -5,6 +5,9 @@ import { ChangePassword } from "@/pages/ChangePassword";
 import { Profile } from "@/pages/Profile";
 import { AccessDenied } from "@/pages/AccessDenied";
 import { TransportPublic } from "@/pages/TransportPublic";
+import { RestaurantsBrowse } from "@/pages/RestaurantsBrowse";
+import { ProduitsBrowse } from "@/pages/ProduitsBrowse";
+import { MyReservations } from "@/pages/MyReservations";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { GuestRoute } from "@/components/GuestRoute";
 
@@ -13,6 +16,16 @@ function App() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/transport" element={<TransportPublic />} />
+      <Route path="/restaurants" element={<RestaurantsBrowse />} />
+      <Route path="/produits" element={<ProduitsBrowse />} />
+      <Route 
+        path="/my-reservations" 
+        element={
+          <ProtectedRoute allowedRoles={["Touriste"]}>
+            <MyReservations />
+          </ProtectedRoute>
+        } 
+      />
       <Route 
         path="/profile" 
         element={

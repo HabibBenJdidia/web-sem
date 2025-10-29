@@ -7,6 +7,9 @@ import {
   InformationCircleIcon,
   BuildingOfficeIcon,
   MapPinIcon,
+  BuildingStorefrontIcon,
+  ShoppingBagIcon,
+  MicrophoneIcon,
 } from "@heroicons/react/24/solid";
 
 import { 
@@ -70,6 +73,24 @@ export const routes = [
         name: "Hébergements",
         path: "/hebergements",
         element: <Hebergements />,
+      },
+      {
+        icon: <BuildingStorefrontIcon {...icon} />,
+        name: "Restaurants",
+        path: "/restaurants",
+        element: <div>Restaurants Dashboard (Coming Soon)</div>,
+      },
+      {
+        icon: <ShoppingBagIcon {...icon} />,
+        name: "Produits Locaux",
+        path: "/produits",
+        element: <div>Produits Locaux Dashboard (Coming Soon)</div>,
+      },
+      {
+        icon: <MicrophoneIcon {...icon} />,
+        name: "AI BSila",
+        path: "/ai-bsila",
+        element: <div>AI BSila Assistant (Coming Soon)</div>,
       },
       {
         icon: <InformationCircleIcon {...icon} />,
