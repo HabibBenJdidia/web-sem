@@ -726,6 +726,37 @@ def get_all_restaurants():
     result = manager.get_all('Restaurant')
     return jsonify(result)
 
+@app.route('/restaurant/<path:uri>', methods=['GET'])
+def get_restaurant(uri):
+    """Get a single restaurant by URI"""
+    query = f"""
+        PREFIX ns: <{NAMESPACE}>
+        SELECT ?p ?o WHERE {{
+            <{uri}> ?p ?o .
+        }}
+    """
+    result = manager.execute_query(query)
+    return jsonify(result)
+
+@app.route('/restaurant/<path:uri>', methods=['PUT'])
+def update_restaurant(uri):
+    """Update a restaurant"""
+    data = request.json
+    updates = {}
+    if 'nom' in data:
+        updates['nom'] = data['nom']
+    if 'situe_dans' in data:
+        updates['situe_dans'] = data['situe_dans']
+    if 'sert' in data:
+        updates['sert'] = data['sert']
+    
+    for key, value in updates.items():
+        result = manager.update_property(uri, key, value, is_string=(key in ['nom']))
+        if result.get('error'):
+            return jsonify(result), 500
+    
+    return jsonify({"message": "Restaurant updated successfully", "uri": uri})
+
 @app.route('/restaurant/<path:uri>', methods=['DELETE'])
 def delete_restaurant(uri):
     result = manager.delete(uri)
@@ -749,10 +780,62 @@ def get_all_produits():
     result = manager.get_all('ProduitLocal')
     return jsonify(result)
 
+@app.route('/produit/<path:uri>', methods=['GET'])
+def get_produit(uri):
+    """Get a single product by URI"""
+    query = f"""
+        PREFIX ns: <{NAMESPACE}>
+        SELECT ?p ?o WHERE {{
+            <{uri}> ?p ?o .
+        }}
+    """
+    result = manager.execute_query(query)
+    return jsonify(result)
+
+@app.route('/produit/<path:uri>', methods=['PUT'])
+def update_produit(uri):
+    """Update a product"""
+    data = request.json
+    updates = {}
+    if 'nom' in data:
+        updates['nom'] = data['nom']
+    if 'saison' in data:
+        updates['saison'] = data['saison']
+    if 'bio' in data:
+        updates['bio'] = data['bio']
+    
+    for key, value in updates.items():
+        result = manager.update_property(uri, key, value, is_string=(key in ['nom', 'saison']))
+        if result.get('error'):
+            return jsonify(result), 500
+    
+    return jsonify({"message": "Product updated successfully", "uri": uri})
+
 @app.route('/produit/<path:uri>', methods=['DELETE'])
 def delete_produit(uri):
     result = manager.delete(uri)
     return jsonify(result)
+
+# Aliases pour /produit-local (compatibilité frontend)
+@app.route('/produit-local', methods=['POST'])
+def create_produit_local():
+    return create_produit()
+
+@app.route('/produit-local', methods=['GET'])
+def get_all_produits_local():
+    return get_all_produits()
+
+@app.route('/produit-local/<path:uri>', methods=['GET'])
+def get_produit_local(uri):
+    return get_produit(uri)
+
+@app.route('/produit-local/<path:uri>', methods=['PUT'])
+def update_produit_local(uri):
+    return update_produit(uri)
+
+@app.route('/produit-local/<path:uri>', methods=['DELETE'])
+def delete_produit_local(uri):
+    return delete_produit(uri)
 
 # CERTIFICATION
 @app.route('/certification', methods=['POST'])

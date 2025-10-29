@@ -357,6 +357,66 @@ class ApiService {
       body: JSON.stringify({ query }),
     });
   }
+
+  // ==================== RESTAURANTS ====================
+  
+  async getRestaurants() {
+    return this.fetch('/restaurant');
+  }
+
+  async getRestaurant(uri) {
+    return this.fetch(`/restaurant/${encodeURIComponent(uri)}`);
+  }
+
+  async createRestaurant(data) {
+    return this.fetch('/restaurant', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateRestaurant(uri, data) {
+    return this.fetch(`/restaurant/${encodeURIComponent(uri)}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteRestaurant(uri) {
+    return this.fetch(`/restaurant/${encodeURIComponent(uri)}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // ==================== PRODUITS LOCAUX ====================
+  
+  async getProduits() {
+    return this.fetch('/produit-local');
+  }
+
+  async getProduit(uri) {
+    return this.fetch(`/produit-local/${encodeURIComponent(uri)}`);
+  }
+
+  async createProduit(data) {
+    return this.fetch('/produit-local', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateProduit(uri, data) {
+    return this.fetch(`/produit-local/${encodeURIComponent(uri)}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteProduit(uri) {
+    return this.fetch(`/produit-local/${encodeURIComponent(uri)}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 export default new ApiService();
