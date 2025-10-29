@@ -61,3 +61,14 @@ class EmpreinteCarbone(BaseModel):
             return "orange"
         else:
             return "red"
+    
+    def to_dict(self):
+        """Convert model to dictionary"""
+        return {
+            'uri': self.uri,
+            'id': self.id if hasattr(self, 'id') else None,
+            'valeur_co2_kg': self.valeur_co2_kg,
+            'name': self.name,
+            'description': self.description,
+            'image': self.image
+        }
