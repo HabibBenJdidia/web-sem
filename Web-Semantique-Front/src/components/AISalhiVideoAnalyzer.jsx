@@ -184,52 +184,12 @@ export function AISalhiVideoAnalyzer() {
 
       const result = await response.json();
       
-      console.log('[VideoAnalyzer] Raw API response:', result);
-      
-      // If vibe_analysis is a string (JSON inside), parse it
-      let vibeAnalysis = result.vibe_analysis || result.vibe;
-      
-      // Check if vibeAnalysis itself contains the full JSON structure
-      if (vibeAnalysis && typeof vibeAnalysis === 'object' && vibeAnalysis.vibe_analysis) {
-        // It's nested, extract the inner vibe_analysis
-        vibeAnalysis = vibeAnalysis.vibe_analysis;
-      }
-      
-      if (typeof vibeAnalysis === 'string') {
-        try {
-          // Remove markdown code blocks if present
-          let cleanedString = vibeAnalysis.trim();
-          if (cleanedString.startsWith('```json')) {
-            cleanedString = cleanedString.replace(/```json\n?/g, '').replace(/```\n?$/g, '');
-          } else if (cleanedString.startsWith('```')) {
-            cleanedString = cleanedString.replace(/```\n?/g, '');
-          }
-          
-          // Try to parse
-          const parsed = JSON.parse(cleanedString);
-          
-          // If parsed contains vibe_analysis, extract it
-          if (parsed.vibe_analysis) {
-            vibeAnalysis = parsed.vibe_analysis;
-          } else {
-            vibeAnalysis = parsed;
-          }
-        } catch (e) {
-          console.warn('Could not parse vibe_analysis string:', e);
-          // Keep it as string, will be displayed in full_analysis
-        }
-      }
-      
-      console.log('[VideoAnalyzer] Processed vibe:', vibeAnalysis);
-      
       // Map API response to expected format
       const mappedResult = {
         ...result,
-        vibe: vibeAnalysis,
+        vibe: result.vibe_analysis || result.vibe,
         recommendations: result.event_recommendations || result.recommendations || []
       };
-      
-      console.log('[VideoAnalyzer] Final mapped result:', mappedResult);
       
       setAnalysis(mappedResult);
 
@@ -393,7 +353,7 @@ export function AISalhiVideoAnalyzer() {
                 </div>
                 
                 {/* Visual Description */}
-                {analysis.vibe.visual_description && typeof analysis.vibe.visual_description === 'string' && !analysis.vibe.visual_description.includes('{') && (
+                {analysis.vibe.visual_description && (
                   <div className="mb-3 p-3 bg-white rounded border border-purple-200">
                     <Typography variant="small" className="font-bold text-purple-700 mb-1">
                       👁️ Description Visuelle
