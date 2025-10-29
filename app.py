@@ -1788,7 +1788,7 @@ def health():
 @app.route('/ai/chat', methods=['POST'])
 def ai_chat():
     """
-    Chat with AI agent
+    Chat with AI agent (uses AISalhi)
     Body: {"message": "your question here"}
     """
     try:
@@ -1801,7 +1801,7 @@ def ai_chat():
         if not message:
             return jsonify({"error": "Message is required"}), 400
         
-        response = ai_agent.chat_message(message)
+        response = aisalhi_agent.chat_message(message)
         print(f"[AI Chat] Response generated: {len(response)} chars")
         
         return jsonify({"response": response}), 200
@@ -1814,7 +1814,7 @@ def ai_chat():
 @app.route('/ai/ask', methods=['POST'])
 def ai_ask():
     """
-    Simple question to AI (returns text response)
+    Simple question to AI (returns text response - uses AISalhi)
     Body: {"question": "your question"}
     """
     data = request.json
@@ -1823,13 +1823,13 @@ def ai_ask():
     if not question:
         return jsonify({"error": "Question is required"}), 400
     
-    response = ai_agent.ask(question)
+    response = aisalhi_agent.ask(question)
     return jsonify({"response": response})
 
 @app.route('/ai/sparql', methods=['POST'])
 def ai_sparql():
     """
-    Generate SPARQL query from natural language
+    Generate SPARQL query from natural language (uses AISalhi)
     Body: {"query": "Find all eco-friendly hotels"}
     """
     try:
@@ -1839,7 +1839,7 @@ def ai_sparql():
         if not query:
             return jsonify({"error": "Query is required"}), 400
         
-        result = ai_agent.generate_sparql(query)
+        result = aisalhi_agent.generate_sparql(query)
         return jsonify(result)
     except Exception as e:
         print(f"Error in /ai/sparql: {str(e)}")
@@ -1848,7 +1848,7 @@ def ai_sparql():
 @app.route('/ai/recommend-activities', methods=['POST'])
 def ai_recommend_activities():
     """
-    Get AI-powered activity recommendations
+    Get AI-powered activity recommendations (uses AISalhi)
     Body: {
         "age": 30,
         "nationalite": "France",
@@ -1859,7 +1859,7 @@ def ai_recommend_activities():
     """
     try:
         data = request.json
-        result = ai_agent.recommend_activities(data)
+        result = aisalhi_agent.recommend_activities(data)
         return jsonify({"recommendations": result})
     except Exception as e:
         print(f"Error in /ai/recommend-activities: {str(e)}")
@@ -1868,17 +1868,17 @@ def ai_recommend_activities():
 @app.route('/ai/eco-score/<entity_type>/<path:uri>', methods=['GET'])
 def ai_eco_score(entity_type, uri):
     """
-    Calculate eco-friendliness score for an entity
+    Calculate eco-friendliness score for an entity (uses AISalhi)
     Example: GET /ai/eco-score/Hebergement/http://example.org/eco-tourism#Hebergement_EcoLodge
     """
-    result = ai_agent.calculate_eco_score(entity_type, uri)
+    result = aisalhi_agent.calculate_eco_score(entity_type, uri)
     return jsonify(result)
 
 @app.route('/ai/reset', methods=['POST'])
 def ai_reset():
-    """Reset AI chat session"""
+    """Reset AI chat session (AISalhi)"""
     try:
-        ai_agent.reset_chat()
+        aisalhi_agent.reset_chat()
         return jsonify({"message": "Chat session reset successfully", "status": "success"})
     except Exception as e:
         print(f"Error in /ai/reset: {str(e)}")
