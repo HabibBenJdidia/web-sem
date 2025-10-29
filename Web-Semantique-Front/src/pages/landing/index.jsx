@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import ApiService from "@/services/api"; // Adjust the import path based on your project structure
 import "@/components/Navbar.css";
@@ -12,6 +12,7 @@ export function LandingPage() {
   const [showDiscoverMenu, setShowDiscoverMenu] = useState(false);
   const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // State for Destination CRUD
   const [destinations, setDestinations] = useState([]);
@@ -50,6 +51,13 @@ const [editingHebergementUri, setEditingHebergementUri] = useState(null);
     await logout();
     setShowUserMenu(false);
     navigate("/");
+  };
+
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   // Destination CRUD Functions
@@ -385,10 +393,22 @@ const handlePaysChange = (pays) => {
           <div className="navbar-collapse" id="navbarSupportedContent">
             <ul className="navbar-nav ms-auto pt-2 pt-lg-0 font-base align-items-lg-center align-items-start">
               <li className="nav-item px-3 px-xl-4">
-                <a className="nav-link fw-medium" href="#service">Service</a>
+                <button 
+                  className="nav-link fw-medium" 
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  onClick={() => scrollToSection('service')}
+                >
+                  Service
+                </button>
               </li>
               <li className="nav-item px-3 px-xl-4">
-                <a className="nav-link fw-medium" href="#destination">Destination</a>
+                <button 
+                  className="nav-link fw-medium" 
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  onClick={() => scrollToSection('destination')}
+                >
+                  Destination
+                </button>
               </li>
               <li className="nav-item px-3 px-xl-4">
                 <Link className="nav-link fw-medium" to="/public/certifications"> Certifications</Link>
@@ -398,7 +418,13 @@ const handlePaysChange = (pays) => {
               </li>
 
               <li className="nav-item px-3 px-xl-4">
-                <a className="nav-link fw-medium" href="#booking">Booking</a>
+                <button 
+                  className="nav-link fw-medium" 
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  onClick={() => scrollToSection('booking')}
+                >
+                  Booking
+                </button>
               </li>
               
               {/* Discover Dropdown */}
@@ -439,12 +465,6 @@ const handlePaysChange = (pays) => {
                     </Link>
                   </div>
                 )}
-              </li>
-              
-              <li className="nav-item px-3 px-xl-4">
-                <a className="nav-link fw-medium" href="#destination">
-                  Destination
-                </a>
               </li>
               <li className="nav-item px-3 px-xl-4">
                 <Link className="nav-link fw-medium" to="/transport">

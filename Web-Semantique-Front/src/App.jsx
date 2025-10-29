@@ -20,9 +20,26 @@ function App() {
       
       {/* Pages publiques (Front-office) */}
       <Route path="/public/certifications" element={<CertificationsPublic />} />
-        <Route path="/public/evenements" element={<EvenementsPublic />} />
-        
-        <Route 
+      <Route path="/public/evenements" element={<EvenementsPublic />} />
+      
+      {/* Pages de navigation publiques */}
+      <Route path="/transport" element={<TransportPublic />} />
+      <Route path="/restaurants" element={<RestaurantsBrowse />} />
+      <Route path="/produits" element={<ProduitsBrowse />} />
+      <Route path="/client/activities" element={<Activities />} />
+      <Route path="/client/natural-zones" element={<NaturalZones />} />
+      
+      {/* Pages protégées pour touristes */}
+      <Route 
+        path="/my-reservations" 
+        element={
+          <ProtectedRoute allowedRoles={["Touriste"]}>
+            <MyReservations />
+          </ProtectedRoute>
+        } 
+      />
+      
+      <Route 
         path="/profile" 
         element={
           <ProtectedRoute>

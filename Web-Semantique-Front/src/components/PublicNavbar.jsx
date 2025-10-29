@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import "./Navbar.css";
 
@@ -10,6 +10,7 @@ export function PublicNavbar() {
   const [showDiscoverMenu, setShowDiscoverMenu] = useState(false);
   const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,6 +28,26 @@ export function PublicNavbar() {
     await logout();
     setShowUserMenu(false);
     navigate("/");
+  };
+
+  const scrollToSection = (sectionId) => {
+    // Si on n'est pas sur la page d'accueil, naviguer d'abord
+    if (location.pathname !== "/") {
+      navigate("/");
+      // Attendre que la navigation soit terminée avant de scroller
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 100);
+    } else {
+      // Si on est déjà sur la page d'accueil, scroller directement
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
   };
 
   return (
@@ -51,10 +72,22 @@ export function PublicNavbar() {
         <div className="navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav ms-auto pt-2 pt-lg-0 font-base align-items-lg-center align-items-start">
             <li className="nav-item px-3 px-xl-4">
-              <Link className="nav-link fw-medium" to="/#service">Service</Link>
+              <button 
+                className="nav-link fw-medium" 
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                onClick={() => scrollToSection('service')}
+              >
+                Service
+              </button>
             </li>
             <li className="nav-item px-3 px-xl-4">
-              <Link className="nav-link fw-medium" to="/#destination">Destination</Link>
+              <button 
+                className="nav-link fw-medium" 
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                onClick={() => scrollToSection('destination')}
+              >
+                Destination
+              </button>
             </li>
             <li className="nav-item px-3 px-xl-4">
               <Link className="nav-link fw-medium" to="/public/certifications">Certifications</Link>
