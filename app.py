@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
 from Mangage import SPARQLManager
 from models import *
@@ -6,6 +6,9 @@ from config import NAMESPACE
 from ai import GeminiAgent, AISalhi, AIBSilaAgent
 from auth_routes import auth_bp, token_required
 from email_service import init_mail
+from routes.energie_renouvelable_routes import energie_bp
+from routes.empreinte_carbone_routes import empreinte_carbone_bp
+from werkzeug.exceptions import RequestEntityTooLarge
 import re
 import os
 import sys
@@ -23,12 +26,33 @@ app.config['JSON_AS_ASCII'] = False  # Support non-ASCII characters in JSON
 CORS(app, resources={
     r"/*": {
         "origins": ["http://localhost:5173", "http://localhost:5174", "http://127.0.0.1:5173", "http://127.0.0.1:5174"],
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
         "allow_headers": ["Content-Type", "Authorization"],
         "supports_credentials": True,
         "max_age": 3600
     }
 })
+
+# File upload configuration (from hamza)
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB max file size
+UPLOAD_FOLDER = 'uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Configure Flask to handle multipart/form-data properly
+app.config['WTF_CSRF_ENABLED'] = False  # Disable CSRF for API endpoints
+
+# Serve uploaded files
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    from flask import send_from_directory
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+# Handle file too large error
+@app.errorhandler(RequestEntityTooLarge)
+def handle_file_too_large(e):
+    return jsonify({'error': 'File too large. Maximum size is 5MB.'}), 413
 
 # Initialize Flask-Mail
 init_mail(app)
@@ -39,8 +63,10 @@ ai_agent = GeminiAgent(manager)  # Original AI agent
 aisalhi_agent = AISalhi(manager)  # Advanced AISalhi agent
 bsila_agent = AIBSilaAgent(manager)  # BSila voice assistant
 
-# Register authentication blueprint
+# Register blueprints
 app.register_blueprint(auth_bp)
+app.register_blueprint(energie_bp, url_prefix='/api/energie')
+app.register_blueprint(empreinte_carbone_bp, url_prefix='/api/empreinte_carbone')
 
 # Root endpoint
 @app.route('/', methods=['GET'])

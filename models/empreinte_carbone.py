@@ -2,9 +2,12 @@ from models.base_model import BaseModel
 from config import NAMESPACE
 
 class EmpreinteCarbone(BaseModel):
-    def __init__(self, uri=None, valeur_co2_kg=None, **kwargs):
+    def __init__(self, uri=None, valeur_co2_kg=None, name=None, description=None, image=None, **kwargs):
         super().__init__(uri=uri, **kwargs)
         self.valeur_co2_kg = valeur_co2_kg
+        self.name = name
+        self.description = description
+        self.image = image
     
     def to_sparql_insert(self):
         """Generate SPARQL triples for EmpreinteCarbone"""
@@ -12,10 +15,18 @@ class EmpreinteCarbone(BaseModel):
         
         if self.valeur_co2_kg is not None:
             triples += f'<{self.uri}> <{NAMESPACE}valeurCO2kg> "{self.valeur_co2_kg}"^^xsd:decimal .\n'
+            triples += f'<{self.uri}> <{NAMESPACE}valeur_co2_kg> "{self.valeur_co2_kg}"^^xsd:float .\n'
             
             # Automatically classify as EmpreinteCarboneFaible if <= 1.0 kg
             if float(self.valeur_co2_kg) <= 1.0:
                 triples += f"<{self.uri}> a <{NAMESPACE}EmpreinteCarboneFaible> .\n"
+        
+        if self.name is not None:
+            triples += f'<{self.uri}> <{NAMESPACE}name> "{self.name}"^^xsd:string .\n'
+        if self.description is not None:
+            triples += f'<{self.uri}> <{NAMESPACE}description> "{self.description}"^^xsd:string .\n'
+        if self.image is not None:
+            triples += f'<{self.uri}> <{NAMESPACE}image> "{self.image}"^^xsd:string .\n'
         
         return triples.rstrip('\n')
     

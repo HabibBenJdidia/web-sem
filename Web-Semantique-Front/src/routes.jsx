@@ -15,8 +15,9 @@ import {
   MicrophoneIcon,
   MapIcon,
   BuildingOfficeIcon,
+  BoltIcon,
 } from "@heroicons/react/24/solid";
-import { Home, Profile, Users, Notifications, Certifications, Evenements, Overview, AISalhiDashboard, Restaurants, Produits, Reservations, ActivitiesAdmin, ZonesAdmin } from "@/pages/dashboard";
+import { Home, Profile, Users, Notifications, Certifications, Evenements, Overview, AISalhiDashboard, Restaurants, Produits, Reservations, ActivitiesAdmin, ZonesAdmin, Energies, EmpreinteCarbone } from "@/pages/dashboard";
 import { VideoAnalyzer } from "@/pages/dashboard/video-analyzer";
 import { Transport } from "@/pages/dashboard/transport";
 import { Hebergements } from "@/pages/dashboard/hebergements";
@@ -133,6 +134,18 @@ export const routes = [
         name: "Transport",
         path: "/transport",
         element: <Transport />,
+      },
+      {
+        icon: <BoltIcon {...icon} />,
+        name: "Énergies Renouvelables",
+        path: "/energies",
+        element: <Energies />,
+      },
+      {
+        icon: <ChartBarIcon {...icon} />,
+        name: "Empreinte Carbone",
+        path: "/empreinte-carbone",
+        element: <EmpreinteCarbone />,
       },
     ],
   },

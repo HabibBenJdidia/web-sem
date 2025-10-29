@@ -13,3 +13,5 @@ export * from "@/pages/dashboard/produits";
 export * from "@/pages/dashboard/reservations";
 export * from "@/pages/dashboard/activities-admin";
 export * from "@/pages/dashboard/zones-admin";
+export * from "@/pages/dashboard/Energies";
+export { default as EmpreinteCarbone } from "@/pages/dashboard/EmpreinteCarbone";

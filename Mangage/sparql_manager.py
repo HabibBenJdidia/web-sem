@@ -55,9 +55,24 @@ class SPARQLManager:
     # CREATE
     def create(self, model_instance):
         """Insert a new entity"""
-        triples = model_instance.to_sparql_insert()
-        query = f"PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\nINSERT DATA {{\n{triples}\n}}"
-        return self.execute_update(query)
+        try:
+            triples = model_instance.to_sparql_insert()
+            query = f"""
+            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+            PREFIX eco: <{NAMESPACE}>
+            
+            INSERT DATA {{
+            {triples}
+            }}
+            """
+            print(f"Executing SPARQL update:\n{query}")  # Debug log
+            result = self.execute_update(query)
+            print(f"SPARQL update result: {result}")  # Debug log
+            return result
+        except Exception as e:
+            error_msg = f"Error in create: {str(e)}"
+            print(error_msg, exc_info=True)  # Debug log
+            return {'error': error_msg}
     
     # READ
     def get_by_uri(self, uri):
@@ -74,16 +89,38 @@ class SPARQLManager:
     
     def get_all(self, class_name):
         """Get all entities of a class"""
-        query = f"""
-        PREFIX eco: <{NAMESPACE}>
-        
-        SELECT ?s ?p ?o
-        WHERE {{
-            ?s a <{NAMESPACE}{class_name}> .
-            ?s ?p ?o .
-        }}
-        """
-        return self.execute_query(query)
+        try:
+            print(f"Getting all entities of type: {class_name}")  # Debug log
+            query = f"""
+            PREFIX eco: <{NAMESPACE}>
+            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+            
+            SELECT ?s ?p ?o
+            WHERE {{
+                ?s a <{NAMESPACE}{class_name}> .
+                ?s ?p ?o .
+            }}
+            """
+            print(f"Executing SPARQL query:\n{query}")  # Debug log
+            
+            results = self.execute_query(query)
+            print(f"SPARQL query results: {results}")  # Debug log
+            
+            if not results:
+                print("No results returned from SPARQL query")  # Debug log
+                return []
+                
+            if isinstance(results, dict) and 'error' in results:
+                print(f"Error in SPARQL query: {results['error']}")  # Debug log
+                return results
+                
+            return results
+            
+        except Exception as e:
+            error_msg = f"Error in get_all: {str(e)}"
+            print(error_msg, exc_info=True)  # Debug log
+            return {'error': error_msg}
     
     def search(self, class_name=None, filters=None):
         """Search entities with filters"""
@@ -157,6 +194,11 @@ class SPARQLManager:
     # DELETE
     def delete(self, uri):
         """Delete an entity and all its properties"""
+        # First, check if the entity exists
+        existing_entity = self.get_by_uri(uri)
+        if not existing_entity:
+            return {"success": False, "error": "Entity not found"}
+
         query = f"""
         PREFIX eco: <{NAMESPACE}>
         

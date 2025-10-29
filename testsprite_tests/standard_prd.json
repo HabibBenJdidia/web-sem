@@ -1,0 +1,217 @@
+{
+  "meta": {
+    "project": "EmpreinteCarbone API",
+    "date": "2025-10-29",
+    "prepared_by": "Software Development Manager"
+  },
+  "product_overview": "EmpreinteCarbone API is a backend service to manage Carbon Footprint entries, enabling creation, retrieval, update, and deletion of carbon footprint data via RESTful endpoints.",
+  "core_goals": [
+    "Provide a reliable and scalable API for managing carbon footprint entries.",
+    "Enable CRUD (Create, Read, Update, Delete) operations on EmpreinteCarbone resources.",
+    "Ensure data integrity and input validation for carbon footprint values.",
+    "Support clear and meaningful HTTP responses for client applications."
+  ],
+  "key_features": [
+    "Create new EmpreinteCarbone entries with a carbon emission value in kg.",
+    "Retrieve all EmpreinteCarbone entries with a list endpoint.",
+    "Get a single EmpreinteCarbone entry by its unique identifier.",
+    "Update an existing EmpreinteCarbone entry with new carbon emission data.",
+    "Delete an EmpreinteCarbone entry by its ID.",
+    "Utilize Python Flask framework with SPARQL Fuseki for database interactions.",
+    "RESTful API design with appropriate HTTP methods and status codes.",
+    "Input validation to handle invalid or incomplete data submissions."
+  ],
+  "user_flow_summary": [
+    "User sends POST request to /api/empreinte_carbone with carbon emission value to create a new entry.",
+    "User sends GET request to /api/empreinte_carbone to list all carbon footprint records.",
+    "User sends GET request to /api/empreinte_carbone/{id} to view details of a specific carbon footprint entry.",
+    "User sends PUT request to /api/empreinte_carbone/{id} to update the carbon emission value for an entry.",
+    "User sends DELETE request to /api/empreinte_carbone/{id} to remove a specific carbon footprint record."
+  ],
+  "validation_criteria": [
+    "API returns 201 status and confirmation on successful creation of an EmpreinteCarbone entry.",
+    "API returns 200 status and a list of entries on retrieval all request.",
+    "API returns 200 and the correct EmpreinteCarbone entry data for a valid ID.",
+    "API returns 404 for attempts to retrieve, update, or delete with an invalid/nonexistent ID.",
+    "API enforces required field 'valeur_co2_kg' on create and updates and returns 400 for invalid inputs.",
+    "API returns appropriate success or error messages according to RESTful conventions."
+  ],
+  "code_summary": {
+    "tech_stack": [
+      "Python",
+      "Flask",
+      "SPARQL (Fuseki)",
+      "RDFLib",
+      "Flask-CORS",
+      "python-dotenv",
+      "requests",
+      "google-generativeai",
+      "PyJWT",
+      "Flask-Mail"
+    ],
+    "features": [
+      {
+        "name": "create_empreinte_carbone",
+        "description": "Creates a new EmpreinteCarbone entry.",
+        "files": [
+          "routes/empreinte_carbone_routes.py",
+          "controllers/empreinte_carbone_controller.py",
+          "models/empreinte_carbone.py"
+        ],
+        "api_doc": {
+          "path": "/api/empreinte_carbone",
+          "method": "POST",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "valeur_co2_kg": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "valeur_co2_kg"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "EmpreinteCarbone created successfully"
+            },
+            "400": {
+              "description": "Invalid input"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_empreintes_carbone",
+        "description": "Retrieves all EmpreinteCarbone entries.",
+        "files": [
+          "routes/empreinte_carbone_routes.py",
+          "controllers/empreinte_carbone_controller.py"
+        ],
+        "api_doc": {
+          "path": "/api/empreinte_carbone",
+          "method": "GET",
+          "responses": {
+            "200": {
+              "description": "List of EmpreinteCarbone entries"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_empreinte_carbone",
+        "description": "Retrieves a single EmpreinteCarbone entry by its ID.",
+        "files": [
+          "routes/empreinte_carbone_routes.py",
+          "controllers/empreinte_carbone_controller.py"
+        ],
+        "api_doc": {
+          "path": "/api/empreinte_carbone/{id}",
+          "method": "GET",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "EmpreinteCarbone entry"
+            },
+            "404": {
+              "description": "EmpreinteCarbone not found"
+            }
+          }
+        }
+      },
+      {
+        "name": "update_empreinte_carbone",
+        "description": "Updates an existing EmpreinteCarbone entry by its ID.",
+        "files": [
+          "routes/empreinte_carbone_routes.py",
+          "controllers/empreinte_carbone_controller.py"
+        ],
+        "api_doc": {
+          "path": "/api/empreinte_carbone/{id}",
+          "method": "PUT",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "valeur_co2_kg": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "EmpreinteCarbone updated successfully"
+            },
+            "400": {
+              "description": "Invalid input"
+            },
+            "404": {
+              "description": "EmpreinteCarbone not found"
+            }
+          }
+        }
+      },
+      {
+        "name": "delete_empreinte_carbone",
+        "description": "Deletes an EmpreinteCarbone entry by its ID.",
+        "files": [
+          "routes/empreinte_carbone_routes.py",
+          "controllers/empreinte_carbone_controller.py"
+        ],
+        "api_doc": {
+          "path": "/api/empreinte_carbone/{id}",
+          "method": "DELETE",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "EmpreinteCarbone deleted successfully"
+            },
+            "404": {
+              "description": "EmpreinteCarbone not found"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

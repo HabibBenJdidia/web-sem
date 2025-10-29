@@ -1,0 +1,47 @@
+[
+  {
+    "id": "TC001",
+    "title": "create_empreinte_carbone_entry",
+    "description": "Test the POST /api/empreinte_carbone endpoint to ensure it successfully creates a new EmpreinteCarbone entry when provided with a valid carbon emission value. Verify that the response status is 201 and the response body confirms creation."
+  },
+  {
+    "id": "TC002",
+    "title": "retrieve_all_empreinte_carbone_entries",
+    "description": "Test the GET /api/empreinte_carbone endpoint to retrieve all EmpreinteCarbone entries. Verify that the response status is 200 and the response body contains a list of entries."
+  },
+  {
+    "id": "TC003",
+    "title": "retrieve_single_empreinte_carbone_entry",
+    "description": "Test the GET /api/empreinte_carbone/{id} endpoint with a valid ID to retrieve a specific EmpreinteCarbone entry. Verify that the response status is 200 and the response body contains the correct entry data."
+  },
+  {
+    "id": "TC004",
+    "title": "retrieve_single_empreinte_carbone_entry_invalid_id",
+    "description": "Test the GET /api/empreinte_carbone/{id} endpoint with an invalid or nonexistent ID. Verify that the response status is 404 and the response body indicates that the entry was not found."
+  },
+  {
+    "id": "TC005",
+    "title": "update_empreinte_carbone_entry",
+    "description": "Test the PUT /api/empreinte_carbone/{id} endpoint to update an existing EmpreinteCarbone entry with a new carbon emission value. Verify that the response status is 200 and the response body confirms the update."
+  },
+  {
+    "id": "TC006",
+    "title": "update_empreinte_carbone_entry_invalid_input",
+    "description": "Test the PUT /api/empreinte_carbone/{id} endpoint with invalid input data (e.g., missing or non-numeric valeur_co2_kg). Verify that the response status is 400 and the response body indicates invalid input."
+  },
+  {
+    "id": "TC007",
+    "title": "update_empreinte_carbone_entry_invalid_id",
+    "description": "Test the PUT /api/empreinte_carbone/{id} endpoint with an invalid or nonexistent ID. Verify that the response status is 404 and the response body indicates that the entry was not found."
+  },
+  {
+    "id": "TC008",
+    "title": "delete_empreinte_carbone_entry",
+    "description": "Test the DELETE /api/empreinte_carbone/{id} endpoint to delete an existing EmpreinteCarbone entry by its ID. Verify that the response status is 200 and the response body confirms deletion."
+  },
+  {
+    "id": "TC009",
+    "title": "delete_empreinte_carbone_entry_invalid_id",
+    "description": "Test the DELETE /api/empreinte_carbone/{id} endpoint with an invalid or nonexistent ID. Verify that the response status is 404 and the response body indicates that the entry was not found."
+  }
+]

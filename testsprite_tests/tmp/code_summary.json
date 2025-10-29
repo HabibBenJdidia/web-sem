@@ -1,0 +1,135 @@
+{
+  "tech_stack": ["Python", "Flask", "SPARQL (Fuseki)", "RDFLib", "Flask-CORS", "python-dotenv", "requests", "google-generativeai", "PyJWT", "Flask-Mail"],
+  "features": [
+    {
+      "name": "create_empreinte_carbone",
+      "description": "Creates a new EmpreinteCarbone entry.",
+      "files": [
+        "routes/empreinte_carbone_routes.py",
+        "controllers/empreinte_carbone_controller.py",
+        "models/empreinte_carbone.py"
+      ],
+      "api_doc": {
+        "path": "/api/empreinte_carbone",
+        "method": "POST",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "valeur_co2_kg": { "type": "number" }
+                },
+                "required": ["valeur_co2_kg"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "EmpreinteCarbone created successfully" },
+          "400": { "description": "Invalid input" }
+        }
+      }
+    },
+    {
+      "name": "get_empreintes_carbone",
+      "description": "Retrieves all EmpreinteCarbone entries.",
+      "files": [
+        "routes/empreinte_carbone_routes.py",
+        "controllers/empreinte_carbone_controller.py"
+      ],
+      "api_doc": {
+        "path": "/api/empreinte_carbone",
+        "method": "GET",
+        "responses": {
+          "200": { "description": "List of EmpreinteCarbone entries" }
+        }
+      }
+    },
+    {
+      "name": "get_empreinte_carbone",
+      "description": "Retrieves a single EmpreinteCarbone entry by its ID.",
+      "files": [
+        "routes/empreinte_carbone_routes.py",
+        "controllers/empreinte_carbone_controller.py"
+      ],
+      "api_doc": {
+        "path": "/api/empreinte_carbone/{id}",
+        "method": "GET",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "EmpreinteCarbone entry" },
+          "404": { "description": "EmpreinteCarbone not found" }
+        }
+      }
+    },
+    {
+      "name": "update_empreinte_carbone",
+      "description": "Updates an existing EmpreinteCarbone entry by its ID.",
+      "files": [
+        "routes/empreinte_carbone_routes.py",
+        "controllers/empreinte_carbone_controller.py"
+      ],
+      "api_doc": {
+        "path": "/api/empreinte_carbone/{id}",
+        "method": "PUT",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "valeur_co2_kg": { "type": "number" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "EmpreinteCarbone updated successfully" },
+          "400": { "description": "Invalid input" },
+          "404": { "description": "EmpreinteCarbone not found" }
+        }
+      }
+    },
+    {
+      "name": "delete_empreinte_carbone",
+      "description": "Deletes an EmpreinteCarbone entry by its ID.",
+      "files": [
+        "routes/empreinte_carbone_routes.py",
+        "controllers/empreinte_carbone_controller.py"
+      ],
+      "api_doc": {
+        "path": "/api/empreinte_carbone/{id}",
+        "method": "DELETE",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "EmpreinteCarbone deleted successfully" },
+          "404": { "description": "EmpreinteCarbone not found" }
+        }
+      }
+    }
+  ]
+}
