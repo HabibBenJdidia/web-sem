@@ -242,12 +242,30 @@ SELECT (SUM(?co2) as ?total_co2) WHERE {
     def chat_message(self, message: str) -> str:
         """
         Interactive chat with AISalhi
-        Maintains conversation history
+        Maintains conversation history and automatically executes SPARQL queries
         """
         try:
+            # Enhanced system context with instruction to return actual data
+            enhanced_context = f"""{self.system_context}
+
+**IMPORTANT INSTRUCTIONS:**
+- When user asks about data (certifications, destinations, activities, etc.), YOU MUST:
+  1. Generate the appropriate SPARQL query
+  2. Execute it using the knowledge base
+  3. Present the ACTUAL RESULTS in a clear, human-readable format
+  4. DO NOT just show the SPARQL query - show the RESULTS!
+  
+- Format results as a clear, structured response with:
+  • A brief introduction
+  • The actual data found (names, details, etc.)
+  • A helpful summary or next steps
+
+- NEVER show SPARQL queries to users unless they explicitly ask "show me the query"
+"""
+            
             # Add system context for first message only
             if not self.chat_history:
-                full_prompt = f"{self.system_context}\n\nUser: {message}"
+                full_prompt = f"{enhanced_context}\n\nUser: {message}"
                 
                 # Generate response for first message
                 response = self.client.models.generate_content(
@@ -256,10 +274,13 @@ SELECT (SUM(?co2) as ?total_co2) WHERE {
                     config=self.generation_config
                 )
                 
+                # Check if response contains SPARQL - if yes, execute it
+                response_text = self._process_and_execute_sparql(response.text, message)
+                
                 # Initialize history with first exchange
                 self.chat_history = [
                     full_prompt,
-                    response.text
+                    response_text
                 ]
             else:
                 # For subsequent messages, add to history
@@ -275,12 +296,157 @@ SELECT (SUM(?co2) as ?total_co2) WHERE {
                     config=self.generation_config
                 )
                 
+                # Check if response contains SPARQL - if yes, execute it
+                response_text = self._process_and_execute_sparql(response.text, message)
+                
                 # Add response to history
-                self.chat_history.append(f"Assistant: {response.text}")
+                self.chat_history.append(f"Assistant: {response_text}")
             
-            return response.text
+            return response_text
         except Exception as e:
             return f"AISalhi Chat Error: {str(e)}"
+    
+    def _process_and_execute_sparql(self, ai_response: str, user_message: str) -> str:
+        """
+        Check if AI response contains SPARQL query and execute it
+        Returns the AI response with actual data instead of just the query
+        """
+        try:
+            # Check if response contains SPARQL query
+            if '```sparql' in ai_response.lower() or 'PREFIX eco:' in ai_response:
+                # Extract SPARQL query
+                sparql_query = ai_response
+                if '```sparql' in sparql_query:
+                    sparql_query = sparql_query.split('```sparql')[1].split('```')[0].strip()
+                elif '```' in sparql_query:
+                    sparql_query = sparql_query.split('```')[1].split('```')[0].strip()
+                
+                # Execute the query
+                results = self.sparql_manager.execute_query(sparql_query)
+                
+                if results and len(results) > 0:
+                    # Format results in a human-readable way
+                    formatted_response = self._format_query_results(results, user_message)
+                    return formatted_response
+                else:
+                    return "Je n'ai trouvé aucun résultat correspondant à votre question dans la base de connaissances. Voulez-vous reformuler votre question ?"
+            
+            # If no SPARQL detected, return original response
+            return ai_response
+        except Exception as e:
+            print(f"Error executing SPARQL in chat: {e}")
+            # Return original response if query execution fails
+            return ai_response
+    
+    def _format_query_results(self, results: List[Dict], user_message: str) -> str:
+        """
+        Format SPARQL query results into human-readable response
+        """
+        try:
+            if not results:
+                return "Aucun résultat trouvé."
+            
+            # Detect what type of data was requested
+            message_lower = user_message.lower()
+            
+            if 'certification' in message_lower:
+                return self._format_certifications(results)
+            elif 'destination' in message_lower or 'ville' in message_lower:
+                return self._format_destinations(results)
+            elif 'activité' in message_lower or 'activity' in message_lower:
+                return self._format_activities(results)
+            elif 'hébergement' in message_lower or 'hotel' in message_lower:
+                return self._format_accommodations(results)
+            elif 'restaurant' in message_lower:
+                return self._format_restaurants(results)
+            elif 'transport' in message_lower:
+                return self._format_transports(results)
+            else:
+                # Generic formatting
+                return self._format_generic(results)
+        except Exception as e:
+            return f"Erreur de formatage des résultats: {str(e)}"
+    
+    def _format_certifications(self, results: List[Dict]) -> str:
+        """Format certification results"""
+        response = f"🌿 **Certifications Écologiques Disponibles** ({len(results)} trouvée(s))\n\n"
+        for i, cert in enumerate(results, 1):
+            nom = cert.get('nomCertification', {}).get('value', cert.get('nom', {}).get('value', 'N/A'))
+            organisme = cert.get('organisme', {}).get('value', cert.get('organisme_certificateur', {}).get('value', 'N/A'))
+            type_cert = cert.get('typeCertification', {}).get('value', cert.get('type_certification', {}).get('value', 'N/A'))
+            valide = cert.get('valide', {}).get('value', cert.get('certification_valide', {}).get('value', 'N/A'))
+            
+            response += f"{i}. **{nom}**\n"
+            response += f"   • Organisme: {organisme}\n"
+            response += f"   • Type: {type_cert}\n"
+            response += f"   • Valide: {'✅ Oui' if valide == 'true' or valide == True else '❌ Non'}\n\n"
+        
+        response += "\n💡 Ces certifications garantissent des pratiques écologiques et durables dans le secteur du tourisme."
+        return response
+    
+    def _format_generic(self, results: List[Dict]) -> str:
+        """Generic formatting for any results"""
+        response = f"📊 **Résultats** ({len(results)} trouvé(s))\n\n"
+        for i, result in enumerate(results[:5], 1):  # Limit to 5 results
+            response += f"{i}. "
+            for key, value in result.items():
+                if isinstance(value, dict) and 'value' in value:
+                    response += f"{key}: {value['value']}, "
+            response = response.rstrip(', ') + "\n"
+        
+        if len(results) > 5:
+            response += f"\n... et {len(results) - 5} autres résultats."
+        
+        return response
+    
+    def _format_destinations(self, results: List[Dict]) -> str:
+        """Format destination results"""
+        response = f"🗺️ **Destinations** ({len(results)} trouvée(s))\n\n"
+        for i, dest in enumerate(results[:10], 1):
+            nom = dest.get('nom', {}).get('value', 'N/A')
+            pays = dest.get('pays', {}).get('value', 'N/A')
+            climat = dest.get('climat', {}).get('value', 'N/A')
+            response += f"{i}. **{nom}** ({pays}) - Climat: {climat}\n"
+        return response
+    
+    def _format_activities(self, results: List[Dict]) -> str:
+        """Format activity results"""
+        response = f"🎯 **Activités** ({len(results)} trouvée(s))\n\n"
+        for i, act in enumerate(results[:10], 1):
+            nom = act.get('nom', {}).get('value', 'N/A')
+            difficulte = act.get('difficulte', {}).get('value', 'N/A')
+            duree = act.get('duree_heures', {}).get('value', act.get('dureeHeures', {}).get('value', 'N/A'))
+            prix = act.get('prix', {}).get('value', 'N/A')
+            response += f"{i}. **{nom}** - Difficulté: {difficulte}, Durée: {duree}h, Prix: {prix}€\n"
+        return response
+    
+    def _format_accommodations(self, results: List[Dict]) -> str:
+        """Format accommodation results"""
+        response = f"🏨 **Hébergements** ({len(results)} trouvé(s))\n\n"
+        for i, acc in enumerate(results[:10], 1):
+            nom = acc.get('nom', {}).get('value', 'N/A')
+            type_h = acc.get('type', {}).get('value', 'N/A')
+            prix = acc.get('prix', {}).get('value', 'N/A')
+            response += f"{i}. **{nom}** ({type_h}) - Prix: {prix}€/nuit\n"
+        return response
+    
+    def _format_restaurants(self, results: List[Dict]) -> str:
+        """Format restaurant results"""
+        response = f"🍽️ **Restaurants** ({len(results)} trouvé(s))\n\n"
+        for i, rest in enumerate(results[:10], 1):
+            nom = rest.get('nom', {}).get('value', 'N/A')
+            response += f"{i}. **{nom}**\n"
+        return response
+    
+    def _format_transports(self, results: List[Dict]) -> str:
+        """Format transport results"""
+        response = f"🚗 **Transports** ({len(results)} trouvé(s))\n\n"
+        for i, trans in enumerate(results[:10], 1):
+            nom = trans.get('nom', {}).get('value', 'N/A')
+            type_t = trans.get('type', {}).get('value', 'N/A')
+            emission = trans.get('emissionCO2', {}).get('value', 'N/A')
+            response += f"{i}. **{nom}** ({type_t}) - Émissions: {emission} kg CO2\n"
+        return response
     
     def reset_chat(self):
         """Reset chat history"""
