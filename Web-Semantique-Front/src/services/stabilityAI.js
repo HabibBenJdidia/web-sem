@@ -1,6 +1,6 @@
 // src/services/stabilityAI.js
 
-const API_KEY = 'sk-XPDiAmW8aJRqN7G7783pGU6QsueB5JYLrt3ZPQ4O110VaJlm'; // Clé en dur
+const API_KEY = 'sk-0bf6uWSha3fKvZYIgHDMAOkRz6s6ziIhz9lFRSbaRJVuMWfG'; // Clé en dur
 
 export const generateImageFromText = async (prompt) => {
   try {
