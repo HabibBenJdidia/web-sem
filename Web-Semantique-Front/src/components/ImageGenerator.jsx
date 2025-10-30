@@ -20,8 +20,8 @@ const ImageGenerator = ({ onImageGenerated, initialPrompt = "" }) => {
       const base64Image = await generateImageFromText(prompt);
       onImageGenerated(base64Image);
     } catch (err) {
-      setError("Erreur lors de la génération de l'image");
-      console.error(err);
+      setError(`Erreur lors de la génération de l'image: ${err.message || 'Erreur inconnue'}`);
+      console.error("Détails de l'erreur:", err);
     } finally {
       setIsLoading(false);
     }

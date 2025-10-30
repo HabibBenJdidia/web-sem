@@ -288,9 +288,10 @@ export function HebergementsBrowse() {
       alert("Remplis au moins un pays, un type et un niveau éco !");
       return;
     }
-    const ecoText = niveauEco === "High" || niveauEco === "Élevé" ? "très écologique" : 
-                    niveauEco === "Moyen" ? "modérément écologique" : "écologique";
-    const generatedPrompt = `Un ${type} ${ecoText} situé en ${selectedPays}, architecture moderne et durable, environnement naturel, vue panoramique`;
+    // Generate prompt in English (required by Stability AI)
+    const ecoText = niveauEco === "High" || niveauEco === "Élevé" ? "highly eco-friendly" : 
+                    niveauEco === "Moyen" ? "moderately eco-friendly" : "eco-friendly";
+    const generatedPrompt = `A ${type} ${ecoText} located in ${selectedPays}, modern and sustainable architecture, natural environment, panoramic view, photorealistic, 4k`;
     setPromptForGenerator(generatedPrompt);
   };
 
@@ -562,7 +563,7 @@ export function HebergementsBrowse() {
                 }}
               >
                 <PlusIcon className="h-5 w-5 d-inline me-2" style={{ width: '20px', height: '20px', display: 'inline-block', verticalAlign: 'middle' }} />
-                Add Accommodation
+                Add Hebergement
               </button>
             </div>
           </div>
