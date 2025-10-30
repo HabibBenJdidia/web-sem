@@ -556,6 +556,96 @@ class ApiService {
       method: 'DELETE',
     });
   }
+
+  // ==================== RESTAURANT ENDPOINTS ====================
+
+  /**
+   * Get all restaurants
+   */
+  async getRestaurants() {
+    return this.fetch('/restaurant');
+  }
+
+  /**
+   * Get restaurant by URI
+   */
+  async getRestaurant(uri) {
+    return this.fetch(`/restaurant/${encodeURIComponent(uri)}`);
+  }
+
+  /**
+   * Create new restaurant
+   */
+  async createRestaurant(data) {
+    return this.fetch('/restaurant', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Update restaurant
+   */
+  async updateRestaurant(uri, data) {
+    return this.fetch(`/restaurant/${encodeURIComponent(uri)}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Delete restaurant
+   */
+  async deleteRestaurant(uri) {
+    return this.fetch(`/restaurant/${encodeURIComponent(uri)}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // ==================== PRODUIT LOCAL ENDPOINTS ====================
+
+  /**
+   * Get all products
+   */
+  async getProduits() {
+    return this.fetch('/produit');
+  }
+
+  /**
+   * Get product by URI
+   */
+  async getProduit(uri) {
+    return this.fetch(`/produit/${encodeURIComponent(uri)}`);
+  }
+
+  /**
+   * Create new product
+   */
+  async createProduit(data) {
+    return this.fetch('/produit', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Update product
+   */
+  async updateProduit(uri, data) {
+    return this.fetch(`/produit/${encodeURIComponent(uri)}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Delete product
+   */
+  async deleteProduit(uri) {
+    return this.fetch(`/produit/${encodeURIComponent(uri)}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 export default new ApiService();
