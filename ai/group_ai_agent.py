@@ -184,8 +184,8 @@ SELECT ?nom ?saison WHERE {
                         break
             
             # Check for name filter (for all entities)
+            # Pattern 1: "name X" or "nom X"
             if 'name' in query_lower or 'nom' in query_lower:
-                # Extract potential name from query
                 words = user_message.split()
                 for i, word in enumerate(words):
                     if word.lower() in ['name', 'nom', 'appelé', 'appelée', 'nommé', 'nommée']:
@@ -193,6 +193,28 @@ SELECT ?nom ?saison WHERE {
                             search_name = words[i + 1].strip('.,!?')
                             real_data = self._filter_by_name(real_data, search_name)
                             break
+            # Pattern 2: "X in what country/pays" or "where is X"
+            elif any(word in query_lower for word in ['in what', 'dans quel', 'où est', 'where is', 'quel pays', 'what country']):
+                # Extract the first word (likely the name)
+                words = user_message.split()
+                if words:
+                    # The first word is likely the name of the entity
+                    search_name = words[0].strip('.,!?')
+                    real_data = self._filter_by_name(real_data, search_name)
+            # Pattern 3: "give me activity X" or "donne-moi l'activité X"
+            elif any(word in query_lower for word in ['give me', 'donne', 'show me', 'montre']):
+                # Try to extract name after entity type keyword
+                words = user_message.split()
+                found_entity_keyword = False
+                for i, word in enumerate(words):
+                    word_lower = word.lower().strip('.,!?')
+                    if word_lower in ['activity', 'activité', 'activite', 'destination', 'restaurant', 'product', 'produit']:
+                        found_entity_keyword = True
+                    elif found_entity_keyword and i > 0:
+                        # Everything after the entity keyword is the name
+                        search_name = ' '.join(words[i:]).strip('.,!?')
+                        real_data = self._filter_by_name(real_data, search_name)
+                        break
             
             # Check for season filter (for products)
             if entity_type == "produits":

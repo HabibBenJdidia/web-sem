@@ -7,6 +7,7 @@ import { Energies } from "@/pages/dashboard";
 import { AccessDenied } from "@/pages/AccessDenied";
 import { TransportPublic } from "@/pages/TransportPublic";
 import { RestaurantsBrowse } from "@/pages/RestaurantsBrowse";
+import { HebergementsBrowse } from "@/pages/HebergementsBrowse";
 import { ProduitsBrowse } from "@/pages/ProduitsBrowse";
 import { MyReservations } from "@/pages/MyReservations";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -28,6 +29,7 @@ function App() {
       {/* Pages de navigation publiques */}
       <Route path="/transport" element={<TransportPublic />} />
       <Route path="/restaurants" element={<RestaurantsBrowse />} />
+      <Route path="/hebergements" element={<HebergementsBrowse />} />
       <Route path="/produits" element={<ProduitsBrowse />} />
       <Route path="/client/activities" element={<Activities />} />
       <Route path="/client/natural-zones" element={<NaturalZones />} />

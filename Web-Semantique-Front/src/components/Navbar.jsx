@@ -126,6 +126,9 @@ export function Navbar() {
               <Link className="nav-link fw-medium" to="/restaurants">Restaurants</Link>
             </li>
             <li className="nav-item px-3 px-xl-4">
+              <Link className="nav-link fw-medium" to="/hebergements">Hébergements</Link>
+            </li>
+            <li className="nav-item px-3 px-xl-4">
               <Link className="nav-link fw-medium" to="/produits">Produits</Link>
             </li>
             
