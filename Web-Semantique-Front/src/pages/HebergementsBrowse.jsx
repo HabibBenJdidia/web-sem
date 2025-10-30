@@ -7,6 +7,12 @@ import {
   Input,
   Button,
   Spinner,
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+  Select,
+  Option,
 } from "@material-tailwind/react";
 import { 
   MagnifyingGlassIcon, 
@@ -15,6 +21,7 @@ import {
   CurrencyDollarIcon,
   HomeIcon,
   SparklesIcon,
+  PlusIcon,
 } from "@heroicons/react/24/outline";
 import api from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
@@ -33,6 +40,16 @@ export function HebergementsBrowse() {
   const [selectedType, setSelectedType] = useState("all");
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  
+  // Form Dialog States
+  const [openDialog, setOpenDialog] = useState(false);
+  const [nomHebergement, setNomHebergement] = useState("");
+  const [type, setType] = useState("");
+  const [prix, setPrix] = useState("");
+  const [nbChambres, setNbChambres] = useState("");
+  const [niveauEco, setNiveauEco] = useState("");
+  const [selectedPays, setSelectedPays] = useState("");
+  const [selectedDestination, setSelectedDestination] = useState("");
 
   useEffect(() => {
     loadData();
@@ -212,6 +229,62 @@ export function HebergementsBrowse() {
       default:
         return 'bg-secondary';
     }
+  };
+
+  // Form handling functions
+  const uniquePays = [...new Set(destinations.map((d) => d.pays))].filter(Boolean).sort();
+  const destinationsByPays = destinations.filter((d) => d.pays === selectedPays);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!nomHebergement.trim()) {
+      alert("Le nom est requis");
+      return;
+    }
+    if (!selectedDestination) {
+      alert("La destination est requise");
+      return;
+    }
+
+    const data = {
+      nom: nomHebergement,
+      type: type || null,
+      prix: prix || null,
+      nb_chambres: nbChambres || null,
+      niveau_eco: niveauEco || null,
+      situe_dans: selectedDestination,
+    };
+
+    try {
+      await api.createHebergement(data);
+      alert("Hébergement ajouté avec succès!");
+      resetForm();
+      // Reload data
+      await loadData();
+    } catch (error) {
+      console.error("Erreur création:", error);
+      alert("Erreur lors de la création: " + (error.message || "Inconnue"));
+    }
+  };
+
+  const resetForm = () => {
+    setNomHebergement("");
+    setType("");
+    setPrix("");
+    setNbChambres("");
+    setNiveauEco("");
+    setSelectedPays("");
+    setSelectedDestination("");
+    setOpenDialog(false);
+  };
+
+  const openAddDialog = () => {
+    if (!user) {
+      alert("Vous devez être connecté pour ajouter un hébergement");
+      navigate('/auth/sign-in');
+      return;
+    }
+    setOpenDialog(true);
   };
 
   const getTypeIcon = (type) => {
@@ -487,7 +560,7 @@ export function HebergementsBrowse() {
 
           {/* Results Count */}
           <div className="row mb-4">
-            <div className="col-md-6 mb-3">
+            <div className="col-md-4 mb-3">
               <Typography variant="h6" className="text-secondary fw-bold mb-0">
                 <span className="badge" style={{ 
                   background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
@@ -498,7 +571,21 @@ export function HebergementsBrowse() {
                 </span>
               </Typography>
             </div>
-            <div className="col-md-6 mb-3 text-md-end">
+            <div className="col-md-8 mb-3 text-md-end d-flex gap-2 justify-content-md-end">
+              <button
+                onClick={openAddDialog}
+                className="btn btn-sm"
+                style={{
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  color: 'white',
+                  border: 'none',
+                  fontWeight: '600',
+                  padding: '0.5rem 1rem',
+                }}
+              >
+                <PlusIcon className="h-4 w-4 d-inline me-2" style={{ width: '16px', height: '16px', display: 'inline-block', verticalAlign: 'middle' }} />
+                Add Accommodation
+              </button>
               {user && user.type === 'Guide' && (
                 <Link to="/dashboard/hebergements" className="btn btn-outline-primary btn-sm">
                   <i className="fas fa-cog me-2"></i>
@@ -668,6 +755,81 @@ export function HebergementsBrowse() {
           )}
         </div>
       </section>
+
+      {/* Add Accommodation Dialog */}
+      <Dialog open={openDialog} handler={setOpenDialog} size="lg">
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>Ajouter un Hébergement</DialogHeader>
+          <DialogBody divider className="space-y-4">
+            <Input 
+              label="Nom *" 
+              value={nomHebergement} 
+              onChange={(e) => setNomHebergement(e.target.value)} 
+              required 
+            />
+            <Select label="Type" value={type} onChange={setType}>
+              <Option value="">Sélectionner</Option>
+              <Option value="Hotel">Hôtel</Option>
+              <Option value="Maison d'hôte">Maison d'hôte</Option>
+              <Option value="Villa">Villa</Option>
+              <Option value="Apartment">Appartement</Option>
+              <Option value="Auberge">Auberge</Option>
+              <Option value="Camping">Camping</Option>
+            </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <Input 
+                label="Prix par nuit (€)" 
+                type="number" 
+                value={prix} 
+                onChange={(e) => setPrix(e.target.value)} 
+              />
+              <Input 
+                label="Nombre de chambres" 
+                type="number" 
+                value={nbChambres} 
+                onChange={(e) => setNbChambres(e.target.value)} 
+              />
+            </div>
+            <Select label="Niveau Écologique" value={niveauEco} onChange={setNiveauEco}>
+              <Option value="">Sélectionner</Option>
+              <Option value="Faible">Faible</Option>
+              <Option value="Moyen">Moyen</Option>
+              <Option value="Élevé">Élevé</Option>
+              <Option value="High">High</Option>
+            </Select>
+            <Select label="Pays *" value={selectedPays} onChange={setSelectedPays}>
+              <Option value="">Choisir un pays</Option>
+              {uniquePays.map((p) => (
+                <Option key={p} value={p}>{p}</Option>
+              ))}
+            </Select>
+            <Select 
+              label="Destination *" 
+              value={selectedDestination} 
+              onChange={setSelectedDestination} 
+              disabled={!selectedPays} 
+              required
+            >
+              <Option value="">
+                {selectedPays ? "Choisir une destination" : "Sélectionnez d'abord un pays"}
+              </Option>
+              {destinationsByPays.map((d) => (
+                <Option key={d.uri} value={d.uri}>
+                  {d.nom} {d.climat ? `(${d.climat})` : ''}
+                </Option>
+              ))}
+            </Select>
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="text" onClick={resetForm} className="mr-2">
+              Annuler
+            </Button>
+            <Button color="green" type="submit">
+              Ajouter
+            </Button>
+          </DialogFooter>
+        </form>
+      </Dialog>
 
       {/* Back to Home */}
       <section className="pt-7 pb-0">
