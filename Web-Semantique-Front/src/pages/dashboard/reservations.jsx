@@ -43,7 +43,7 @@ export function Reservations() {
     try {
       setLoading(true);
       const [reservationsData, restaurantsData] = await Promise.all([
-        api.getAllReservations(),
+        api.getReservations(),
         api.getRestaurants(),
       ]);
 
