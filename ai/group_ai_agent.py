@@ -150,7 +150,7 @@ SELECT ?nom ?saison WHERE {
         elif any(word in query_lower for word in ['certification', 'label', 'certifié']):
             real_data = self._fetch_certifications()
             entity_type = "certifications"
-        elif any(word in query_lower for word in ['activité', 'activite', 'randonnée', 'randonnee']):
+        elif any(word in query_lower for word in ['activité', 'activite', 'activity', 'randonnée', 'randonnee', 'difficulté', 'difficulte', 'difficulty']):
             real_data = self._fetch_activites()
             entity_type = "activités"
         elif any(word in query_lower for word in ['zone', 'naturelle', 'parc', 'réserve']):
@@ -166,13 +166,23 @@ SELECT ?nom ?saison WHERE {
             real_data = self._fetch_users()
             entity_type = "utilisateurs"
         
-        # Filter data based on location if specified
+        # Filter data based on location or other criteria
         if real_data and entity_type:
             # Check for location filters
             for city in ['bizerte', 'tunis', 'sousse', 'sfax', 'paris', 'lyon']:
                 if city in query_lower:
                     real_data = self._filter_by_location(real_data, city.capitalize())
                     break
+            
+            # Check for difficulty filters (for activities)
+            if entity_type == "activités":
+                for difficulty in ['facile', 'moyenne', 'difficile', 'easy', 'medium', 'hard']:
+                    if difficulty in query_lower:
+                        # Map English to French
+                        difficulty_map = {'easy': 'Facile', 'medium': 'Moyenne', 'hard': 'Difficile'}
+                        filter_value = difficulty_map.get(difficulty, difficulty.capitalize())
+                        real_data = self._filter_by_difficulty(real_data, filter_value)
+                        break
         
         # Build prompt with real data
         if real_data:
@@ -229,6 +239,15 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
                 if isinstance(val, str) and location.lower() in val.lower():
                     filtered.append(item)
                     break
+        return filtered if filtered else data
+    
+    def _filter_by_difficulty(self, data: List[Dict], difficulty: str) -> List[Dict]:
+        """Filter activities by difficulty"""
+        filtered = []
+        for item in data:
+            if 'difficulte' in item and item['difficulte']:
+                if item['difficulte'].lower() == difficulty.lower():
+                    filtered.append(item)
         return filtered if filtered else data
     
     def _fetch_destinations(self) -> List[Dict]:
