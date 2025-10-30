@@ -183,6 +183,17 @@ SELECT ?nom ?saison WHERE {
                         filter_value = difficulty_map.get(difficulty, difficulty.capitalize())
                         real_data = self._filter_by_difficulty(real_data, filter_value)
                         break
+            
+            # Check for name filter (for all entities)
+            if 'name' in query_lower or 'nom' in query_lower:
+                # Extract potential name from query
+                words = user_message.split()
+                for i, word in enumerate(words):
+                    if word.lower() in ['name', 'nom', 'appelé', 'appelée', 'nommé', 'nommée']:
+                        if i + 1 < len(words):
+                            search_name = words[i + 1].strip('.,!?')
+                            real_data = self._filter_by_name(real_data, search_name)
+                            break
         
         # Build prompt with real data
         if real_data:
@@ -247,6 +258,15 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
         for item in data:
             if 'difficulte' in item and item['difficulte']:
                 if item['difficulte'].lower() == difficulty.lower():
+                    filtered.append(item)
+        return filtered if filtered else data
+    
+    def _filter_by_name(self, data: List[Dict], name: str) -> List[Dict]:
+        """Filter entities by name (partial match)"""
+        filtered = []
+        for item in data:
+            if 'nom' in item and item['nom']:
+                if name.lower() in item['nom'].lower():
                     filtered.append(item)
         return filtered if filtered else data
     
