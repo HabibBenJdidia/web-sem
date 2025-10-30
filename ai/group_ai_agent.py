@@ -250,22 +250,36 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
                     filtered.append(item)
         return filtered if filtered else data
     
+    def _deduplicate_by_uri(self, data: List[Dict]) -> List[Dict]:
+        """Remove duplicates based on URI"""
+        seen = set()
+        unique_results = []
+        for item in data:
+            uri = item.get('uri', '')
+            if uri and uri not in seen:
+                seen.add(uri)
+                unique_results.append(item)
+            elif not uri:
+                # If no URI, keep the item (shouldn't happen but safe)
+                unique_results.append(item)
+        return unique_results
+    
     def _fetch_destinations(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT DISTINCT ?nom ?pays ?climat WHERE {
+        SELECT ?uri ?nom ?pays ?climat WHERE {
             ?uri a eco:Destination .
             ?uri eco:nom ?nom .
             OPTIONAL { ?uri eco:pays ?pays . }
             OPTIONAL { ?uri eco:climat ?climat . }
         }
         """
-        return self._execute_and_parse(query)
+        return self._deduplicate_by_uri(self._execute_and_parse(query))
     
     def _fetch_hebergements(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT DISTINCT ?nom ?type ?prix ?niveau WHERE {
+        SELECT ?uri ?nom ?type ?prix ?niveau WHERE {
             ?uri a eco:Hebergement .
             ?uri eco:nom ?nom .
             OPTIONAL { ?uri eco:type ?type . }
@@ -273,12 +287,12 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
             OPTIONAL { ?uri eco:niveauEco ?niveau . }
         }
         """
-        return self._execute_and_parse(query)
+        return self._deduplicate_by_uri(self._execute_and_parse(query))
     
     def _fetch_restaurants(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT DISTINCT ?nom ?type ?ville WHERE {
+        SELECT ?uri ?nom ?type ?ville WHERE {
             ?uri a eco:Restaurant .
             ?uri eco:nom ?nom .
             OPTIONAL { ?uri eco:type ?type . }
@@ -288,48 +302,48 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
             }
         }
         """
-        return self._execute_and_parse(query)
+        return self._deduplicate_by_uri(self._execute_and_parse(query))
     
     def _fetch_produits(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT DISTINCT ?nom ?saison ?bio WHERE {
+        SELECT ?uri ?nom ?saison ?bio WHERE {
             ?uri a eco:ProduitLocal .
             ?uri eco:nom ?nom .
             OPTIONAL { ?uri eco:saison ?saison . }
             OPTIONAL { ?uri eco:bio ?bio . }
         }
         """
-        return self._execute_and_parse(query)
+        return self._deduplicate_by_uri(self._execute_and_parse(query))
     
     def _fetch_transports(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT DISTINCT ?nom ?type ?emission WHERE {
+        SELECT ?uri ?nom ?type ?emission WHERE {
             ?uri a eco:Transport .
             ?uri eco:nom ?nom .
             OPTIONAL { ?uri eco:type ?type . }
             OPTIONAL { ?uri eco:emissionCO2PerKm ?emission . }
         }
         """
-        return self._execute_and_parse(query)
+        return self._deduplicate_by_uri(self._execute_and_parse(query))
     
     def _fetch_evenements(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT DISTINCT ?nom ?date ?prix WHERE {
+        SELECT ?uri ?nom ?date ?prix WHERE {
             ?uri a eco:Evenement .
             ?uri eco:nom ?nom .
             OPTIONAL { ?uri eco:eventDate ?date . }
             OPTIONAL { ?uri eco:eventPrix ?prix . }
         }
         """
-        return self._execute_and_parse(query)
+        return self._deduplicate_by_uri(self._execute_and_parse(query))
     
     def _fetch_certifications(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT DISTINCT ?nom ?organisme ?annee WHERE {
+        SELECT ?uri ?nom ?organisme ?annee WHERE {
             ?uri a eco:CertificationEco .
             OPTIONAL { ?uri eco:labelNom ?nom . }
             OPTIONAL { ?uri eco:nom ?nom . }
@@ -338,12 +352,12 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
             OPTIONAL { ?uri eco:anneeObtention ?annee . }
         }
         """
-        return self._execute_and_parse(query)
+        return self._deduplicate_by_uri(self._execute_and_parse(query))
     
     def _fetch_activites(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT DISTINCT ?nom ?difficulte ?duree ?prix WHERE {
+        SELECT ?uri ?nom ?difficulte ?duree ?prix WHERE {
             ?uri a eco:Activite .
             ?uri eco:nom ?nom .
             OPTIONAL { ?uri eco:difficulte ?difficulte . }
@@ -351,53 +365,53 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
             OPTIONAL { ?uri eco:prix ?prix . }
         }
         """
-        return self._execute_and_parse(query)
+        return self._deduplicate_by_uri(self._execute_and_parse(query))
     
     def _fetch_zones(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT DISTINCT ?nom ?superficie ?protection WHERE {
+        SELECT ?uri ?nom ?superficie ?protection WHERE {
             ?uri a eco:ZoneNaturelle .
             ?uri eco:nom ?nom .
             OPTIONAL { ?uri eco:superficieHectares ?superficie . }
             OPTIONAL { ?uri eco:niveauProtection ?protection . }
         }
         """
-        return self._execute_and_parse(query)
+        return self._deduplicate_by_uri(self._execute_and_parse(query))
     
     def _fetch_empreintes(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT DISTINCT ?valeur ?periode WHERE {
+        SELECT ?uri ?valeur ?periode WHERE {
             ?uri a eco:EmpreinteCarbone .
             OPTIONAL { ?uri eco:valeurCO2kg ?valeur . }
             OPTIONAL { ?uri eco:periode ?periode . }
         }
         """
-        return self._execute_and_parse(query)
+        return self._deduplicate_by_uri(self._execute_and_parse(query))
     
     def _fetch_energies(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT DISTINCT ?type ?capacite WHERE {
+        SELECT ?uri ?type ?capacite WHERE {
             ?uri a eco:EnergieRenouvelable .
             OPTIONAL { ?uri eco:typeEnergie ?type . }
             OPTIONAL { ?uri eco:capaciteKw ?capacite . }
         }
         """
-        return self._execute_and_parse(query)
+        return self._deduplicate_by_uri(self._execute_and_parse(query))
     
     def _fetch_users(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT DISTINCT ?nom ?age ?nationalite WHERE {
+        SELECT ?uri ?nom ?age ?nationalite WHERE {
             { ?uri a eco:Touriste . } UNION { ?uri a eco:Guide . }
             ?uri eco:nom ?nom .
             OPTIONAL { ?uri eco:age ?age . }
             OPTIONAL { ?uri eco:nationalite ?nationalite . }
         }
         """
-        return self._execute_and_parse(query)
+        return self._deduplicate_by_uri(self._execute_and_parse(query))
     
     def _execute_and_parse(self, query: str) -> List[Dict]:
         try:
