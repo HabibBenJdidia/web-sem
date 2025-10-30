@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import ImageGenerator from "@/components/ImageGenerator";
 import {
   Card,
   CardBody,
@@ -50,6 +51,8 @@ export function HebergementsBrowse() {
   const [niveauEco, setNiveauEco] = useState("");
   const [selectedPays, setSelectedPays] = useState("");
   const [selectedDestination, setSelectedDestination] = useState("");
+  const [generatedImage, setGeneratedImage] = useState(null);
+  const [promptForGenerator, setPromptForGenerator] = useState("");
 
   useEffect(() => {
     loadData();
@@ -276,6 +279,19 @@ export function HebergementsBrowse() {
     setSelectedPays("");
     setSelectedDestination("");
     setOpenDialog(false);
+    setPromptForGenerator("");
+    setGeneratedImage(null);
+  };
+
+  const handleGenerateImage = () => {
+    if (!selectedPays || !type || !niveauEco) {
+      alert("Remplis au moins un pays, un type et un niveau éco !");
+      return;
+    }
+    const ecoText = niveauEco === "High" || niveauEco === "Élevé" ? "très écologique" : 
+                    niveauEco === "Moyen" ? "modérément écologique" : "écologique";
+    const generatedPrompt = `Un ${type} ${ecoText} situé en ${selectedPays}, architecture moderne et durable, environnement naturel, vue panoramique`;
+    setPromptForGenerator(generatedPrompt);
   };
 
   const openAddDialog = () => {
@@ -519,247 +535,44 @@ export function HebergementsBrowse() {
       {/* Main Content */}
       <section className="pt-5 pb-9">
         <div className="container">
-          {/* Search & Filter */}
-          <div className="row mb-5">
-            <div className="col-12">
-              <div className="card shadow-lg border-0" style={{ 
-                animation: 'fadeIn 0.5s ease-out',
-                background: 'linear-gradient(135deg, rgba(240, 147, 251, 0.05) 0%, rgba(245, 87, 108, 0.05) 100%)',
-                border: '2px solid #f093fb !important'
-              }}>
-                <div className="card-body p-4">
-                  <div className="row g-3">
-                    <div className="col-md-8">
-                      <Input
-                        size="lg"
-                        label="Search accommodations..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-                      />
-                    </div>
-                    <div className="col-md-4">
-                      <select
-                        className="form-select form-select-lg"
-                        value={selectedType}
-                        onChange={(e) => setSelectedType(e.target.value)}
-                        style={{ height: '42px' }}
-                      >
-                        {uniqueTypes.map(type => (
-                          <option key={type} value={type}>
-                            {type === "all" ? "All Types" : type}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Results Count */}
-          <div className="row mb-4">
-            <div className="col-md-4 mb-3">
-              <Typography variant="h6" className="text-secondary fw-bold mb-0">
-                <span className="badge" style={{ 
-                  background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                  fontSize: '1rem',
-                  padding: '0.5rem 1rem'
-                }}>
-                  {filteredHebergements.length} Accommodation{filteredHebergements.length !== 1 ? 's' : ''} Found
-                </span>
-              </Typography>
-            </div>
-            <div className="col-md-8 mb-3 text-md-end d-flex gap-2 justify-content-md-end">
+          {/* Add Accommodation Button - Centered */}
+          <div className="row">
+            <div className="col-12 text-center">
               <button
                 onClick={openAddDialog}
-                className="btn btn-sm"
+                className="btn btn-lg"
                 style={{
                   background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                   color: 'white',
                   border: 'none',
                   fontWeight: '600',
-                  padding: '0.5rem 1rem',
+                  padding: '1rem 2rem',
+                  fontSize: '1.2rem',
+                  borderRadius: '0.75rem',
+                  boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)',
+                  transition: 'all 0.3s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.3)';
                 }}
               >
-                <PlusIcon className="h-4 w-4 d-inline me-2" style={{ width: '16px', height: '16px', display: 'inline-block', verticalAlign: 'middle' }} />
+                <PlusIcon className="h-5 w-5 d-inline me-2" style={{ width: '20px', height: '20px', display: 'inline-block', verticalAlign: 'middle' }} />
                 Add Accommodation
               </button>
-              {user && user.type === 'Guide' && (
-                <Link to="/dashboard/hebergements" className="btn btn-outline-primary btn-sm">
-                  <i className="fas fa-cog me-2"></i>
-                  Manage Accommodations
-                </Link>
-              )}
             </div>
           </div>
-
-          {/* Hebergements Grid */}
-          {filteredHebergements.length === 0 ? (
-            <div className="row">
-              <div className="col-12">
-                <div className="card shadow-hover text-center py-5" style={{ animation: 'fadeIn 0.6s ease-out' }}>
-                  <div className="card-body">
-                    <div style={{ fontSize: '4rem', opacity: 0.3 }}>🔍</div>
-                    <Typography variant="h5" className="text-secondary mb-2">
-                      No accommodations found
-                    </Typography>
-                    <Typography variant="small" className="text-muted">
-                      Try adjusting your search criteria
-                    </Typography>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="row g-4">
-              {filteredHebergements.map((hebergement, index) => {
-                const destination = getDestination(hebergement.situe_dans || hebergement.destination?.uri);
-                
-                return (
-                  <div key={hebergement.uri} className="col-lg-4 col-md-6 mb-4" 
-                       style={{ 
-                         animation: `fadeIn 0.5s ease-out ${index * 0.1}s backwards`
-                       }}>
-                    <div className="card h-100 shadow-hover border-0 overflow-hidden hover-lift">
-                      <div className="position-relative">
-                        <div 
-                          className="card-header border-0"
-                          style={{ 
-                            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                            padding: '2rem 1.5rem'
-                          }}
-                        >
-                          <div className="text-center">
-                            <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>
-                              {getTypeIcon(hebergement.type)}
-                            </div>
-                            <h5 className="text-white fw-bold mb-1">{hebergement.nom}</h5>
-                            <span className="badge bg-white text-dark">
-                              {hebergement.type || 'Hébergement'}
-                            </span>
-                          </div>
-                        </div>
-                        {hebergement.niveau_eco && (
-                          <div className="position-absolute top-0 end-0 m-3">
-                            <span className={`badge ${getEcoLevelColor(hebergement.niveau_eco)} shadow-sm`}>
-                              <i className="fas fa-leaf me-1"></i>
-                              {hebergement.niveau_eco}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="card-body p-4">
-                        {/* Location */}
-                        <div className="d-flex align-items-center mb-3 pb-3 border-bottom">
-                          <MapPinIcon className="h-4 w-4 text-primary me-2" style={{ minWidth: '16px' }} />
-                          <Typography variant="small" className="text-secondary fw-medium mb-0">
-                            {destination?.nom || getDestinationName(hebergement.situe_dans)} 
-                            {destination?.pays && `, ${destination.pays}`}
-                          </Typography>
-                        </div>
-
-                        {/* Details */}
-                        <div className="row g-3 mb-3">
-                          {hebergement.prix && (
-                            <div className="col-6">
-                              <div className="d-flex align-items-center">
-                                <CurrencyDollarIcon className="h-5 w-5 text-success me-2" />
-                                <div>
-                                  <Typography variant="small" className="text-muted d-block" style={{ fontSize: '0.7rem' }}>
-                                    Prix/Nuit
-                                  </Typography>
-                                  <Typography variant="small" className="fw-bold text-success">
-                                    {hebergement.prix}€
-                                  </Typography>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                          
-                          {hebergement.nb_chambres && (
-                            <div className="col-6">
-                              <div className="d-flex align-items-center">
-                                <HomeIcon className="h-5 w-5 text-info me-2" />
-                                <div>
-                                  <Typography variant="small" className="text-muted d-block" style={{ fontSize: '0.7rem' }}>
-                                    Chambres
-                                  </Typography>
-                                  <Typography variant="small" className="fw-bold text-info">
-                                    {hebergement.nb_chambres}
-                                  </Typography>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Eco Level Bar */}
-                        {hebergement.niveau_eco && (
-                          <div className="pt-3 border-top">
-                            <div className="d-flex justify-content-between align-items-center mb-2">
-                              <Typography variant="small" className="text-muted mb-0">
-                                <SparklesIcon className="h-4 w-4 d-inline me-1" />
-                                Niveau Écologique
-                              </Typography>
-                              <Typography variant="small" className="fw-bold mb-0">
-                                {hebergement.niveau_eco}
-                              </Typography>
-                            </div>
-                            <div className="progress" style={{ height: '8px' }}>
-                              <div 
-                                className={`progress-bar ${getEcoLevelColor(hebergement.niveau_eco).replace('bg-', 'bg-gradient-')}`}
-                                style={{ 
-                                  width: hebergement.niveau_eco?.toLowerCase() === 'élevé' || hebergement.niveau_eco?.toLowerCase() === 'high' ? '100%' :
-                                         hebergement.niveau_eco?.toLowerCase() === 'moyen' || hebergement.niveau_eco?.toLowerCase() === 'medium' ? '66%' : '33%'
-                                }}
-                              ></div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="card-footer bg-light border-0 p-3">
-                        <button
-                          onClick={() => {
-                            if (!user) {
-                              navigate('/auth/sign-in');
-                            } else {
-                              alert('Booking functionality coming soon!');
-                            }
-                          }}
-                          className="btn w-100"
-                          style={{
-                            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                            color: 'white',
-                            border: 'none',
-                            fontWeight: '600',
-                            padding: '0.75rem',
-                            borderRadius: '0.5rem',
-                            transition: 'transform 0.2s',
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-                          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                        >
-                          <i className="fas fa-calendar-check me-2"></i>
-                          {user ? 'Book Now' : 'Login to Book'}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
         </div>
       </section>
 
       {/* Add Accommodation Dialog */}
       <Dialog open={openDialog} handler={setOpenDialog} size="lg">
         <form onSubmit={handleSubmit}>
-          <DialogHeader>Ajouter un Hébergement</DialogHeader>
+          <DialogHeader>Ajouter Hébergement</DialogHeader>
           <DialogBody divider className="space-y-4">
             <Input 
               label="Nom *" 
@@ -770,32 +583,27 @@ export function HebergementsBrowse() {
             <Select label="Type" value={type} onChange={setType}>
               <Option value="">Sélectionner</Option>
               <Option value="Hotel">Hôtel</Option>
-              <Option value="Maison d'hôte">Maison d'hôte</Option>
               <Option value="Villa">Villa</Option>
               <Option value="Apartment">Appartement</Option>
-              <Option value="Auberge">Auberge</Option>
-              <Option value="Camping">Camping</Option>
             </Select>
             <div className="grid grid-cols-2 gap-4">
               <Input 
-                label="Prix par nuit (€)" 
+                label="Prix (€)" 
                 type="number" 
                 value={prix} 
                 onChange={(e) => setPrix(e.target.value)} 
               />
               <Input 
-                label="Nombre de chambres" 
+                label="Chambres" 
                 type="number" 
                 value={nbChambres} 
                 onChange={(e) => setNbChambres(e.target.value)} 
               />
             </div>
-            <Select label="Niveau Écologique" value={niveauEco} onChange={setNiveauEco}>
+            <Select label="Niveau Éco" value={niveauEco} onChange={setNiveauEco}>
               <Option value="">Sélectionner</Option>
-              <Option value="Faible">Faible</Option>
-              <Option value="Moyen">Moyen</Option>
-              <Option value="Élevé">Élevé</Option>
-              <Option value="High">High</Option>
+              <Option value="Low">Faible</Option>
+              <Option value="High">Élevé</Option>
             </Select>
             <Select label="Pays *" value={selectedPays} onChange={setSelectedPays}>
               <Option value="">Choisir un pays</Option>
@@ -811,25 +619,55 @@ export function HebergementsBrowse() {
               required
             >
               <Option value="">
-                {selectedPays ? "Choisir une destination" : "Sélectionnez d'abord un pays"}
+                {selectedPays ? "Choisir une destination" : "Sélectionnez un pays"}
               </Option>
               {destinationsByPays.map((d) => (
                 <Option key={d.uri} value={d.uri}>
-                  {d.nom} {d.climat ? `(${d.climat})` : ''}
+                  {d.nom} ({d.climat})
                 </Option>
               ))}
             </Select>
+
+            <Button 
+              color="purple" 
+              onClick={handleGenerateImage} 
+              className="w-full" 
+              disabled={!selectedPays || !type || !niveauEco}
+              type="button"
+            >
+              Générer mon hébergement de rêve
+            </Button>
+
+            <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl">
+              <ImageGenerator 
+                initialPrompt={promptForGenerator} 
+                onImageGenerated={(b) => setGeneratedImage(`data:image/png;base64,${b}`)} 
+              />
+            </div>
           </DialogBody>
           <DialogFooter>
-            <Button variant="text" onClick={resetForm} className="mr-2">
-              Annuler
-            </Button>
-            <Button color="green" type="submit">
-              Ajouter
-            </Button>
+            <Button variant="text" onClick={resetForm}>Annuler</Button>
+            <Button color="green" type="submit">Ajouter</Button>
           </DialogFooter>
         </form>
       </Dialog>
+
+      {/* IMAGE GÉNÉRÉE */}
+      {generatedImage && (
+        <div className="mt-8 p-6 bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl shadow-lg text-center" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 9999, maxWidth: '90%', maxHeight: '90%', overflow: 'auto' }}>
+          <Typography variant="h5" className="mb-4 text-purple-800">Ton hébergement de rêve</Typography>
+          <img src={generatedImage} alt="IA" className="max-w-2xl mx-auto rounded-lg shadow-2xl" style={{ maxWidth: '100%', height: 'auto' }} />
+          <div className="flex gap-3 justify-center mt-4">
+            <Button color="green" onClick={() => {
+              const a = document.createElement("a");
+              a.href = generatedImage;
+              a.download = "hebergement-reve.png";
+              a.click();
+            }}>Télécharger</Button>
+            <Button color="gray" onClick={() => setGeneratedImage(null)}>Fermer</Button>
+          </div>
+        </div>
+      )}
 
       {/* Back to Home */}
       <section className="pt-7 pb-0">
