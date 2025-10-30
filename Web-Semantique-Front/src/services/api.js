@@ -455,6 +455,37 @@ class ApiService {
     return this.fetch(`/ai/eco-score/${type}/${encodeURIComponent(uri)}`);
   }
 
+  // ==================== GROUP AI ENDPOINTS ====================
+
+  /**
+   * Chat with GroupAI
+   */
+  async groupAIChat(message) {
+    return this.fetch('/groupai/chat', {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    });
+  }
+
+  /**
+   * Execute SPARQL via GroupAI
+   */
+  async groupAISparql(query) {
+    return this.fetch('/groupai/sparql', {
+      method: 'POST',
+      body: JSON.stringify({ query }),
+    });
+  }
+
+  /**
+   * Reset GroupAI chat
+   */
+  async groupAIReset() {
+    return this.fetch('/groupai/reset', {
+      method: 'POST',
+    });
+  }
+
   // ==================== GENERIC SPARQL ====================
 
   /**

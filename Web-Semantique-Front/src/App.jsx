@@ -12,10 +12,13 @@ import { MyReservations } from "@/pages/MyReservations";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { GuestRoute } from "@/components/GuestRoute";
 import { Activities, NaturalZones } from "@/pages/client";
+import { GroupAIChatbot } from "@/components/GroupAIChatbot";
 
 function App() {
   return (
-    <Routes>
+    <>
+      <GroupAIChatbot />
+      <Routes>
       <Route path="/" element={<LandingPage />} />
       
       {/* Pages publiques (Front-office) */}
@@ -74,7 +77,8 @@ function App() {
       <Route path="/auth/*" element={<Auth />} />
       <Route path="/access-denied" element={<AccessDenied />} />
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      </Routes>
+    </>
   );
 }
 

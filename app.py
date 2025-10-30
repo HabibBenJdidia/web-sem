@@ -4,6 +4,7 @@ from Mangage import SPARQLManager
 from models import *
 from config import NAMESPACE
 from ai import GeminiAgent, AISalhi, AIBSilaAgent
+from ai.group_ai_agent import GroupAIAgent
 from auth_routes import auth_bp, token_required
 from email_service import init_mail
 from routes.energie_renouvelable_routes import energie_bp
@@ -62,6 +63,7 @@ manager = SPARQLManager()
 ai_agent = GeminiAgent(manager)  # Original AI agent
 aisalhi_agent = AISalhi(manager)  # Advanced AISalhi agent
 bsila_agent = AIBSilaAgent(manager)  # BSila voice assistant
+group_ai_agent = GroupAIAgent(manager)  # GroupAI universal chatbot
 
 # Register blueprints
 app.register_blueprint(auth_bp)
@@ -2027,7 +2029,10 @@ def ai_help():
             "POST /ai/analyze-video": "Analyze video/audio for vibe detection and event recommendations",
             "GET /ai/eco-score/<entity_type>/<uri>": "Calculate eco score",
             "POST /ai/reset": "Reset chat session",
-            "GET /ai/help": "This help message"
+            "GET /ai/help": "This help message",
+            "POST /groupai/chat": "GroupAI universal chatbot",
+            "POST /groupai/sparql": "Execute custom SPARQL query",
+            "POST /groupai/reset": "Reset GroupAI chat session"
         },
         "examples": {
             "chat": {
@@ -2377,6 +2382,102 @@ def bsila_help():
             "Recherche par nom, localisation, produit",
             "Réponses duales (vocal + data)",
             "Speech-to-text intégré"
+        ]
+    })
+
+# ==================== GROUP AI ROUTES ====================
+@app.route('/groupai/chat', methods=['POST'])
+def groupai_chat():
+    """GroupAI universal chatbot - search across all entities"""
+    try:
+        data = request.get_json()
+        message = data.get('message', '')
+        
+        if not message:
+            return jsonify({'error': 'Message is required'}), 400
+        
+        response = group_ai_agent.chat_message(message)
+        
+        return jsonify({
+            'success': True,
+            'response': response
+        })
+    except Exception as e:
+        print(f"Error in GroupAI chat: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/groupai/sparql', methods=['POST'])
+def groupai_sparql():
+    """Execute custom SPARQL query via GroupAI"""
+    try:
+        data = request.get_json()
+        query = data.get('query', '')
+        
+        if not query:
+            return jsonify({'error': 'SPARQL query is required'}), 400
+        
+        result = group_ai_agent.execute_sparql(query)
+        
+        return jsonify(result)
+    except Exception as e:
+        print(f"Error in GroupAI SPARQL: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/groupai/reset', methods=['POST'])
+def groupai_reset():
+    """Reset GroupAI chat session"""
+    try:
+        result = group_ai_agent.reset_chat()
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/groupai/help', methods=['GET'])
+def groupai_help():
+    """Get GroupAI capabilities"""
+    return jsonify({
+        "name": "GroupAI",
+        "version": "1.0.0",
+        "description": "Universal Eco-Tourism Chatbot - Search across ALL entities",
+        "searchable_entities": [
+            "Destination et Hébergement (Destination, Ville, Region, Hebergement, Hotel, MaisonHote)",
+            "Restaurant et Produit Local (Restaurant, RestaurantEco, ProduitLocal, ProduitLocalBio)",
+            "User et Transport (Touriste, Guide, Transport, EcoTransport, TransportNonMotorise)",
+            "Evenement et CertificationEco (Evenement, Festival, Foire, CertificationEco)",
+            "Activite et Zone Naturelle (Activite, Randonnee, ZoneNaturelle)",
+            "Empreinte Carbone et EnergieRenouvelable (EmpreinteCarbone, EnergieRenouvelable)"
+        ],
+        "capabilities": [
+            "Search across all 10+ entity types",
+            "Natural language queries in French",
+            "SPARQL execution with conversational responses",
+            "Smart data filtering and recommendations",
+            "Eco-friendly suggestions"
+        ],
+        "endpoints": {
+            "POST /groupai/chat": "Chat with GroupAI (body: {message: string})",
+            "POST /groupai/sparql": "Execute SPARQL query (body: {query: string})",
+            "POST /groupai/reset": "Reset chat session",
+            "GET /groupai/help": "This help message"
+        },
+        "examples": [
+            {"message": "Montre-moi toutes les destinations"},
+            {"message": "Quels sont les hébergements écologiques?"},
+            {"message": "Liste les restaurants à Paris"},
+            {"message": "Transports zéro émission disponibles?"},
+            {"message": "Événements en 2025"},
+            {"message": "Activités faciles pour débutants"},
+            {"message": "Produits bio de saison"},
+            {"message": "Zones naturelles protégées"}
         ]
     })
 
