@@ -138,7 +138,7 @@ SELECT ?nom ?saison WHERE {
         elif any(word in query_lower for word in ['restaurant', 'manger', 'cuisine']):
             real_data = self._fetch_restaurants()
             entity_type = "restaurants"
-        elif any(word in query_lower for word in ['produit', 'local', 'bio']):
+        elif any(word in query_lower for word in ['produit', 'product', 'local', 'bio']):
             real_data = self._fetch_produits()
             entity_type = "produits"
         elif any(word in query_lower for word in ['transport', 'déplacement', 'vélo', 'train', 'bus']):
@@ -159,7 +159,7 @@ SELECT ?nom ?saison WHERE {
         elif any(word in query_lower for word in ['empreinte', 'carbone', 'co2', 'émission']):
             real_data = self._fetch_empreintes()
             entity_type = "empreintes carbone"
-        elif any(word in query_lower for word in ['énergie', 'energie', 'renouvelable', 'solaire', 'éolien']):
+        elif any(word in query_lower for word in ['énergie', 'energie', 'energy', 'renouvelable', 'renewable', 'solaire', 'solar', 'éolien', 'hydraulique', 'hydraulic']):
             real_data = self._fetch_energies()
             entity_type = "énergies renouvelables"
         elif any(word in query_lower for word in ['touriste', 'guide', 'utilisateur', 'user']):
@@ -194,6 +194,37 @@ SELECT ?nom ?saison WHERE {
                             search_name = words[i + 1].strip('.,!?')
                             real_data = self._filter_by_name(real_data, search_name)
                             break
+            
+            # Check for season filter (for products)
+            if entity_type == "produits":
+                for season in ['printemps', 'été', 'ete', 'automne', 'hiver', 'spring', 'summer', 'autumn', 'fall', 'winter']:
+                    if season in query_lower:
+                        # Map English to French
+                        season_map = {
+                            'spring': 'Printemps',
+                            'summer': 'Été',
+                            'autumn': 'Automne',
+                            'fall': 'Automne',
+                            'winter': 'Hiver'
+                        }
+                        filter_value = season_map.get(season, season.capitalize())
+                        real_data = self._filter_by_season(real_data, filter_value)
+                        break
+            
+            # Check for energy type filter (for energies)
+            if entity_type == "énergies renouvelables":
+                for energy_type in ['solaire', 'solar', 'éolien', 'éolienne', 'wind', 'hydraulique', 'hydraulic', 'hydro']:
+                    if energy_type in query_lower:
+                        # Map English to French
+                        energy_map = {
+                            'solar': 'Solaire',
+                            'wind': 'Éolienne',
+                            'hydraulic': 'Hydraulique',
+                            'hydro': 'Hydraulique'
+                        }
+                        filter_value = energy_map.get(energy_type, energy_type.capitalize())
+                        real_data = self._filter_by_energy_type(real_data, filter_value)
+                        break
         
         # Build prompt with real data
         if real_data:
@@ -267,6 +298,25 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
         for item in data:
             if 'nom' in item and item['nom']:
                 if name.lower() in item['nom'].lower():
+                    filtered.append(item)
+        return filtered if filtered else data
+    
+    def _filter_by_season(self, data: List[Dict], season: str) -> List[Dict]:
+        """Filter products by season"""
+        filtered = []
+        for item in data:
+            if 'saison' in item and item['saison']:
+                # Handle both single season and multi-season (e.g., "Automne-Hiver")
+                if season.lower() in item['saison'].lower():
+                    filtered.append(item)
+        return filtered if filtered else data
+    
+    def _filter_by_energy_type(self, data: List[Dict], energy_type: str) -> List[Dict]:
+        """Filter energies by type"""
+        filtered = []
+        for item in data:
+            if 'type' in item and item['type']:
+                if energy_type.lower() in item['type'].lower():
                     filtered.append(item)
         return filtered if filtered else data
     
