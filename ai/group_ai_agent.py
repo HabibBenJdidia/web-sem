@@ -463,8 +463,9 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
     def _fetch_energies(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT ?uri ?type ?capacite WHERE {
+        SELECT ?uri ?nom ?type ?capacite WHERE {
             ?uri a eco:EnergieRenouvelable .
+            OPTIONAL { ?uri eco:nom ?nom . }
             OPTIONAL { ?uri eco:typeEnergie ?type . }
             OPTIONAL { ?uri eco:capaciteKw ?capacite . }
         }
