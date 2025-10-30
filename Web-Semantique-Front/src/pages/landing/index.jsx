@@ -402,13 +402,7 @@ const handlePaysChange = (pays) => {
                 </button>
               </li>
               <li className="nav-item px-3 px-xl-4">
-                <button 
-                  className="nav-link fw-medium" 
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                  onClick={() => scrollToSection('destination')}
-                >
-                  Hebergements
-                </button>
+                <Link className="nav-link fw-medium" to="/hebergements">Hébergements</Link>
               </li>
               <li className="nav-item px-3 px-xl-4">
                 <Link className="nav-link fw-medium" to="/public/certifications"> Certifications</Link>
