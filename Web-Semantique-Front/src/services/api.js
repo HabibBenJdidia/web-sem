@@ -646,6 +646,72 @@ class ApiService {
       method: 'DELETE',
     });
   }
+
+  // ==================== RESERVATION RESTAURANT ENDPOINTS ====================
+
+  /**
+   * Get all reservations for a tourist
+   */
+  async getTouristeReservations(touristeUri) {
+    return this.fetch(`/reservations-restaurant/touriste/${encodeURIComponent(touristeUri)}`);
+  }
+
+  /**
+   * Get all restaurant reservations
+   */
+  async getReservations() {
+    return this.fetch('/reservation-restaurant');
+  }
+
+  /**
+   * Get reservation by URI
+   */
+  async getReservation(uri) {
+    return this.fetch(`/reservation-restaurant/${encodeURIComponent(uri)}`);
+  }
+
+  /**
+   * Create new restaurant reservation
+   */
+  async createReservation(data) {
+    return this.fetch('/reservation-restaurant', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Update reservation status
+   */
+  async updateReservationStatus(uri, statut) {
+    return this.fetch(`/reservation-restaurant/${encodeURIComponent(uri)}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ statut }),
+    });
+  }
+
+  /**
+   * Delete reservation
+   */
+  async deleteReservation(uri) {
+    return this.fetch(`/reservation-restaurant/${encodeURIComponent(uri)}`, {
+      method: 'DELETE',
+    });
+  }
+
+  /**
+   * Check restaurant availability
+   */
+  async checkRestaurantAvailability(restaurantUri, date, heure) {
+    return this.fetch('/reservation-restaurant/check-availability', {
+      method: 'POST',
+      body: JSON.stringify({
+        restaurant_uri: restaurantUri,
+        date_reservation: date,
+        heure,
+      }),
+    });
+  }
 }
 
 export default new ApiService();
