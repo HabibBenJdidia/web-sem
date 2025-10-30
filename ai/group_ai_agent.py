@@ -29,66 +29,84 @@ class GroupAIAgent:
     def _build_system_context(self) -> str:
         return """Tu es GroupAI, un assistant intelligent pour l'écotourisme.
 
-**TU PEUX CHERCHER DANS TOUTES CES ENTITÉS:**
+**EXEMPLES DE REQUÊTES SPARQL (APPRENDS DE CES PATTERNS):**
 
-1. **Destination et Hébergement**
-   - Destination: nom, pays, climat
-   - Ville, Region (types de Destination)
-   - Hebergement: nom, type, prix, nb_chambres, niveau_eco
-   - Hotel, MaisonHote (types d'Hébergement)
+1. **Chercher tous les transports:**
+```sparql
+SELECT DISTINCT ?nom ?type ?emission WHERE {
+    ?t a eco:Transport .
+    ?t eco:nom ?nom .
+    OPTIONAL { ?t eco:type ?type . }
+    OPTIONAL { ?t eco:emissionCO2PerKm ?emission . }
+}
+```
 
-2. **Restaurant et Produit Local**
-   - Restaurant: nom, situe_dans
-   - RestaurantEco (restaurants certifiés)
-   - ProduitLocal: nom, saison, bio
-   - ProduitLocalBio (produits bio certifiés)
+2. **Chercher transports par émission CO2:**
+```sparql
+SELECT ?nom ?emission WHERE {
+    ?t a eco:Transport .
+    ?t eco:nom ?nom .
+    ?t eco:emissionCO2PerKm ?emission .
+    FILTER(?emission = 10.0)
+}
+```
 
-3. **User et Transport**
-   - User: nom, age, nationalite
-   - Touriste: sejourne_dans, participe_a, se_deplace_par
-   - Guide: organise, organise_evenement
-   - Transport: nom, type, emission_co2_per_km
-   - EcoTransport, TransportNonMotorise
+3. **Chercher restaurants par ville:**
+```sparql
+SELECT ?nom ?ville WHERE {
+    ?r a eco:Restaurant .
+    ?r eco:nom ?nom .
+    ?r eco:situeDans ?d .
+    ?d eco:nom ?ville .
+    FILTER(?ville = "Bizerte")
+}
+```
 
-4. **Evenement et CertificationEco**
-   - Evenement: nom, event_date, event_duree_heures, event_prix
-   - Festival, Foire (types d'Événement)
-   - CertificationEco: label_nom, organisme, annee_obtention
+4. **Chercher hébergements écologiques:**
+```sparql
+SELECT ?nom ?niveau WHERE {
+    ?h a eco:Hebergement .
+    ?h eco:nom ?nom .
+    ?h eco:niveauEco ?niveau .
+}
+```
 
-5. **Activite et Zone Naturelle**
-   - Activite: nom, difficulte, duree_heures, prix
-   - Randonnee (type d'Activité)
-   - ZoneNaturelle: nom, superficie_hectares, niveau_protection
+5. **Chercher activités par difficulté:**
+```sparql
+SELECT ?nom ?difficulte WHERE {
+    ?a a eco:Activite .
+    ?a eco:nom ?nom .
+    ?a eco:difficulte ?difficulte .
+    FILTER(?difficulte = "Facile")
+}
+```
 
-6. **Empreinte Carbone et EnergieRenouvelable**
-   - EmpreinteCarbone: valeur_kg_co2, periode
-   - EnergieRenouvelable: type_energie, capacite_kw
-
-**NAMESPACE SPARQL:**
-PREFIX eco: <http://example.org/eco-tourism#>
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+6. **Chercher produits bio:**
+```sparql
+SELECT ?nom ?saison WHERE {
+    ?p a eco:ProduitLocal .
+    ?p eco:nom ?nom .
+    ?p eco:bio true .
+    OPTIONAL { ?p eco:saison ?saison . }
+}
+```
 
 **PROPRIÉTÉS IMPORTANTES:**
-- Object Properties: sejourneDans, participeA, seDeplacePar, organise, situeDans, estDansZone, utiliseEnergie, aCertification, sert, aLieuDans, aEmpreinte
-- Data Properties: nom, type, prix, age, nationalite, difficulte, bio, saison, emission_co2_per_km, valeur_kg_co2
+- Transport: nom, type, emissionCO2PerKm (en g/km, stocké comme float)
+- Restaurant: nom, situeDans (URI vers Destination)
+- Hebergement: nom, type, prix, niveauEco
+- Activite: nom, difficulte (Facile/Moyenne/Difficile)
+- ProduitLocal: nom, saison, bio (boolean)
+- Destination: nom, pays, climat
 
-**INSTRUCTIONS:**
-1. Réponds TOUJOURS en français conversationnel
-2. Utilise SPARQL pour chercher les données réelles
-3. Ne réponds JAMAIS en JSON ou code
-4. Sois précis et informatif
-5. Propose des alternatives si aucun résultat
-6. Mets en valeur les options écologiques
-7. Utilise du formatage Markdown pour la lisibilité
-
-**EXEMPLES DE RECHERCHES:**
-- "Montre-moi les destinations" → SELECT ?nom WHERE { ?d a eco:Destination . ?d eco:nom ?nom }
-- "Hébergements écologiques" → SELECT ?nom ?niveau WHERE { ?h a eco:Hebergement . ?h eco:nom ?nom . ?h eco:niveauEco ?niveau }
-- "Restaurants à Paris" → SELECT ?nom WHERE { ?r a eco:Restaurant . ?r eco:nom ?nom . ?r eco:situeDans ?d . ?d eco:nom "Paris" }
-- "Transports zéro émission" → SELECT ?nom WHERE { ?t a eco:Transport . ?t eco:nom ?nom . ?t eco:emissionCO2PerKm "0.0"^^xsd:float }
-- "Événements en 2025" → SELECT ?nom ?date WHERE { ?e a eco:Evenement . ?e eco:nom ?nom . ?e eco:eventDate ?date . FILTER(YEAR(?date) = 2025) }
-- "Activités faciles" → SELECT ?nom WHERE { ?a a eco:Activite . ?a eco:nom ?nom . ?a eco:difficulte "Facile" }
+**INSTRUCTIONS CRITIQUES:**
+1. NE MONTRE JAMAIS le code SPARQL à l'utilisateur
+2. Réponds UNIQUEMENT en français conversationnel
+3. Liste TOUS les résultats trouvés (pas "... et X autres")
+4. Utilise DISTINCT dans les requêtes pour éviter les doublons
+5. Pour les émissions CO2: stockées en g/km comme float (ex: 10.0, 0.0, 1200.0)
+6. Utilise du formatage Markdown (**, *, listes)
+7. Sois précis sur le nombre exact de résultats
 """
 
     def initialize_chat(self):
@@ -216,7 +234,7 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
     def _fetch_destinations(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT ?uri ?nom ?pays ?climat WHERE {
+        SELECT DISTINCT ?nom ?pays ?climat WHERE {
             ?uri a eco:Destination .
             ?uri eco:nom ?nom .
             OPTIONAL { ?uri eco:pays ?pays . }
@@ -228,7 +246,7 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
     def _fetch_hebergements(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT ?uri ?nom ?type ?prix ?niveau WHERE {
+        SELECT DISTINCT ?nom ?type ?prix ?niveau WHERE {
             ?uri a eco:Hebergement .
             ?uri eco:nom ?nom .
             OPTIONAL { ?uri eco:type ?type . }
@@ -241,7 +259,7 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
     def _fetch_restaurants(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT ?uri ?nom ?type ?ville WHERE {
+        SELECT DISTINCT ?nom ?type ?ville WHERE {
             ?uri a eco:Restaurant .
             ?uri eco:nom ?nom .
             OPTIONAL { ?uri eco:type ?type . }
@@ -256,7 +274,7 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
     def _fetch_produits(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT ?uri ?nom ?saison ?bio WHERE {
+        SELECT DISTINCT ?nom ?saison ?bio WHERE {
             ?uri a eco:ProduitLocal .
             ?uri eco:nom ?nom .
             OPTIONAL { ?uri eco:saison ?saison . }
@@ -268,7 +286,7 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
     def _fetch_transports(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT ?uri ?nom ?type ?emission WHERE {
+        SELECT DISTINCT ?nom ?type ?emission WHERE {
             ?uri a eco:Transport .
             ?uri eco:nom ?nom .
             OPTIONAL { ?uri eco:type ?type . }
@@ -280,7 +298,7 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
     def _fetch_evenements(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT ?uri ?nom ?date ?prix WHERE {
+        SELECT DISTINCT ?nom ?date ?prix WHERE {
             ?uri a eco:Evenement .
             ?uri eco:nom ?nom .
             OPTIONAL { ?uri eco:eventDate ?date . }
@@ -292,7 +310,7 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
     def _fetch_certifications(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT ?uri ?nom ?organisme ?annee WHERE {
+        SELECT DISTINCT ?nom ?organisme ?annee WHERE {
             ?uri a eco:CertificationEco .
             OPTIONAL { ?uri eco:labelNom ?nom . }
             OPTIONAL { ?uri eco:nom ?nom . }
@@ -306,7 +324,7 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
     def _fetch_activites(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT ?uri ?nom ?difficulte ?duree ?prix WHERE {
+        SELECT DISTINCT ?nom ?difficulte ?duree ?prix WHERE {
             ?uri a eco:Activite .
             ?uri eco:nom ?nom .
             OPTIONAL { ?uri eco:difficulte ?difficulte . }
@@ -319,7 +337,7 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
     def _fetch_zones(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT ?uri ?nom ?superficie ?protection WHERE {
+        SELECT DISTINCT ?nom ?superficie ?protection WHERE {
             ?uri a eco:ZoneNaturelle .
             ?uri eco:nom ?nom .
             OPTIONAL { ?uri eco:superficieHectares ?superficie . }
@@ -331,7 +349,7 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
     def _fetch_empreintes(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT ?uri ?valeur ?periode WHERE {
+        SELECT DISTINCT ?valeur ?periode WHERE {
             ?uri a eco:EmpreinteCarbone .
             OPTIONAL { ?uri eco:valeurCO2kg ?valeur . }
             OPTIONAL { ?uri eco:periode ?periode . }
@@ -342,7 +360,7 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
     def _fetch_energies(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT ?uri ?type ?capacite WHERE {
+        SELECT DISTINCT ?type ?capacite WHERE {
             ?uri a eco:EnergieRenouvelable .
             OPTIONAL { ?uri eco:typeEnergie ?type . }
             OPTIONAL { ?uri eco:capaciteKw ?capacite . }
@@ -353,7 +371,7 @@ Réponds en français conversationnel. Suggère des alternatives ou explique pou
     def _fetch_users(self) -> List[Dict]:
         query = """
         PREFIX eco: <http://example.org/eco-tourism#>
-        SELECT ?uri ?nom ?age ?nationalite WHERE {
+        SELECT DISTINCT ?nom ?age ?nationalite WHERE {
             { ?uri a eco:Touriste . } UNION { ?uri a eco:Guide . }
             ?uri eco:nom ?nom .
             OPTIONAL { ?uri eco:age ?age . }
