@@ -10,8 +10,7 @@ class GroupAIAgent:
     
     def __init__(self, sparql_manager, api_key=None):
         self.sparql_manager = sparql_manager
-        api_key = api_key or os.getenv('GROUPAI_API_KEY', 'AIzaSyD20FVZADQgMxt_2GHuJWMeNaYgnqS2_aw')
-        genai.configure(api_key=api_key)
+        api_key = api_key or os.getenv('GROUPAI_API_KEY', 'AIzaSyD7OnqQ-Ac9_Vr5ew8Hq5ZN09mvw4pWY-A')
         
         self.model = genai.GenerativeModel(
             'gemini-2.0-flash-exp',
@@ -128,8 +127,11 @@ SELECT ?nom ?saison WHERE {
         real_data = None
         entity_type = None
         
-        # Detect entity type and fetch data
-        if any(word in query_lower for word in ['destination', 'ville', 'region', 'pays']):
+        # Detect entity type and fetch data (order matters - more specific first!)
+        if any(word in query_lower for word in ['énergie', 'energie', 'energy', 'renouvelable', 'renewable', 'solaire', 'solar', 'éolien', 'hydraulique', 'hydraulic', 'biomasse']):
+            real_data = self._fetch_energies()
+            entity_type = "énergies renouvelables"
+        elif any(word in query_lower for word in ['destination', 'ville', 'region', 'pays']):
             real_data = self._fetch_destinations()
             entity_type = "destinations"
         elif any(word in query_lower for word in ['hébergement', 'hebergement', 'hotel', 'maison']):
@@ -159,9 +161,6 @@ SELECT ?nom ?saison WHERE {
         elif any(word in query_lower for word in ['empreinte', 'carbone', 'co2', 'émission']):
             real_data = self._fetch_empreintes()
             entity_type = "empreintes carbone"
-        elif any(word in query_lower for word in ['énergie', 'energie', 'energy', 'renouvelable', 'renewable', 'solaire', 'solar', 'éolien', 'hydraulique', 'hydraulic']):
-            real_data = self._fetch_energies()
-            entity_type = "énergies renouvelables"
         elif any(word in query_lower for word in ['touriste', 'guide', 'utilisateur', 'user']):
             real_data = self._fetch_users()
             entity_type = "utilisateurs"
@@ -213,14 +212,15 @@ SELECT ?nom ?saison WHERE {
             
             # Check for energy type filter (for energies)
             if entity_type == "énergies renouvelables":
-                for energy_type in ['solaire', 'solar', 'éolien', 'éolienne', 'wind', 'hydraulique', 'hydraulic', 'hydro']:
+                for energy_type in ['solaire', 'solar', 'éolien', 'éolienne', 'wind', 'hydraulique', 'hydraulic', 'hydro', 'biomasse', 'biomass']:
                     if energy_type in query_lower:
                         # Map English to French
                         energy_map = {
                             'solar': 'Solaire',
                             'wind': 'Éolienne',
                             'hydraulic': 'Hydraulique',
-                            'hydro': 'Hydraulique'
+                            'hydro': 'Hydraulique',
+                            'biomass': 'Biomasse'
                         }
                         filter_value = energy_map.get(energy_type, energy_type.capitalize())
                         real_data = self._filter_by_energy_type(real_data, filter_value)
